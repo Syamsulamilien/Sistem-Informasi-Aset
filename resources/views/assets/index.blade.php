@@ -2,8 +2,8 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div class="mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
             <div>
-                <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Daftar Aset IT</h1>
-                <p class="text-sm text-gray-600 mt-1">Kelola seluruh aset IT rumah sakit</p>
+                <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Daftar Aset </h1>
+                <p class="text-sm text-gray-600 mt-1">Kelola seluruh aset rumah sakit</p>
             </div>
             @can('create', App\Models\Asset::class)
                 <a href="{{ route('assets.create') }}" class="inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm">
@@ -17,7 +17,7 @@
 
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 mb-6">
             <form method="GET" action="{{ route('assets.index') }}">
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
                     <div class="lg:col-span-2">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Pencarian</label>
                         <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari kode aset, merek, atau serial..." class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
@@ -138,7 +138,113 @@
                             <option value="Nonaktif" {{ request('status') == 'Nonaktif' ? 'selected' : '' }}>Nonaktif</option>
                         </select>
                     </div>
+                    
+                    <!-- Searchable Dropdown for Kategori -->
+                    <div x-data="{
+                        open: false,
+                        search: '',
+                        selected: '{{ request('kategori') ?? '' }}',
+                        selectedKategori: '{{ request('kategori') ?? '' }}',
+                        currentPage: 1,
+                        perPage: 5,
+                        items: @js($categories),
+                        get filteredItems() {
+                            return this.items.filter(item =>
+                                item.toLowerCase().includes(this.search.toLowerCase())
+                            );
+                        },
+                        get totalPages() {
+                            return Math.ceil(this.filteredItems.length / this.perPage);
+                        },
+                        get paginatedItems() {
+                            const start = (this.currentPage - 1) * this.perPage;
+                            return this.filteredItems.slice(start, start + this.perPage);
+                        },
+                        selectItem(item) {
+                            this.selected = item;
+                            this.selectedKategori = item;
+                            this.open = false;
+                            this.search = '';
+                            this.currentPage = 1;
+                        },
+                        clearSelection() {
+                            this.selected = '';
+                            this.selectedKategori = '';
+                        }
+                    }" @click.away="open = false" class="relative">
 
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Kategori</label>
+
+                        <input type="hidden" name="kategori" x-model="selectedKategori">
+
+                        <button type="button" @click="open = !open" class="w-full px-4 py-2.5 text-left bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors flex items-center justify-between hover:bg-gray-50">
+                            <span x-text="selected || 'Semua Kategori'" :class="selected ? 'text-gray-900' : 'text-gray-500'"></span>
+                            <svg class="w-5 h-5 text-gray-400 transition-transform" :class="{'rotate-180': open}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+
+                        <div x-show="open" x-transition class="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-lg shadow-xl">
+                            <div class="p-3 border-b border-gray-200">
+                                <div class="relative">
+                                    <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                    </svg>
+                                    <input type="text" x-model="search" @input="currentPage = 1" placeholder="Cari kategori..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+                            </div>
+
+                            <div class="max-h-64 overflow-y-auto">
+                                <button type="button" @click="clearSelection(); open = false;" class="w-full px-4 py-3 text-left hover:bg-blue-50 transition-colors">
+                                    <span class="text-gray-700 hover:text-blue-600 font-medium">Semua Kategori</span>
+                                </button>
+
+                                <template x-if="paginatedItems.length > 0">
+                                    <div>
+                                        <template x-for="item in paginatedItems" :key="item">
+                                            <button type="button" @click="selectItem(item)" class="w-full px-4 py-3 text-left hover:bg-blue-50 transition-colors flex items-center justify-between group">
+                                                <span x-text="item" class="text-gray-700 group-hover:text-blue-600 font-medium"></span>
+                                                <svg x-show="selected === item" class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                                </svg>
+                                            </button>
+                                        </template>
+                                    </div>
+                                </template>
+
+                                <template x-if="paginatedItems.length === 0 && search !== ''">
+                                    <div class="px-4 py-8 text-center text-gray-500">
+                                        <svg class="w-12 h-12 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                        </svg>
+                                        <p class="text-sm">Tidak ada hasil ditemukan</p>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <div x-show="filteredItems.length > perPage" class="p-3 border-t border-gray-200 flex items-center justify-between bg-gray-50">
+                                <div class="text-xs text-gray-600">
+                                    <span x-text="`${((currentPage-1)*perPage)+1}-${Math.min(currentPage*perPage, filteredItems.length)} of ${filteredItems.length}`"></span>
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    <button type="button" @click="currentPage > 1 && currentPage--" :disabled="currentPage === 1" :class="currentPage === 1 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-200'" class="p-1.5 rounded transition-colors">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                                        </svg>
+                                    </button>
+
+                                    <span class="px-2 py-1 text-xs font-medium text-gray-700" x-text="`${currentPage}/${totalPages}`"></span>
+
+                                    <button type="button" @click="currentPage < totalPages && currentPage++" :disabled="currentPage === totalPages" :class="currentPage === totalPages ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-200'" class="p-1.5 rounded transition-colors">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <!-- Searchable Dropdown for Location -->
                     <div x-data="{
                         open: false,
@@ -298,16 +404,18 @@
             </div>
         </div>
 
-                <div class="hidden lg:block bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <!-- Desktop Table -->
+        <div class="hidden lg:block bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
                             <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Kode Aset</th>
                             <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Jenis</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Kategori</th>
                             <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Merek/Model</th>
                             <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Lokasi</th>
-                            <!-- ✅ TAMBAHAN: Kolom Harga -->
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Penanggung Jawab</th>
                             <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Harga</th>
                             <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Kondisi</th>
                             <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
@@ -326,6 +434,21 @@
                                         {{ $asset->assetType->name ?? 'N/A' }} 
                                     </span>
                                 </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    @php
+                                        $badgeColors = [
+                                            'Asset TI' => 'bg-purple-100 text-purple-800 border-purple-300',
+                                            'Asset Rumah Tangga' => 'bg-green-100 text-green-800 border-green-300',
+                                            'Asset Transportasi' => 'bg-orange-100 text-orange-800 border-orange-300',
+                                            'Asset Gizi' => 'bg-pink-100 text-pink-800 border-pink-300',
+                                            'Asset Lainnya' => 'bg-gray-100 text-gray-800 border-gray-300',
+                                        ];
+                                        $colorClass = $badgeColors[$asset->kategori] ?? 'bg-gray-100 text-gray-800 border-gray-300';
+                                    @endphp
+                                    <span class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full border {{ $colorClass }}">
+                                        {{ $asset->kategori ?? 'N/A' }}
+                                    </span>
+                                </td>
                                 <td class="px-6 py-4">
                                     <div class="text-sm font-medium text-gray-900">{{ $asset->brand }}</div>
                                     <div class="text-xs text-gray-500">{{ $asset->model }}</div>
@@ -334,7 +457,18 @@
                                     <div class="text-sm text-gray-900">{{ $asset->location->name }}</div>
                                     <div class="text-xs text-gray-500">{{ $asset->location->floor }}</div>
                                 </td>
-                                <!-- ✅ TAMBAHAN: Data Harga -->
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    @if($asset->penanggung_jawab)
+                                        <div class="flex items-center">
+                                            <svg class="w-4 h-4 mr-1.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                            </svg>
+                                            <span class="text-sm font-medium text-gray-900">{{ $asset->penanggung_jawab }}</span>
+                                        </div>
+                                    @else
+                                        <span class="text-xs text-gray-400 italic">-</span>
+                                    @endif
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     @if($asset->price)
                                         <div class="text-sm font-semibold text-gray-900">
@@ -369,7 +503,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="px-6 py-12 text-center">
+                                <td colspan="10" class="px-6 py-12 text-center">
                                     <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
                                     </svg>
@@ -382,8 +516,8 @@
             </div>
         </div>
 
-
-                <div class="lg:hidden space-y-4">
+        <!-- Mobile View -->
+        <div class="lg:hidden space-y-4">
             @forelse($assets as $asset)
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
                     <div class="flex justify-between items-start mb-3">
@@ -398,6 +532,22 @@
                     
                     <div class="space-y-2 mb-3">
                         <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Kategori:</span>
+                            @php
+                                $badgeColors = [
+                                    'Asset TI' => 'bg-purple-100 text-purple-800',
+                                    'Asset Rumah Tangga' => 'bg-green-100 text-green-800',
+                                    'Asset Transportasi' => 'bg-orange-100 text-orange-800',
+                                    'Asset Gizi' => 'bg-pink-100 text-pink-800',
+                                    'Asset Lainnya' => 'bg-gray-100 text-gray-800',
+                                ];
+                                $colorClass = $badgeColors[$asset->kategori] ?? 'bg-gray-100 text-gray-800';
+                            @endphp
+                            <span class="px-2 py-1 text-xs font-semibold rounded {{ $colorClass }}">
+                                {{ $asset->kategori ?? 'N/A' }}
+                            </span>
+                        </div>
+                        <div class="flex justify-between text-sm">
                             <span class="text-gray-600">Merek:</span>
                             <span class="font-medium text-gray-900">{{ $asset->brand }}</span>
                         </div>
@@ -409,7 +559,17 @@
                             <span class="text-gray-600">Lokasi:</span>
                             <span class="font-medium text-gray-900">{{ $asset->location->name }}</span>
                         </div>
-                        <!-- ✅ TAMBAHAN: Harga di Mobile -->
+                        @if($asset->penanggung_jawab)
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Penanggung Jawab:</span>
+                            <span class="font-semibold text-indigo-700 flex items-center">
+                                <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                </svg>
+                                {{ $asset->penanggung_jawab }}
+                            </span>
+                        </div>
+                        @endif
                         <div class="flex justify-between text-sm">
                             <span class="text-gray-600">Harga:</span>
                             @if($asset->price)
@@ -449,6 +609,7 @@
                 </div>
             @endforelse
         </div>
+
         <div class="mt-6">
             @if ($assets->hasPages())
                 <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
@@ -457,7 +618,6 @@
                     </div>
 
                     <nav class="flex items-center gap-1">
-                        {{-- Previous Button --}}
                         @if ($assets->onFirstPage())
                             <span class="px-3 py-2 bg-gray-800 text-gray-500 rounded-lg cursor-not-allowed">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -472,7 +632,6 @@
                             </a>
                         @endif
 
-                        {{-- Page Numbers --}}
                         @foreach ($assets->getUrlRange(1, $assets->lastPage()) as $page => $url)
                             @if ($page == $assets->currentPage())
                                 <span class="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium min-w-[44px] text-center">
@@ -485,7 +644,6 @@
                             @endif
                         @endforeach
 
-                        {{-- Next Button --}}
                         @if ($assets->hasMorePages())
                             <a href="{{ $assets->nextPageUrl() }}" class="px-3 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -505,6 +663,7 @@
         </div>
     </div>
 
+    <!-- Import Modal -->
     <div id="importModal" style="display: none;" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-xl shadow-xl max-w-md w-full">
             <div class="p-6">
@@ -536,6 +695,7 @@
         </div>
     </div>
 
+    <!-- Delete Modal -->
     <div id="deleteModal" style="display: none;" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-xl shadow-xl max-w-md w-full">
             <div class="p-6">
@@ -587,7 +747,6 @@
             document.body.style.overflow = '';
         }
 
-        // Close modals when clicking outside
         document.getElementById('importModal').addEventListener('click', function(e) {
             if (e.target === this) closeImportModal();
         });
@@ -596,7 +755,6 @@
             if (e.target === this) closeDeleteModal();
         });
 
-        // Close modals with Escape key
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 closeImportModal();

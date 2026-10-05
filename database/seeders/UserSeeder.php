@@ -10,25 +10,34 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        User::create([
-            'name' => 'Administrator',
-            'email' => 'admin@pku.com',
-            'password' => Hash::make('password'),
-            'role' => 'admin',
-        ]);
+        User::updateOrCreate(
+            ['email' => 'admin@pku.com'],
+            [
+                'name' => 'Administrator',
+                'username' => 'admin',
+                'password' => Hash::make('password'),
+                'role' => 'admin',
+            ]
+        );
 
-        User::create([
-            'name' => 'Teknisi IT',
-            'email' => 'teknisi@pku.com',
-            'password' => Hash::make('password'),
-            'role' => 'teknisi',
-        ]);
+        User::updateOrCreate(
+            ['email' => 'teknisi@pku.com'],
+            [
+                'name' => 'Teknisi IT',
+                'username' => 'teknisi',
+                'password' => Hash::make('password'),
+                'role' => 'teknisi',
+            ]
+        );
 
-        User::create([
-            'name' => 'Viewer',
-            'email' => 'viewer@pku.com',
-            'password' => Hash::make('password'),
-            'role' => 'viewer',
-        ]);
+        User::updateOrCreate(
+            ['email' => 'viewer@pku.com'],
+            [
+                'name' => 'Viewer',
+                'username' => 'viewer',
+                'password' => Hash::make('password'),
+                'role' => 'viewer',
+            ]
+        );
     }
 }

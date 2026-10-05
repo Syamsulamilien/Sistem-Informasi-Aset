@@ -61,11 +61,20 @@
                             <div class="text-xs text-gray-500">{{ $maintenance->asset->assetType->name ?? 'N/A' }}</div>
                         </div>
 
-                        <!-- Technician -->
+                        <!-- ✅ PERBAIKAN: Technician dengan null check -->
                         <div>
                             <label class="block text-sm font-medium text-gray-500 mb-1">Technician</label>
-                            <div class="text-base text-gray-900">{{ $maintenance->technician->name }}</div>
-                            <div class="text-sm text-gray-500">{{ $maintenance->technician->email }}</div>
+                            <div class="text-base text-gray-900">
+                                @if($maintenance->technician_id && $maintenance->technician)
+                                    {{ $maintenance->technician->name }}
+                                    <div class="text-sm text-gray-500">{{ $maintenance->technician->email }}</div>
+                                @elseif($maintenance->technician_name)
+                                    {{ $maintenance->technician_name }}
+                                    <div class="text-sm text-gray-500 italic">(Teknisi Manual)</div>
+                                @else
+                                    <span class="text-gray-400 italic">Belum ditentukan</span>
+                                @endif
+                            </div>
                         </div>
 
                         <!-- Schedule Date -->
@@ -84,6 +93,26 @@
                                     <div class="text-sm text-gray-500">{{ $maintenance->performed_date->diffForHumans() }}</div>
                                 @else
                                     <span class="text-gray-400">Not yet performed</span>
+                                @endif
+                            </div>
+                        </div>
+
+                        <!-- Tanggal Penerimaan Barang -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500 mb-1">Tanggal Penerimaan Barang</label>
+                            <div class="text-base text-gray-900">
+                                @if ($maintenance->tanggal_penerimaan_barang)
+                                    <div class="flex items-center">
+                                        <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        <div>
+                                            {{ $maintenance->tanggal_penerimaan_barang->format('d F Y') }}
+                                            <div class="text-sm text-gray-500">{{ $maintenance->tanggal_penerimaan_barang->diffForHumans() }}</div>
+                                        </div>
+                                    </div>
+                                @else
+                                    <span class="text-gray-400">Belum diterima</span>
                                 @endif
                             </div>
                         </div>
@@ -134,21 +163,19 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-500 mb-1">Condition</label>
                             <div class="text-base text-gray-900">
-                                @if ($maintenance->asset->condition == 'Good')
-                                    <span class="text-green-600">✓ Good</span>
-                                @elseif ($maintenance->asset->condition == 'Fair')
-                                    <span class="text-yellow-600">⚠ Fair</span>
+                                @if ($maintenance->asset->condition == 'Baik')
+                                    <span class="text-green-600">✓ Baik</span>
+                                @elseif ($maintenance->asset->condition == 'Rusak Ringan')
+                                    <span class="text-yellow-600">⚠ Rusak Ringan</span>
                                 @else
-                                    <span class="text-red-600">✗ Poor</span>
+                                    <span class="text-red-600">✗ Rusak Berat</span>
                                 @endif
                             </div>
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-500 mb-1">Purchase Date</label>
-                            <div class="text-base text-gray-900">
-                                {{ $maintenance->asset->purchase_date ? $maintenance->asset->purchase_date->format('d F Y') : '-' }}
-                            </div>
+                            <label class="block text-sm font-medium text-gray-500 mb-1">Purchase Year</label>
+                            <div class="text-base text-gray-900">{{ $maintenance->asset->purchase_year ?? '-' }}</div>
                         </div>
                     </div>
 
@@ -185,8 +212,7 @@
                             @csrf
                             @method('PATCH')
                             <button type="submit" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition">
-                                ✓ Mark as Completed
-                            </button>
+                                ✓ Mark as Completed</button>
                         </form>
                     @endif
                     

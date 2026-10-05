@@ -4,7 +4,7 @@
         <div class="mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
             <div>
                 <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Master Jenis Aset</h1>
-                <p class="text-sm text-gray-600 mt-1">Kelola jenis-jenis aset IT</p>
+                <p class="text-sm text-gray-600 mt-1">Kelola jenis-jenis aset berdasarkan kategori</p>
             </div>
             <a href="{{ route('asset-types.create') }}" class="inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -24,19 +24,17 @@
                     <p class="text-sm font-semibold text-blue-900 mb-1">💡 Informasi Master Jenis Aset</p>
                     <ul class="text-xs text-blue-800 space-y-1">
                         <li>• Prefix kode harus <strong>unik</strong> dan hanya boleh huruf kapital &amp; angka (contoh: PC, LTP, RTR)</li>
+                        <li>• Setiap jenis aset memiliki <strong>kategori</strong> untuk pengelompokan yang lebih baik</li>
                         <li>• Prefix akan digunakan untuk generate kode aset otomatis (contoh: PC-2025-0001)</li>
                         <li>• Jenis aset yang sudah digunakan tidak bisa dihapus</li>
-                        <li>• Set status "Nonaktif" untuk jenis yang tidak digunakan lagi</li>
                     </ul>
                 </div>
             </div>
         </div>
 
-        <!-- Asset Types Table - Desktop with Horizontal Scroll -->
+        <!-- Asset Types Table - Desktop -->
         <div class="hidden lg:block bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <!-- Scroll Container with Navigation Buttons -->
             <div class="relative">
-                <!-- Left Scroll Button -->
                 <button id="scrollLeft" class="absolute left-0 top-0 bottom-0 z-10 bg-gradient-to-r from-white to-transparent px-2 hidden items-center">
                     <div class="bg-white rounded-full shadow-lg p-2 hover:bg-gray-50 transition-colors">
                         <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -45,7 +43,6 @@
                     </div>
                 </button>
 
-                <!-- Right Scroll Button -->
                 <button id="scrollRight" class="absolute right-0 top-0 bottom-0 z-10 bg-gradient-to-l from-white to-transparent px-2 flex items-center">
                     <div class="bg-white rounded-full shadow-lg p-2 hover:bg-gray-50 transition-colors">
                         <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -54,17 +51,15 @@
                     </div>
                 </button>
 
-                <!-- Scrollable Table Container -->
                 <div id="tableContainer" class="overflow-x-auto scroll-smooth" style="scrollbar-width: none; -ms-overflow-style: none;">
                     <style>
-                        #tableContainer::-webkit-scrollbar {
-                            display: none;
-                        }
+                        #tableContainer::-webkit-scrollbar { display: none; }
                     </style>
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap">Nama Jenis</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap">Kategori</th>
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap">Prefix Kode</th>
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap">Contoh Kode</th>
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap">Jumlah Aset</th>
@@ -91,6 +86,21 @@
                                                 @endif
                                             </div>
                                         </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        @php
+                                            $badgeColors = [
+                                                'Asset TI' => 'bg-purple-100 text-purple-800 border-purple-300',
+                                                'Asset Rumah Tangga' => 'bg-green-100 text-green-800 border-green-300',
+                                                'Asset Transportasi' => 'bg-orange-100 text-orange-800 border-orange-300',
+                                                'Asset Gizi' => 'bg-pink-100 text-pink-800 border-pink-300',
+                                                'Asset Lainnya' => 'bg-gray-100 text-gray-800 border-gray-300',
+                                            ];
+                                            $colorClass = $badgeColors[$type->kategori] ?? 'bg-gray-100 text-gray-800 border-gray-300';
+                                        @endphp
+                                        <span class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full border {{ $colorClass }}">
+                                            {{ $type->kategori }}
+                                        </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <span class="px-3 py-1 text-xs font-mono font-bold rounded bg-blue-100 text-blue-800 border border-blue-300">
@@ -138,7 +148,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="px-6 py-12 text-center">
+                                    <td colspan="7" class="px-6 py-12 text-center">
                                         <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
                                         </svg>
@@ -187,6 +197,22 @@
                     
                     <div class="space-y-2 mb-3 pl-15">
                         <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Kategori:</span>
+                            @php
+                                $badgeColors = [
+                                    'Asset TI' => 'bg-purple-100 text-purple-800',
+                                    'Asset Rumah Tangga' => 'bg-green-100 text-green-800',
+                                    'Asset Transportasi' => 'bg-orange-100 text-orange-800',
+                                    'Asset Gizi' => 'bg-pink-100 text-pink-800',
+                                    'Asset Lainnya' => 'bg-gray-100 text-gray-800',
+                                ];
+                                $colorClass = $badgeColors[$type->kategori] ?? 'bg-gray-100 text-gray-800';
+                            @endphp
+                            <span class="px-2 py-1 text-xs font-semibold rounded {{ $colorClass }}">
+                                {{ $type->kategori }}
+                            </span>
+                        </div>
+                        <div class="flex justify-between text-sm">
                             <span class="text-gray-600">Prefix Kode:</span>
                             <span class="font-mono font-bold text-blue-800">{{ $type->code_prefix }}</span>
                         </div>
@@ -227,14 +253,10 @@
         <div class="mt-6">
             @if ($assetTypes->hasPages())
                 <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
-                    <!-- Results Info -->
                     <div class="text-sm text-gray-600">
                         Showing {{ $assetTypes->firstItem() }} to {{ $assetTypes->lastItem() }} of {{ $assetTypes->total() }} results
                     </div>
-
-                    <!-- Pagination Links -->
                     <nav class="flex items-center gap-1">
-                        {{-- Previous Button --}}
                         @if ($assetTypes->onFirstPage())
                             <span class="px-3 py-2 bg-gray-100 text-gray-400 rounded-lg cursor-not-allowed">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -248,21 +270,13 @@
                                 </svg>
                             </a>
                         @endif
-
-                        {{-- Page Numbers --}}
                         @foreach ($assetTypes->getUrlRange(1, $assetTypes->lastPage()) as $page => $url)
                             @if ($page == $assetTypes->currentPage())
-                                <span class="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium min-w-[44px] text-center">
-                                    {{ $page }}
-                                </span>
+                                <span class="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium min-w-[44px] text-center">{{ $page }}</span>
                             @else
-                                <a href="{{ $url }}" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium min-w-[44px] text-center">
-                                    {{ $page }}
-                                </a>
+                                <a href="{{ $url }}" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium min-w-[44px] text-center">{{ $page }}</a>
                             @endif
                         @endforeach
-
-                        {{-- Next Button --}}
                         @if ($assetTypes->hasMorePages())
                             <a href="{{ $assetTypes->nextPageUrl() }}" class="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -282,7 +296,7 @@
         </div>
     </div>
 
-    <!-- Delete Confirmation Modal -->
+    <!-- Delete Modal -->
     <div id="deleteModal" style="display: none;" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-xl shadow-xl max-w-md w-full">
             <div class="p-6">
@@ -299,12 +313,8 @@
                     @csrf
                     @method('DELETE')
                     <div class="flex gap-3">
-                        <button type="button" onclick="closeDeleteModal()" class="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium">
-                            Batal
-                        </button>
-                        <button type="submit" class="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium">
-                            Ya, Hapus
-                        </button>
+                        <button type="button" onclick="closeDeleteModal()" class="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium">Batal</button>
+                        <button type="submit" class="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium">Ya, Hapus</button>
                     </div>
                 </form>
             </div>
@@ -312,7 +322,6 @@
     </div>
 
     <script>
-        // Horizontal Scroll Functionality
         const tableContainer = document.getElementById('tableContainer');
         const scrollLeftBtn = document.getElementById('scrollLeft');
         const scrollRightBtn = document.getElementById('scrollRight');
@@ -320,8 +329,6 @@
         function updateScrollButtons() {
             const maxScroll = tableContainer.scrollWidth - tableContainer.clientWidth;
             const currentScroll = tableContainer.scrollLeft;
-
-            // Show/hide left button
             if (currentScroll > 0) {
                 scrollLeftBtn.classList.remove('hidden');
                 scrollLeftBtn.classList.add('flex');
@@ -329,9 +336,7 @@
                 scrollLeftBtn.classList.remove('flex');
                 scrollLeftBtn.classList.add('hidden');
             }
-
-            // Show/hide right button
-            if (currentScroll < maxScroll - 5) { // -5 for small tolerance
+            if (currentScroll < maxScroll - 5) {
                 scrollRightBtn.classList.remove('hidden');
                 scrollRightBtn.classList.add('flex');
             } else {
@@ -340,54 +345,31 @@
             }
         }
 
-        // Scroll left
         scrollLeftBtn.addEventListener('click', () => {
-            tableContainer.scrollBy({
-                left: -300,
-                behavior: 'smooth'
-            });
+            tableContainer.scrollBy({ left: -300, behavior: 'smooth' });
         });
-
-        // Scroll right
         scrollRightBtn.addEventListener('click', () => {
-            tableContainer.scrollBy({
-                left: 300,
-                behavior: 'smooth'
-            });
+            tableContainer.scrollBy({ left: 300, behavior: 'smooth' });
         });
-
-        // Update buttons on scroll
         tableContainer.addEventListener('scroll', updateScrollButtons);
-
-        // Update buttons on window resize
         window.addEventListener('resize', updateScrollButtons);
-
-        // Initial check
         updateScrollButtons();
 
-        // Delete Modal Functions
         function openDeleteModal(typeId, typeName) {
             document.getElementById('deleteAssetTypeName').textContent = typeName;
             document.getElementById('deleteForm').action = `/asset-types/${typeId}`;
             document.getElementById('deleteModal').style.display = 'flex';
             document.body.style.overflow = 'hidden';
         }
-
         function closeDeleteModal() {
             document.getElementById('deleteModal').style.display = 'none';
             document.body.style.overflow = '';
         }
-
-        // Close modal when clicking outside
         document.getElementById('deleteModal').addEventListener('click', function(e) {
             if (e.target === this) closeDeleteModal();
         });
-
-        // Close modal with Escape key
         document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                closeDeleteModal();
-            }
+            if (e.key === 'Escape') closeDeleteModal();
         });
     </script>
 </x-app-layout>

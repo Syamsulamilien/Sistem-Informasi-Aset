@@ -11,66 +11,9 @@
         }
         body {
             font-family: Arial, sans-serif;
-            font-size: 12px;
-            margin: 20px;
-            background-color: white;
-        }
-        .navbar {
-            display: none;
-        }
-        .navbar-item {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-        .navbar-label {
-            font-size: 10px;
-            opacity: 0.85;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 5px;
-            font-weight: 600;
-        }
-        .navbar-value {
-            font-size: 18px;
-            font-weight: bold;
-        }
-        .navbar-item.maintenance {
-            background: rgba(255,255,255,0.1);
-            padding: 10px 15px;
-            border-radius: 6px;
-            backdrop-filter: blur(10px);
-        }
-        .maintenance-summary {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-        .maintenance-item-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
             font-size: 11px;
-        }
-        .maintenance-badge-small {
-            display: inline-block;
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-size: 8px;
-            font-weight: bold;
-            white-space: nowrap;
-        }
-        .badge-scheduled {
-            background-color: #ffc107;
-            color: #333;
-        }
-        .badge-completed {
-            background-color: #28a745;
-            color: white;
-        }
-        .badge-overdue {
-            background-color: #dc3545;
-            color: white;
+            margin: 15px;
+            background-color: white;
         }
         .header {
             text-align: center;
@@ -80,52 +23,54 @@
         }
         .header h1 {
             margin: 0;
-            font-size: 20px;
+            font-size: 18px;
             margin-bottom: 3px;
         }
         .header p {
             margin: 2px 0;
             color: #666;
-            font-size: 11px;
+            font-size: 10px;
         }
         .description {
             text-align: justify;
-            font-size: 10px;
+            font-size: 9px;
             color: #444;
-            margin-top: 10px;
-            margin-bottom: 15px;
-            line-height: 1.5;
+            margin-top: 8px;
+            margin-bottom: 12px;
+            line-height: 1.4;
         }
         .description p {
-            margin: 6px 0;
+            margin: 4px 0;
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
+            margin-top: 10px;
             background-color: white;
         }
         th {
             background-color: #4A5568;
             color: white;
-            padding: 10px;
+            padding: 8px 4px;
             text-align: left;
-            font-size: 11px;
+            font-size: 9px;
             font-weight: bold;
         }
         td {
-            padding: 8px;
+            padding: 6px 4px;
             border-bottom: 1px solid #ddd;
-            font-size: 10px;
+            font-size: 8px;
+            vertical-align: top;
         }
         tr:nth-child(even) {
             background-color: #f8f9fa;
         }
         .badge {
-            padding: 3px 8px;
+            padding: 2px 6px;
             border-radius: 3px;
-            font-size: 9px;
+            font-size: 7px;
             font-weight: bold;
+            display: inline-block;
         }
         .badge-aktif {
             background-color: #d4edda;
@@ -135,38 +80,39 @@
             background-color: #f8d7da;
             color: #721c24;
         }
-        .badge-good {
+        .badge-good, .badge-baik {
             background-color: #d1ecf1;
             color: #0c5460;
         }
-        .badge-fair {
+        .badge-fair, .badge-rusak.ringan {
             background-color: #fff3cd;
             color: #856404;
         }
-        .badge-poor {
+        .badge-poor, .badge-rusak.berat {
             background-color: #f8d7da;
             color: #721c24;
         }
         .footer {
-            margin-top: 30px;
+            margin-top: 20px;
             text-align: right;
-            font-size: 10px;
+            font-size: 9px;
             color: #666;
         }
         .total {
             font-weight: bold;
             background-color: #e2e8f0;
         }
-        @media print {
-            body {
-                background-color: white;
-                margin: 0;
-            }
-            .navbar {
-                margin-left: -20px;
-                margin-right: -20px;
-                margin-top: -20px;
-            }
+        .maintenance-info {
+            font-size: 7px;
+            line-height: 1.3;
+        }
+        .maintenance-badge {
+            display: inline-block;
+            padding: 1px 4px;
+            border-radius: 2px;
+            font-size: 6px;
+            font-weight: bold;
+            margin-bottom: 2px;
         }
     </style>
 </head>
@@ -179,54 +125,7 @@
 
         $lokasiTerbanyak = collect($statistics['by_location'] ?? [])->sortDesc()->keys()->first() ?? '-';
         $jenisTerbanyak = collect($statistics['by_type'] ?? [])->sortByDesc('count')->keys()->first() ?? '-';
-        
-        // Maintenance Statistics
-        $maintenanceStats = [
-            'scheduled' => 0,
-            'completed' => 0,
-            'overdue' => 0,
-            'total_cost' => 0
-        ];
-        
-        if(isset($maintenances)) {
-            foreach($maintenances as $m) {
-                if($m->status === 'Scheduled') {
-                    $maintenanceStats['scheduled']++;
-                    if($m->schedule_date && $m->schedule_date->isPast()) {
-                        $maintenanceStats['overdue']++;
-                    }
-                } elseif($m->status === 'Completed') {
-                    $maintenanceStats['completed']++;
-                }
-                $maintenanceStats['total_cost'] += $m->cost ?? 0;
-            }
-        }
     @endphp
-
-    <!-- Navbar dengan Info -->
-    <div class="navbar">
-        <div class="navbar-item">
-            <div class="navbar-label">Total Aset</div>
-            <div class="navbar-value">{{ $total }}</div>
-        </div>
-        <div class="navbar-item">
-            <div class="navbar-label">Aset Aktif</div>
-            <div class="navbar-value" style="color: #84fab0;">{{ $aktif }}</div>
-        </div>
-        <div class="navbar-item">
-            <div class="navbar-label">Total Nilai</div>
-            <div class="navbar-value" style="font-size: 14px;">Rp {{ number_format($nilai, 0, ',', '.') }}</div>
-        </div>
-    @php
-        $maintenanceStats = [
-            'scheduled' => $maintenances->where('status', 'Scheduled')->count(),
-            'completed' => $maintenances->where('status', 'Completed')->count(),
-            'cancelled' => $maintenances->where('status', 'Cancelled')->count(),
-            'overdue' => $maintenances->where('status', 'Scheduled')->filter(fn($m) => $m->schedule_date && $m->schedule_date->isPast())->count(),
-            'total_cost' => $maintenances->sum('cost')
-        ];
-    @endphp
-    </div>
 
     <div class="header">
         <h1>LAPORAN ASET IT</h1>
@@ -234,39 +133,62 @@
         <p>Tanggal: {{ date('d F Y') }}</p>
     </div>
 
+    @if(isset($appliedFilters) && array_filter($appliedFilters))
+        <div style="background-color: #f0f9ff; padding: 8px; margin-bottom: 10px; border-left: 3px solid #3b82f6; font-size: 9px;">
+            <strong style="color: #1e40af;">Filter yang Diterapkan:</strong>
+            <div style="margin-top: 4px; color: #1e3a8a;">
+                @if($appliedFilters['asset_type'])
+                    <span style="margin-right: 10px;">• Jenis Aset: <strong>{{ $appliedFilters['asset_type'] }}</strong></span>
+                @endif
+                @if($appliedFilters['kategori'])
+                    <span style="margin-right: 10px;">• Kategori: <strong>{{ $appliedFilters['kategori'] }}</strong></span>
+                @endif
+                @if($appliedFilters['status'])
+                    <span style="margin-right: 10px;">• Status: <strong>{{ $appliedFilters['status'] }}</strong></span>
+                @endif
+                @if($appliedFilters['condition'])
+                    <span style="margin-right: 10px;">• Kondisi: <strong>{{ $appliedFilters['condition'] }}</strong></span>
+                @endif
+                @if($appliedFilters['location'])
+                    <span style="margin-right: 10px;">• Lokasi: <strong>{{ $appliedFilters['location'] }}</strong></span>
+                @endif
+                @if($appliedFilters['year'])
+                    <span style="margin-right: 10px;">• Tahun: <strong>{{ $appliedFilters['year'] }}</strong></span>
+                @endif
+            </div>
+        </div>
+    @endif
+
     <div class="description">
         <p>
-            Berdasarkan hasil pendataan terbaru, tercatat sebanyak <strong>{{ $total }}</strong> aset TI di lingkungan 
-            <strong>RSU PKU Muhammadiyah Bantul</strong>. Dari jumlah tersebut, sebanyak 
+            Berdasarkan hasil pendataan terbaru, tercatat sebanyak <strong>{{ $total }}</strong> aset TI di lingkungan
+            <strong>RSU PKU Muhammadiyah Bantul</strong>. Dari jumlah tersebut, sebanyak
             <strong>{{ $aktif }}</strong> aset berstatus aktif dan <strong>{{ $nonaktif }}</strong> aset berstatus nonaktif.
             Total nilai keseluruhan aset mencapai <strong>Rp {{ number_format($nilai, 0, ',', '.') }}</strong>.
         </p>
         <p>
-            Jenis aset yang paling banyak digunakan adalah <strong>{{ $jenisTerbanyak }}</strong>, 
-            sedangkan lokasi dengan jumlah aset terbanyak adalah <strong>{{ $lokasiTerbanyak }}</strong>. 
-            Data ini menunjukkan distribusi aset yang merata di berbagai unit kerja, dengan fokus utama pada 
+            Jenis aset yang paling banyak digunakan adalah <strong>{{ $jenisTerbanyak }}</strong>,
+            sedangkan lokasi dengan jumlah aset terbanyak adalah <strong>{{ $lokasiTerbanyak }}</strong>.
+            Data ini menunjukkan distribusi aset yang merata di berbagai unit kerja, dengan fokus utama pada
             pemeliharaan perangkat yang mendukung operasional rumah sakit.
-        </p>
-        <p>
-            Laporan ini dibuat secara otomatis oleh sistem monitoring aset untuk membantu manajemen dalam 
-            pengawasan, perencanaan pengadaan, serta evaluasi efektivitas pemanfaatan teknologi informasi di rumah sakit.
         </p>
     </div>
 
     <table>
         <thead>
             <tr>
-                <th>No</th>
-                <th>Kode Aset</th>
-                <th>Jenis</th>
-                <th>Merek/Model</th>
-                <th>Lokasi</th>
-                <th>Kondisi</th>
-                <th>Status</th>
-                <th>Tahun</th>
-                <th>Harga (Rp)</th>
-                <th>Status Maintenance</th>
-                <th>Jadwal Maintenance</th>
+                <th style="width: 3%;">No</th>
+                <th style="width: 10%;">Kode Aset</th>
+                <th style="width: 8%;">Jenis</th>
+                <th style="width: 12%;">Merek/Model</th>
+                <th style="width: 9%;">Lokasi</th>
+                <th style="width: 6%;">Status</th>
+                <th style="width: 5%;">Tahun</th>
+                <th style="width: 8%;">Intensitas</th>
+                <th style="width: 8%;">Masa Pakai</th>
+                <th style="width: 9%;">Penanggung Jawab</th>
+                <th style="width: 10%;">Harga (Rp)</th>
+                <th style="width: 12%;">Maintenance</th>
             </tr>
         </thead>
         <tbody>
@@ -275,71 +197,82 @@
             @endphp
             @forelse($assets as $index => $asset)
                 @php
-                    // Ambil maintenance terbaru untuk aset ini
-                    $latestMaintenance = $maintenances->where('asset_id', $asset->id)->sortByDesc('schedule_date')->first();
+                    // ✅ OPTIMIZED: Langsung ambil dari collection yang sudah di-index
+                    $latestMaintenance = $maintenances[$asset->id] ?? null;
                 @endphp
                 <tr>
                     <td>{{ $index + 1 }}</td>
                     <td>{{ $asset->asset_code }}</td>
                     <td>{{ $asset->assetType->name ?? '-' }}</td>
-                    <td>{{ $asset->brand }} {{ $asset->model }}</td>
+                    <td style="font-size: 7px;">{{ $asset->brand }} {{ $asset->model }}</td>
                     <td>{{ $asset->location->name ?? '-' }}</td>
-                    <td>
-                        <span class="badge badge-{{ strtolower($asset->condition) }}">
-                            {{ $asset->condition }}
-                        </span>
-                    </td>
                     <td>
                         <span class="badge {{ $asset->status == 'Aktif' ? 'badge-aktif' : 'badge-nonaktif' }}">
                             {{ $asset->status }}
                         </span>
                     </td>
-                    <td>{{ $asset->purchase_year }}</td>
                     <td>
-                        Rp {{ number_format($asset->price ?? 0, 0, ',', '.') }}
+                        @if($asset->purchase_year == 0)
+                            <span style="color: #999; font-style: italic; font-size: 7px;">N/A</span>
+                        @else
+                            {{ $asset->purchase_year }}
+                        @endif
                     </td>
-                    <td style="min-width: 120px;">
+                    <td style="font-size: 7px;">
+                        @if($asset->intensitas_pemakaian)
+                            {{ $asset->intensitas_pemakaian }}
+                        @else
+                            <span style="color: #999;">-</span>
+                        @endif
+                    </td>
+                    <td style="font-size: 7px;">
+                        @if($asset->masa_pemakaian)
+                            {{ $asset->masa_pemakaian }} {{ $asset->masa_pemakaian_satuan ?? 'Bulan' }}
+                        @else
+                            <span style="color: #999;">-</span>
+                        @endif
+                    </td>
+                    <td style="font-size: 7px;">
+                        @if($asset->penanggung_jawab)
+                            {{ $asset->penanggung_jawab }}
+                        @else
+                            <span style="color: #999;">-</span>
+                        @endif
+                    </td>
+                    <td>Rp {{ number_format($asset->price ?? 0, 0, ',', '.') }}</td>
+                    <td class="maintenance-info">
                         @if($latestMaintenance)
                             @if($latestMaintenance->status === 'Completed')
-                                <span class="badge" style="background-color: #d4edda; color: #155724; display: inline-block; margin-bottom: 8px;">Selesai</span>
+                                <span class="maintenance-badge" style="background-color: #d4edda; color: #155724;">Selesai</span>
                             @elseif($latestMaintenance->status === 'Scheduled')
-                                <span class="badge" style="background-color: #fff3cd; color: #856404; display: inline-block; margin-bottom: 8px;">Sedang Maintenance</span>
+                                <span class="maintenance-badge" style="background-color: #fff3cd; color: #856404;">Terjadwal</span>
+                            @elseif($latestMaintenance->status === 'In Progress')
+                                <span class="maintenance-badge" style="background-color: #d1ecf1; color: #0c5460;">Proses</span>
                             @else
-                                <span class="badge" style="background-color: #e2e8f0; color: #4a5568; display: inline-block; margin-bottom: 8px;">Dibatalkan</span>
+                                <span class="maintenance-badge" style="background-color: #e2e8f0; color: #4a5568;">{{ $latestMaintenance->status }}</span>
                             @endif
-                            <br>
-                            <small style="color: #666; display: block;">Rp {{ number_format($latestMaintenance->cost ?? 0, 0, ',', '.') }}</small>
-                        @else
-                            <span style="color: #999; font-size: 9px;">-</span>
-                        @endif
-                    </td>
-                    <td style="min-width: 140px;">
-                        @if($latestMaintenance)
-                            <div style="margin-bottom: 6px;">
-                                <strong style="display: block; margin-bottom: 3px;">{{ $latestMaintenance->schedule_date->format('d M Y') }}</strong>
-                                <small style="color: #666; display: block; margin-bottom: 2px;">{{ $latestMaintenance->technician->name ?? '-' }}</small>
-                            </div>
-                            @if($latestMaintenance->performed_date)
-                                <div style="border-top: 1px solid #e0e0e0; padding-top: 6px;">
-                                    <small style="color: #4a5568; display: block; font-weight: 600;">Selesai: {{ $latestMaintenance->performed_date->format('d M Y') }}</small>
-                                </div>
+                            <br><small style="font-size: 6px;">{{ $latestMaintenance->schedule_date->format('d M Y') }}</small>
+                            @if($latestMaintenance->technician)
+                                <br><small style="color: #666; font-size: 6px;">{{ $latestMaintenance->technician->name }}</small>
+                            @elseif($latestMaintenance->technician_name)
+                                <br><small style="color: #666; font-size: 6px;">{{ $latestMaintenance->technician_name }}</small>
                             @endif
                         @else
-                            <span style="color: #999; font-size: 9px;">-</span>
+                            <span style="color: #999;">-</span>
                         @endif
                     </td>
-                    @php
-                        $totalHarga += $asset->price ?? 0;
-                    @endphp
                 </tr>
+                @php
+                    $totalHarga += $asset->price ?? 0;
+                @endphp
             @empty
                 <tr>
-                    <td colspan="9" style="text-align: center;">Tidak ada data</td>
+                    <td colspan="12" style="text-align: center;">Tidak ada data</td>
                 </tr>
             @endforelse
             <tr class="total">
-                <td colspan="9" style="text-align: right;">Total Harga:</td>
-                <td colspan="2">Rp {{ number_format($totalHarga, 0, ',', '.') }}</td>
+                <td colspan="10" style="text-align: right;"><strong>Total Harga:</strong></td>
+                <td colspan="2"><strong>Rp {{ number_format($totalHarga, 0, ',', '.') }}</strong></td>
             </tr>
         </tbody>
     </table>

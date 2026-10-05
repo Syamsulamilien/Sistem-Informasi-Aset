@@ -10,37 +10,42 @@ use Illuminate\Support\Facades\Auth;
 
 class MaintenanceController extends Controller
 {
-    /**
-     * Display a listing of maintenance records.
-     */
     public function index(Request $request)
     {
         $query = MaintenanceRecord::with(['asset.assetType', 'technician']);
+        $statsQuery = MaintenanceRecord::query();
 
-        // Filter by status
+        // Filter Status
         if ($request->filled('status')) {
             $query->where('status', $request->status);
+            $statsQuery->where('status', $request->status);
         }
 
-        // Filter by asset
+        // Filter Asset
         if ($request->filled('asset_id')) {
             $query->where('asset_id', $request->asset_id);
+            $statsQuery->where('asset_id', $request->asset_id);
         }
 
-        // Filter by technician - BARU DITAMBAHKAN
+        // Filter Technician
         if ($request->filled('technician_id')) {
             $query->where('technician_id', $request->technician_id);
+            $statsQuery->where('technician_id', $request->technician_id);
         }
 
-        // Filter by date range
+        // Filter Tanggal Mulai
         if ($request->filled('start_date')) {
             $query->whereDate('schedule_date', '>=', $request->start_date);
-        }
-        if ($request->filled('end_date')) {
-            $query->whereDate('schedule_date', '<=', $request->end_date);
+            $statsQuery->whereDate('schedule_date', '>=', $request->start_date);
         }
 
-        // Search - Asset code, brand, or model
+        // Filter Tanggal Akhir
+        if ($request->filled('end_date')) {
+            $query->whereDate('schedule_date', '<=', $request->end_date);
+            $statsQuery->whereDate('schedule_date', '<=', $request->end_date);
+        }
+
+        // Filter Search
         if ($request->filled('search')) {
             $search = $request->search;
             $query->whereHas('asset', function($q) use ($search) {
@@ -48,11 +53,30 @@ class MaintenanceController extends Controller
                   ->orWhere('brand', 'like', "%{$search}%")
                   ->orWhere('model', 'like', "%{$search}%");
             });
+            $statsQuery->whereHas('asset', function($q) use ($search) {
+                $q->where('asset_code', 'like', "%{$search}%")
+                  ->orWhere('brand', 'like', "%{$search}%")
+                  ->orWhere('model', 'like', "%{$search}%");
+            });
         }
 
+        // Hitung statistik berdasarkan filter
+        $stats = [
+            'scheduled' => (clone $statsQuery)->where('status', 'Scheduled')->count(),
+            'completed' => (clone $statsQuery)->where('status', 'Completed')->count(),
+            'overdue' => (clone $statsQuery)->where('status', 'Scheduled')
+                ->whereDate('schedule_date', '<', now())
+                ->count(),
+            'cost_this_month' => (clone $statsQuery)
+                ->whereMonth('performed_date', now()->month)
+                ->whereYear('performed_date', now()->year)
+                ->sum('cost'),
+        ];
+
+        // Ambil data untuk tabel
         $maintenances = $query->latest('schedule_date')->paginate(15)->withQueryString();
         
-        // Format assets untuk dropdown dengan label yang lebih informatif
+        // Data untuk dropdown
         $assets = Asset::with('assetType')
             ->orderBy('asset_code')
             ->get()
@@ -65,15 +89,11 @@ class MaintenanceController extends Controller
         
         $technicians = User::orderBy('name')->get();
 
-        return view('maintenance.index', compact('maintenances', 'assets', 'technicians'));
+        return view('maintenance.index', compact('maintenances', 'assets', 'technicians', 'stats'));
     }
 
-    /**
-     * Show the form for creating a new maintenance record.
-     */
     public function create()
     {
-        // Format assets untuk dropdown
         $assets = Asset::with('assetType')
             ->orderBy('asset_code')
             ->get()
@@ -89,19 +109,18 @@ class MaintenanceController extends Controller
         return view('maintenance.create', compact('assets', 'technicians'));
     }
 
-    /**
-     * Store a newly created maintenance record.
-     */
     public function store(Request $request)
     {
         $validated = $request->validate([
             'asset_id' => 'required|exists:assets,id',
             'schedule_date' => 'required|date',
             'performed_date' => 'nullable|date',
-            'technician_id' => 'required|exists:users,id',
+            'tanggal_penerimaan_barang' => 'nullable|date',
+            'technician_id' => 'nullable|exists:users,id',
+            'technician_name' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
             'cost' => 'nullable|numeric|min:0',
-            'status' => 'required|in:Scheduled,Completed,Cancelled',
+            'status' => 'required|in:Scheduled,Proses,Completed,Cancelled',
         ]);
 
         $validated['cost'] = $validated['cost'] ?? 0;
@@ -112,9 +131,6 @@ class MaintenanceController extends Controller
             ->with('success', 'Maintenance record created successfully.');
     }
 
-    /**
-     * Display the specified maintenance record.
-     */
     public function show(MaintenanceRecord $maintenance)
     {
         $maintenance->load(['asset.assetType', 'technician']);
@@ -122,12 +138,8 @@ class MaintenanceController extends Controller
         return view('maintenance.show', compact('maintenance'));
     }
 
-    /**
-     * Show the form for editing the specified maintenance record.
-     */
     public function edit(MaintenanceRecord $maintenance)
     {
-        // Format assets untuk dropdown
         $assets = Asset::with('assetType')
             ->orderBy('asset_code')
             ->get()
@@ -143,19 +155,18 @@ class MaintenanceController extends Controller
         return view('maintenance.edit', compact('maintenance', 'assets', 'technicians'));
     }
 
-    /**
-     * Update the specified maintenance record.
-     */
     public function update(Request $request, MaintenanceRecord $maintenance)
     {
         $validated = $request->validate([
             'asset_id' => 'required|exists:assets,id',
             'schedule_date' => 'required|date',
             'performed_date' => 'nullable|date',
-            'technician_id' => 'required|exists:users,id',
+            'tanggal_penerimaan_barang' => 'nullable|date',
+            'technician_id' => 'nullable|exists:users,id',
+            'technician_name' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
             'cost' => 'nullable|numeric|min:0',
-            'status' => 'required|in:Scheduled,Completed,Cancelled',
+            'status' => 'required|in:Scheduled,Proses,Completed,Cancelled', 
         ]);
 
         $validated['cost'] = $validated['cost'] ?? 0;
@@ -166,9 +177,6 @@ class MaintenanceController extends Controller
             ->with('success', 'Maintenance record updated successfully.');
     }
 
-    /**
-     * Remove the specified maintenance record.
-     */
     public function destroy(MaintenanceRecord $maintenance)
     {
         $maintenance->delete();
@@ -177,23 +185,24 @@ class MaintenanceController extends Controller
             ->with('success', 'Maintenance record deleted successfully.');
     }
 
-    /**
-     * Get upcoming maintenance schedules
-     */
-    public function upcoming()
-    {
-        $upcomingMaintenances = MaintenanceRecord::with(['asset.assetType', 'technician'])
-            ->where('status', 'Scheduled')
-            ->whereDate('schedule_date', '>=', now())
-            ->orderBy('schedule_date')
-            ->paginate(15);
+   public function upcoming()
+{
+    $year = request('year'); // Ambil filter tahun dari URL
 
-        return view('maintenance.upcoming', compact('upcomingMaintenances'));
-    }
+    $upcomingMaintenances = MaintenanceRecord::with(['asset.assetType', 'technician'])
+        ->where('status', 'Scheduled')
+        ->when($year, function ($query) use ($year) {
+            $query->whereYear('schedule_date', $year);
+        })
+        ->whereDate('schedule_date', '>=', now())
+        ->orderBy('schedule_date')
+        ->paginate(15)
+        ->withQueryString(); // biar pagination mempertahankan filter
 
-    /**
-     * Get overdue maintenance schedules
-     */
+    return view('maintenance.upcoming', compact('upcomingMaintenances'));
+}
+
+
     public function overdue()
     {
         $overdueMaintenances = MaintenanceRecord::with(['asset.assetType', 'technician'])
@@ -205,23 +214,28 @@ class MaintenanceController extends Controller
         return view('maintenance.overdue', compact('overdueMaintenances'));
     }
 
-    /**
-     * Mark maintenance as completed
-     */
+    public function markInProgress(MaintenanceRecord $maintenance)
+    {
+        $maintenance->update([
+            'status' => 'Proses',
+            'performed_date' => $maintenance->performed_date ?? now(),
+        ]);
+
+        return redirect()->back()
+            ->with('success', 'Maintenance marked as in progress.');
+    }
+
     public function complete(MaintenanceRecord $maintenance)
     {
         $maintenance->update([
             'status' => 'Completed',
-            'performed_date' => now(),
+            'performed_date' => $maintenance->performed_date ?? now(),
         ]);
 
         return redirect()->back()
             ->with('success', 'Maintenance marked as completed.');
     }
 
-    /**
-     * Get maintenance history for a specific asset
-     */
     public function assetHistory($assetId)
     {
         $asset = Asset::findOrFail($assetId);

@@ -41,6 +41,27 @@
                                 <p class="mt-1.5 text-xs text-gray-500">Jenis tidak dapat diubah</p>
                             </div>
 
+                            <!-- Kategori Asset (Read-only) -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Kategori <span class="text-red-500">*</span>
+                                </label>
+                                <input type="hidden" name="kategori" value="{{ old('kategori', $asset->kategori) }}">
+                                @php
+                                    $badgeColors = [
+                                        'Asset TI' => 'bg-purple-100 border-purple-300 text-purple-800',
+                                        'Asset Rumah Tangga' => 'bg-green-100 border-green-300 text-green-800',
+                                        'Asset Transportasi' => 'bg-orange-100 border-orange-300 text-orange-800',
+                                        'Asset Gizi' => 'bg-pink-100 border-pink-300 text-pink-800',
+                                        'Asset Lainnya' => 'bg-gray-100 border-gray-300 text-gray-800',
+                                    ];
+                                    $colorClass = $badgeColors[$asset->kategori] ?? 'bg-gray-100 border-gray-300 text-gray-800';
+                                @endphp
+                                <input type="text" value="{{ old('kategori', $asset->kategori) }}" disabled
+                                    class="w-full px-4 py-2.5 border-2 rounded-lg cursor-not-allowed font-medium {{ $colorClass }}">
+                                <p class="mt-1.5 text-xs text-gray-500">Kategori tidak dapat diubah (mengikuti jenis aset)</p>
+                            </div>
+
                             <!-- Merek (Editable) -->
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -68,13 +89,15 @@
                             <!-- Serial Number (Editable) -->
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Nomor Seri <span class="text-red-500">*</span>
+                                    Nomor Seri
                                 </label>
-                                <input type="text" name="serial_number" value="{{ old('serial_number', $asset->serial_number) }}" required 
+                                <input type="text" name="serial_number" value="{{ old('serial_number', $asset->serial_number) }}"
+                                    placeholder="Opsional: biarkan kosong jika tidak ada"
                                     class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors {{ $errors->has('serial_number') ? 'border-red-500' : 'border-gray-300' }}">
                                 @error('serial_number')
                                     <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
+                                <p class="mt-1.5 text-xs text-gray-500">Opsional: Biarkan kosong jika tidak ada serial number</p>
                             </div>
 
                             <!-- Deskripsi -->
@@ -105,28 +128,48 @@
                                     Tahun Pembelian <span class="text-red-500">*</span>
                                 </label>
                                 <input type="number" name="purchase_year" value="{{ old('purchase_year', $asset->purchase_year) }}" required 
+                                    placeholder="Ketik 0 jika tidak diketahui atau {{ date('Y') }}"
                                     class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors {{ $errors->has('purchase_year') ? 'border-red-500' : 'border-gray-300' }}">
                                 @error('purchase_year')
                                     <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
-                            </div>
-
-                            <!-- Harga Pembelian -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Harga Pembelian
-                                </label>
-                                <div class="relative">
-                                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium">Rp</span>
-                                    <input type="number" name="price" value="{{ old('price', $asset->price) }}" 
-                                        class="w-full pl-12 pr-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors {{ $errors->has('price') ? 'border-red-500' : 'border-gray-300' }}"
-                                        placeholder="0">
+                                <p class="mt-1.5 text-xs text-gray-500">
+                                    💡 Ketik <strong class="font-semibold">0</strong> jika tahun tidak diketahui, atau tahun antara 1900 - {{ date('Y') + 1 }}
+                                </p>
+                            </div>                   
+                                <!-- Harga Pembelian -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                                        Harga Pembelian
+                                    </label>
+                                    <div class="relative">
+                                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium">Rp</span>
+                                        <input type="number" name="price" value="{{ old('price', $asset->price) }}" 
+                                            class="w-full pl-12 pr-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors {{ $errors->has('price') ? 'border-red-500' : 'border-gray-300' }}"
+                                            placeholder="0" step="0.01">
+                                    </div>
+                                    @error('price')
+                                        <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                    <p class="mt-1.5 text-xs text-gray-500">Masukkan harga tanpa titik</p>
                                 </div>
-                                @error('price')
-                                    <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                                <p class="mt-1.5 text-xs text-gray-500">Masukkan harga tanpa titik</p>
-                            </div>
+
+                                <!-- Sumber Dana -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                                        Sumber Dana
+                                    </label>
+                                    <select name="sumber_dana" class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors {{ $errors->has('sumber_dana') ? 'border-red-500' : 'border-gray-300' }}">
+                                        <option value="">Pilih Sumber Dana</option>
+                                        <option value="Dana Sekolah" {{ old('sumber_dana', $asset->sumber_dana) == 'Dana Sekolah' ? 'selected' : '' }}>Dana Sekolah</option>
+                                        <option value="Dana BOS" {{ old('sumber_dana', $asset->sumber_dana) == 'Dana BOS' ? 'selected' : '' }}>Dana BOS</option>
+                                        <option value="Yayasan" {{ old('sumber_dana', $asset->sumber_dana) == 'Yayasan' ? 'selected' : '' }}>Yayasan</option>
+                                        <option value="Lainnya" {{ old('sumber_dana', $asset->sumber_dana) == 'Lainnya' ? 'selected' : '' }}>Lainnya</option>
+                                    </select>
+                                    @error('sumber_dana')
+                                        <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
 
                             <!-- Kondisi -->
                             <div>
@@ -177,6 +220,69 @@
                                 @error('location_id')
                                     <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Informasi Tambahan -->
+                    <div class="mb-8">
+                        <h2 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200">
+                            Informasi Tambahan
+                        </h2>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                            <!-- Penanggung Jawab -->
+                            <div class="sm:col-span-2 lg:col-span-3">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Penanggung Jawab
+                                </label>
+                                <input type="text" name="penanggung_jawab" value="{{ old('penanggung_jawab', $asset->penanggung_jawab) }}"
+                                    placeholder="Masukkan nama penanggung jawab"
+                                    class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors {{ $errors->has('penanggung_jawab') ? 'border-red-500' : 'border-gray-300' }}">
+                                @error('penanggung_jawab')
+                                    <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                                <p class="mt-1.5 text-xs text-gray-500">Opsional: Nama orang yang bertanggung jawab atas aset ini</p>
+                            </div>
+
+                            <!-- Intensitas Pemakaian -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Intensitas Pemakaian
+                                </label>
+                                <input type="text" name="intensitas_pemakaian"
+                                    value="{{ old('intensitas_pemakaian', $asset->intensitas_pemakaian) }}"
+                                    placeholder="Contoh: Rendah, Sedang, Tinggi"
+                                    class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors {{ $errors->has('intensitas_pemakaian') ? 'border-red-500' : 'border-gray-300' }}">
+                                @error('intensitas_pemakaian')
+                                    <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                                <p class="mt-1.5 text-xs text-gray-500">Opsional: Seberapa sering aset digunakan</p>
+                            </div>
+
+                            <!-- Masa Pemakaian -->
+                            <div class="sm:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Masa Pemakaian
+                                </label>
+                                <div class="flex gap-2">
+                                    <input type="number" name="masa_pemakaian"
+                                        value="{{ old('masa_pemakaian', $asset->masa_pemakaian) }}"
+                                        placeholder="0" min="0"
+                                        class="w-2/3 px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors {{ $errors->has('masa_pemakaian') ? 'border-red-500' : 'border-gray-300' }}">
+
+                                    <select name="masa_pemakaian_satuan"
+                                        class="w-1/3 px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors {{ $errors->has('masa_pemakaian_satuan') ? 'border-red-500' : 'border-gray-300' }}">
+                                        <option value="Bulan" {{ old('masa_pemakaian_satuan', $asset->masa_pemakaian_satuan ?? 'Bulan') == 'Bulan' ? 'selected' : '' }}>Bulan</option>
+                                        <option value="Tahun" {{ old('masa_pemakaian_satuan', $asset->masa_pemakaian_satuan ?? 'Bulan') == 'Tahun' ? 'selected' : '' }}>Tahun</option>
+                                    </select>
+                                </div>
+                                @error('masa_pemakaian')
+                                    <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                                @error('masa_pemakaian_satuan')
+                                    <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                                <p class="mt-1.5 text-xs text-gray-500">Opsional: Berapa lama aset sudah digunakan</p>
                             </div>
                         </div>
                     </div>

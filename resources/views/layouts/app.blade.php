@@ -12,7 +12,7 @@
     @include('layouts.sidebar')
 
     {{-- Main Content dengan margin left --}}
-    <main class="lg:ml-64 min-h-screen">
+    <main class="lg:ml-64 min-h-screen pt-16 lg:pt-0">
         {{-- Alert Messages --}}
         @if (session('success'))
             <div class="mx-4 mt-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">

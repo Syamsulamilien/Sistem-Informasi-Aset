@@ -1,5 +1,5 @@
 <x-app-layout>
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pt-20 lg:pt-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <!-- Header -->
         <div class="mb-6">
             <div class="flex flex-col gap-4">
@@ -63,6 +63,26 @@
                             </div>
                         </div>
 
+                        <!-- Kategori Asset -->
+                        <div class="p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg border-2 border-purple-200 shadow-sm">
+                            <div class="flex items-center justify-between">
+                                <div class="flex-1">
+                                    <p class="text-xs text-purple-700 mb-1 font-semibold flex items-center">
+                                        <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                                        </svg>
+                                        Kategori Asset
+                                    </p>
+                                    <p class="font-bold text-purple-900 text-lg mt-1">{{ $asset->kategori ?? 'Tidak ada data' }}</p>
+                                </div>
+                                <div class="p-2 bg-purple-200 rounded-full">
+                                    <svg class="w-6 h-6 text-purple-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Merek & Model -->
                         <div class="p-3 bg-gray-50 rounded-lg">
                             <p class="text-xs text-gray-600 mb-1">Merek & Model</p>
@@ -91,10 +111,16 @@
                         </div>
                         @endif
 
-                        <!-- Tahun Pembelian -->
+                        <!-- ✅ TAHUN PEMBELIAN (FIXED) -->
                         <div class="p-3 bg-gray-50 rounded-lg">
                             <p class="text-xs text-gray-600 mb-1">Tahun Pembelian</p>
-                            <p class="font-semibold text-gray-900">{{ $asset->purchase_year }}</p>
+                            @if($asset->purchase_year == 0)
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-600 inline-block">
+                                    Tidak Diketahui
+                                </span>
+                            @else
+                                <p class="font-semibold text-gray-900">{{ $asset->purchase_year }}</p>
+                            @endif
                         </div>
 
                         <!-- Harga Pembelian -->
@@ -119,6 +145,16 @@
                                     </svg>
                                 </div>
                             </div>
+                        </div>
+
+                        <!-- Sumber Dana -->
+                        <div class="p-3 bg-gray-50 rounded-lg">
+                            <p class="text-xs text-gray-600 mb-1">Sumber Dana</p>
+                            @if($asset->sumber_dana)
+                                <p class="font-semibold text-gray-900">{{ $asset->sumber_dana }}</p>
+                            @else
+                                <p class="text-sm text-gray-500 italic">Tidak ada data</p>
+                            @endif
                         </div>
 
                         <!-- Kondisi -->
@@ -152,6 +188,72 @@
                                 <p class="text-xs text-gray-500 mt-0.5">{{ Str::limit($asset->location->description, 50) }}</p>
                             @endif
                         </div>
+                        
+                        <!-- Penanggung Jawab -->
+                        @if($asset->penanggung_jawab)
+                        <div class="p-4 bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-lg border-2 border-indigo-200 shadow-sm">
+                            <div class="flex items-center justify-between">
+                                <div class="flex-1">
+                                    <p class="text-xs text-indigo-700 mb-1 font-semibold flex items-center">
+                                        <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                        </svg>
+                                        Penanggung Jawab
+                                    </p>
+                                    <p class="font-bold text-indigo-900 text-lg mt-1">{{ $asset->penanggung_jawab }}</p>
+                                </div>
+                                <div class="p-2 bg-indigo-200 rounded-full">
+                                    <svg class="w-6 h-6 text-indigo-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+
+                        <!-- Intensitas Pemakaian -->
+                        @if($asset->intensitas_pemakaian)
+                        <div class="p-4 bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg border-2 border-orange-200 shadow-sm">
+                            <div class="flex items-center justify-between">
+                                <div class="flex-1">
+                                    <p class="text-xs text-orange-700 mb-1 font-semibold flex items-center">
+                                        <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                        </svg>
+                                        Intensitas Pemakaian
+                                    </p>
+                                    <p class="font-bold text-orange-900 text-lg mt-1">{{ $asset->intensitas_pemakaian }}</p>
+                                </div>
+                                <div class="p-2 bg-orange-200 rounded-full">
+                                    <svg class="w-6 h-6 text-orange-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+
+                        <!-- Masa Pemakaian -->
+                        @if($asset->masa_pemakaian)
+                        <div class="p-4 bg-gradient-to-br from-teal-50 to-teal-100 rounded-lg border-2 border-teal-200 shadow-sm">
+                            <div class="flex items-center justify-between">
+                                <div class="flex-1">
+                                    <p class="text-xs text-teal-700 mb-1 font-semibold flex items-center">
+                                        <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        Masa Pemakaian
+                                    </p>
+                                    <p class="font-bold text-teal-900 text-lg mt-1">{{ $asset->masa_pemakaian }} {{ $asset->masa_pemakaian_satuan ?? 'Bulan' }}</p>
+                                </div>
+                                <div class="p-2 bg-teal-200 rounded-full">
+                                    <svg class="w-6 h-6 text-teal-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
 
                         <!-- Garansi -->
                         <div class="p-3 bg-gray-50 rounded-lg">
@@ -281,7 +383,14 @@
                                         <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                                         </svg>
+                                        @if($maintenance->technician_id && $maintenance->technician)
                                         {{ $maintenance->technician->name }}
+                                    @elseif($maintenance->technician_name)
+                                        {{ $maintenance->technician_name }}
+                                    @else
+                                        <span class="italic text-gray-500">Tidak ada teknisi</span>
+                                    @endif
+
                                     </p>
                                 </div>
                                 <span class="px-2 py-1 text-xs font-semibold rounded-full whitespace-nowrap {{ $maintenance->status == 'Completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">

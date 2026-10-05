@@ -11,6 +11,7 @@ class User extends Authenticatable
 
     protected $fillable = [
         'name',
+        'username',
         'email',
         'password',
         'role',
@@ -44,9 +45,29 @@ class User extends Authenticatable
         return $this->role === 'viewer';
     }
 
+    public function isUserBiasa()
+    {
+        return in_array($this->role, ['viewer', 'user_biasa']);
+    }
+
+    public function isLaboran()
+    {
+        return $this->role === 'laboran';
+    }
+
     public function maintenanceRecords()
     {
         return $this->hasMany(MaintenanceRecord::class, 'technician_id');
+    }
+
+    public function borrowings()
+    {
+        return $this->hasMany(Borrowing::class);
+    }
+
+    public function consumableTransactions()
+    {
+        return $this->hasMany(ConsumableTransaction::class);
     }
 }
 

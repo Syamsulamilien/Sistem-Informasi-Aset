@@ -4,15 +4,15 @@
         <div class="mb-8">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-900">Dashboard Overview</h1>
-                    <p class="mt-1 text-sm text-gray-600">Sistem Pendataan dan Pemantauan Aset IT RSU PKU Muhammadiyah Bantul</p>
+                    <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Dashboard Overview</h1>
+                    <p class="mt-1 text-sm text-gray-600">Sistem Pendataan dan Pemantauan Aset SMK Kesehatan</p>
                 </div>
-                <div class="flex items-center gap-3">
-                    <div class="flex items-center bg-blue-50 px-3 py-2 rounded-lg">
+                <div class="flex flex-wrap items-center gap-3">
+                    <div class="flex items-center bg-white border border-gray-200 px-3 py-2 rounded-lg shadow-sm">
                         <svg class="w-4 h-4 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                         </svg>
-                        <span class="text-sm font-medium text-blue-700">{{ now()->format('d M Y') }}</span>
+                        <span class="text-sm font-medium text-gray-700">{{ now()->format('d M Y') }}</span>
                     </div>
                     <a href="{{ route('assets.index') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 text-sm font-medium shadow-sm hover:shadow-md">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -115,10 +115,8 @@
                             <p class="text-sm text-gray-600 mt-1">Distribusi aset berdasarkan ruangan</p>
                         </div>
                     </div>
-                    <div class="overflow-x-auto">
-                        <div style="min-width: 600px; height: 280px;">
-                            <canvas id="assetLocationChart"></canvas>
-                        </div>
+                    <div class="relative h-[300px] w-full">
+                        <canvas id="assetLocationChart"></canvas>
                     </div>
                 </div>
 
@@ -209,7 +207,7 @@
                     <div style="height: 220px; margin-bottom: 24px;">
                         <canvas id="assetTypeChart"></canvas>
                     </div>
-                    <div class="space-y-3 mt-4">
+                    <div class="space-y-3 mt-4 overflow-y-auto" style="max-height: 300px;">
                         @php
                             $colors = [
                                 'bg-blue-500', 'bg-green-500', 'bg-orange-500', 'bg-red-500',

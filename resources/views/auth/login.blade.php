@@ -85,7 +85,7 @@
                             <h1 class="text-6xl font-extrabold mb-6 leading-tight drop-shadow-lg">
                                 Asset,<br/>
                                 <span class="bg-gradient-to-r from-white to-cyan-100 bg-clip-text text-transparent">
-                                    Monitoring TI
+                                    Monitoring
                                 </span>
                             </h1>
                             <p class="text-xl text-white/95 leading-relaxed font-medium mb-10 drop-shadow-md">
@@ -159,27 +159,27 @@
 
                             <form method="POST" action="{{ route('login') }}" class="space-y-5">
                                 @csrf
-                                <!-- Email Address -->
+                                <!-- Username -->
                                 <div>
-                                    <label for="email" class="block text-sm font-semibold text-gray-700 mb-2">Email Address</label>
+                                    <label for="username" class="block text-sm font-semibold text-gray-700 mb-2">Username</label>
                                     <div class="relative">
                                         <div class="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none">
                                             <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"></path>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                                             </svg>
                                         </div>
                                         <input 
-                                            id="email" 
+                                            id="username" 
                                             class="block w-full pl-11 sm:pl-12 pr-3 sm:pr-4 py-3 sm:py-3.5 bg-gray-50 border-2 border-gray-200 rounded-xl focus:ring-0 focus:border-teal-500 focus:bg-white transition-all placeholder-gray-400 text-gray-900 text-sm sm:text-base" 
-                                            type="email" 
-                                            name="email" 
-                                            value="{{ old('email') }}"
+                                            type="text" 
+                                            name="username" 
+                                            value="{{ old('username') }}"
                                             required 
                                             autofocus 
                                             autocomplete="username"
-                                            placeholder="name@example.com" />
+                                            placeholder="Enter your username" />
                                     </div>
-                                    @error('email')
+                                    @error('username')
                                         <p class="mt-2 text-xs sm:text-sm text-red-600 flex items-start">
                                             <svg class="w-4 h-4 mr-1 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                                 <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
@@ -248,17 +248,17 @@
                                         <div class="w-full border-t border-gray-300"></div>
                                     </div>
                                     <div class="relative flex justify-center text-sm">
-                                        <span class="px-4 bg-white text-gray-600 font-medium">or</span>
+                                        <span class="px-4 bg-white text-gray-600 font-medium"></span>
                                     </div>
                                 </div>
 
                                 <!-- Sign Up Button -->
                                 @if (Route::has('register'))
-                                    <div>
+                                    <!-- <div>
                                         <a href="{{ route('register') }}" class="w-full py-3.5 sm:py-4 px-6 bg-white hover:bg-gray-50 text-teal-600 font-bold rounded-xl transition-all border-2 border-teal-500 hover:border-teal-600 flex items-center justify-center shadow-md hover:shadow-lg text-sm sm:text-base">
                                             Create New Account
                                         </a>
-                                    </div>
+                                    </div> -->
                                 @endif
                             </form>
                         </div>

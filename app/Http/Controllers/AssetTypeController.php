@@ -15,7 +15,8 @@ class AssetTypeController extends Controller
 
     public function create()
     {
-        return view('asset-types.create');
+        $kategoriOptions = AssetType::KATEGORI_OPTIONS;
+        return view('asset-types.create', compact('kategoriOptions'));
     }
 
     public function store(Request $request)
@@ -23,11 +24,17 @@ class AssetTypeController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:asset_types',
             'code_prefix' => 'required|string|max:10|unique:asset_types|regex:/^[A-Z0-9]+$/',
+            'kategori' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'is_active' => 'boolean',
+            'is_active' => 'nullable|boolean',
         ], [
             'code_prefix.regex' => 'Prefix hanya boleh huruf kapital dan angka tanpa spasi',
+            'kategori.required' => 'Kategori asset harus diisi',
+            'kategori.max' => 'Kategori maksimal 255 karakter',
         ]);
+
+        // Handle checkbox is_active (jika tidak dicentang, set false)
+        $validated['is_active'] = $request->has('is_active') ? true : false;
 
         AssetType::create($validated);
 
@@ -37,7 +44,8 @@ class AssetTypeController extends Controller
 
     public function edit(AssetType $assetType)
     {
-        return view('asset-types.edit', compact('assetType'));
+        $kategoriOptions = AssetType::KATEGORI_OPTIONS;
+        return view('asset-types.edit', compact('assetType', 'kategoriOptions'));
     }
 
     public function update(Request $request, AssetType $assetType)
@@ -45,9 +53,13 @@ class AssetTypeController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:asset_types,name,' . $assetType->id,
             'code_prefix' => 'required|string|max:10|unique:asset_types,code_prefix,' . $assetType->id . '|regex:/^[A-Z0-9]+$/',
+            'kategori' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'is_active' => 'boolean',
+            'is_active' => 'nullable|boolean',
         ]);
+
+        // Handle checkbox is_active (jika tidak dicentang, set false)
+        $validated['is_active'] = $request->has('is_active') ? true : false;
 
         $assetType->update($validated);
 

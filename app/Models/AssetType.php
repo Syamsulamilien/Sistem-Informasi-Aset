@@ -12,12 +12,22 @@ class AssetType extends Model
     protected $fillable = [
         'name',
         'code_prefix',
+        'kategori',
         'description',
         'is_active',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
+    ];
+
+    // Konstanta untuk kategori
+    const KATEGORI_OPTIONS = [
+        'Asset TI' => 'Asset TI',
+        'Asset Rumah Tangga' => 'Asset Rumah Tangga',
+        'Asset Transportasi' => 'Asset Transportasi',
+        'Asset Gizi' => 'Asset Gizi',
+        'Asset Lainnya' => 'Asset Lainnya',
     ];
 
     public function assets()
@@ -35,5 +45,14 @@ class AssetType extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
+    }
+
+    // Scope: Filter berdasarkan kategori
+    public function scopeByKategori($query, $kategori)
+    {
+        if ($kategori) {
+            return $query->where('kategori', $kategori);
+        }
+        return $query;
     }
 }

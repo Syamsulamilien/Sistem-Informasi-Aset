@@ -12,6 +12,7 @@ class Asset extends Model
     protected $fillable = [
         'asset_code',
         'asset_type_id',
+        'kategori',
         'brand',
         'model',
         'serial_number',
@@ -21,6 +22,10 @@ class Asset extends Model
         'condition',
         'status',
         'location_id',
+        'penanggung_jawab',
+        'intensitas_pemakaian',
+        'masa_pemakaian',
+        'masa_pemakaian_satuan',
         'warranty_expiry_date',
         'photo',
         'invoice_number',
@@ -28,7 +33,7 @@ class Asset extends Model
 
     protected $casts = [
         'warranty_expiry_date' => 'date',
-        'price' => 'decimal:2', // ✅ Cast ke decimal
+        'price' => 'decimal:2',
     ];
 
     // ==============================
@@ -50,29 +55,25 @@ class Asset extends Model
         return $this->hasMany(AssetHistory::class)->latest();
     }
 
+    public function borrowings()
+    {
+        return $this->hasMany(Borrowing::class);
+    }
+
     // ==============================
     // 🧰 RELASI & METHOD MAINTENANCE
     // ==============================
 
-    /**
-     * Get all maintenance records for this asset
-     */
     public function maintenanceRecords()
     {
         return $this->hasMany(MaintenanceRecord::class);
     }
 
-    /**
-     * Get latest maintenance record
-     */
     public function latestMaintenance()
     {
         return $this->hasOne(MaintenanceRecord::class)->latestOfMany('schedule_date');
     }
 
-    /**
-     * Get upcoming scheduled maintenance
-     */
     public function upcomingMaintenance()
     {
         return $this->hasMany(MaintenanceRecord::class)
@@ -81,9 +82,6 @@ class Asset extends Model
             ->orderBy('schedule_date');
     }
 
-    /**
-     * Get completed maintenance records
-     */
     public function completedMaintenance()
     {
         return $this->hasMany(MaintenanceRecord::class)
@@ -91,17 +89,28 @@ class Asset extends Model
             ->orderBy('performed_date', 'desc');
     }
 
-    /**
-     * Get total maintenance cost for this asset
-     */
+    // ✅ TAMBAHAN: Maintenance yang pending/scheduled
+    public function pendingMaintenances()
+    {
+        return $this->hasMany(MaintenanceRecord::class)
+            ->where('status', 'Scheduled')
+            ->orderBy('schedule_date', 'asc');
+    }
+
+    // ✅ TAMBAHAN: Next maintenance terdekat
+    public function nextMaintenance()
+    {
+        return $this->hasOne(MaintenanceRecord::class)
+            ->where('status', 'Scheduled')
+            ->where('schedule_date', '>=', now())
+            ->orderBy('schedule_date', 'asc');
+    }
+
     public function getTotalMaintenanceCostAttribute()
     {
         return $this->maintenanceRecords()->sum('cost');
     }
 
-    /**
-     * Check if asset has overdue maintenance
-     */
     public function hasOverdueMaintenance()
     {
         return $this->maintenanceRecords()
@@ -155,9 +164,6 @@ class Asset extends Model
     // 💡 HELPER METHODS TAMBAHAN
     // ==============================
 
-    /**
-     * Format harga ke format Rupiah
-     */
     public function getFormattedPriceAttribute()
     {
         if (!$this->price) {
@@ -166,27 +172,26 @@ class Asset extends Model
         return 'Rp ' . number_format($this->price, 0, ',', '.');
     }
 
-    /**
-     * Scope: Filter aset berdasarkan lokasi
-     */
     public function scopeByLocation($query, $locationId)
     {
         return $query->where('location_id', $locationId);
     }
 
-    /**
-     * Scope: Filter aset berdasarkan status
-     */
     public function scopeByStatus($query, $status)
     {
         return $query->where('status', $status);
     }
 
-    /**
-     * Scope: Filter aset berdasarkan tipe
-     */
     public function scopeByType($query, $assetTypeId)
     {
         return $query->where('asset_type_id', $assetTypeId);
+    }
+
+    public function scopeByKategori($query, $kategori)
+    {
+        if ($kategori) {
+            return $query->where('kategori', $kategori);
+        }
+        return $query;
     }
 }

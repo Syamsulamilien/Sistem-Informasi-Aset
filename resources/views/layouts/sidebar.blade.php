@@ -18,8 +18,8 @@
                 <img src="{{ asset('images/logo.png') }}" alt="PKU Asset Logo" class="h-10 w-10 object-contain">
                 <!-- Text -->
                 <div>
-                    <h2 class="text-xl font-bold text-blue-600">PKU Asset</h2>
-                    <p class="text-xs text-gray-600">Monitoring System</p>
+                    <h2 class="text-xl font-bold text-blue-600">SMK Kesehatan</h2>
+                    <p class="text-xs text-gray-600">Sistem Informasi Aset</p>
                 </div>
             </div>
             <!-- Close Button (Mobile Only) -->
@@ -40,19 +40,32 @@
             <span class="font-medium">Dashboard</span>
         </a>
 
-        <a href="{{ route('assets.index') }}" class="flex items-center px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors {{ request()->routeIs('assets.*') ? 'bg-blue-50 text-blue-600 border-r-4 border-blue-600' : '' }}">
-            <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path>
-            </svg>
-            <span class="font-medium">Aset IT</span>
-        </a>
-
-        <!-- MENU: JENIS ASET -->
         <a href="{{ route('asset-types.index') }}" class="flex items-center px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors {{ request()->routeIs('asset-types.*') ? 'bg-blue-50 text-blue-600 border-r-4 border-blue-600' : '' }}">
             <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
             </svg>
-            <span class="font-medium">Jenis Aset</span>
+            <span class="font-medium">Master Asset</span>
+        </a>
+
+        <a href="{{ route('assets.index') }}" class="flex items-center px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors {{ request()->routeIs('assets.*') ? 'bg-blue-50 text-blue-600 border-r-4 border-blue-600' : '' }}">
+            <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path>
+            </svg>
+            <span class="font-medium">Asset</span>
+        </a>
+
+        <a href="{{ route('consumables.index') }}" class="flex items-center px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors {{ request()->routeIs('consumables.*') ? 'bg-blue-50 text-blue-600 border-r-4 border-blue-600' : '' }}">
+            <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+            </svg>
+            <span class="font-medium">Barang Habis Pakai</span>
+        </a>
+
+        <a href="{{ route('borrowings.index') }}" class="flex items-center px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors {{ request()->routeIs('borrowings.*') ? 'bg-blue-50 text-blue-600 border-r-4 border-blue-600' : '' }}">
+            <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+            </svg>
+            <span class="font-medium">Peminjaman</span>
         </a>
 
         <a href="{{ route('locations.index') }}" class="flex items-center px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors {{ request()->routeIs('locations.*') ? 'bg-blue-50 text-blue-600 border-r-4 border-blue-600' : '' }}">
@@ -63,7 +76,7 @@
             <span class="font-medium">Lokasi</span>
         </a>
 
-        <!-- MENU BARU: MAINTENANCE -->
+        <!-- MENU MAINTENANCE -->
         <a href="{{ route('maintenance.index') }}" class="flex items-center px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors {{ request()->routeIs('maintenance.*') ? 'bg-blue-50 text-blue-600 border-r-4 border-blue-600' : '' }}">
             <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
@@ -78,6 +91,22 @@
             </svg>
             <span class="font-medium">Laporan</span>
         </a>
+
+        <!-- DIVIDER (hanya tampil untuk admin) -->
+        @if(Auth::user()->role === 'admin')
+            <div class="px-6 py-3">
+                <div class="border-t border-gray-300"></div>
+                <p class="text-xs text-gray-500 uppercase tracking-wider mt-3 mb-2 font-semibold">Administrator</p>
+            </div>
+
+            <!-- MENU KELOLA USER (hanya untuk admin) -->
+            <a href="{{ route('users.index') }}" class="flex items-center px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors {{ request()->routeIs('users.*') ? 'bg-blue-50 text-blue-600 border-r-4 border-blue-600' : '' }}">
+                <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                </svg>
+                <span class="font-medium">Kelola User</span>
+            </a>
+        @endif
     </nav>
 
     <!-- User Profile -->
@@ -91,11 +120,19 @@
                 <p class="text-xs text-gray-500 capitalize">{{ Auth::user()->role }}</p>
             </div>
         </div>
-        
+
+        <!-- Change Password Button -->
+        <a href="{{ route('change-password') }}" class="mt-4 w-full flex items-center justify-center px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
+            </svg>
+            Ganti Password
+        </a>
+
         <!-- Logout Button -->
-        <form method="POST" action="{{ route('logout') }}" class="mt-4">
+        <form method="POST" action="{{ route('logout') }}" class="mt-2">
             @csrf
-            <button type="submit" class="w-full flex items-center justify-center px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
+            <button type="submit" class="w-full flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
                 </svg>

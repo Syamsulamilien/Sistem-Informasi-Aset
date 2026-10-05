@@ -6,11 +6,14 @@ use App\Models\Asset;
 use App\Models\AssetHistory;
 use App\Models\Location;
 use App\Models\AssetType;
+use App\Models\MaintenanceRecord;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Illuminate\Validation\Rule;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Carbon\Carbon;
 
 class AssetController extends Controller
 {
@@ -46,11 +49,22 @@ class AssetController extends Controller
             $query->where('condition', $request->condition);
         }
 
+        if ($request->filled('kategori')) {
+            $query->where('kategori', $request->kategori);
+        }
+
         $assets = $query->latest()->paginate(15)->withQueryString();
         $locations = Location::all();
         $assetTypes = AssetType::active()->get();
 
-        return view('assets.index', compact('assets', 'locations', 'assetTypes'));
+        // Ambil daftar kategori unik dari asset_types
+        $categories = AssetType::select('kategori')
+            ->distinct()
+            ->whereNotNull('kategori')
+            ->orderBy('kategori')
+            ->pluck('kategori');
+
+        return view('assets.index', compact('assets', 'locations', 'assetTypes', 'categories'));
     }
 
     public function create()
@@ -61,25 +75,57 @@ class AssetController extends Controller
         return view('assets.create', compact('locations', 'assetTypes'));
     }
 
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'asset_type_id' => 'required|exists:asset_types,id',
-            'brand' => 'required|string|max:255',
-            'model' => 'required|string|max:255',
-            'serial_number' => 'required|unique:assets',
-            'description' => 'nullable|string|max:1000',
-            'purchase_year' => 'required|integer|min:1900|max:' . (date('Y') + 1),
-            'price' => 'nullable|numeric|min:0',
-            'condition' => 'required|in:Baik,Rusak Ringan,Rusak Berat',
-            'status' => 'required|in:Aktif,Nonaktif',
-            'location_id' => 'required|exists:locations,id',
-            'warranty_expiry_date' => 'nullable|date',
-            'photo' => 'nullable|image|max:2048',
-            'invoice_number' => 'nullable|string|max:255',
-        ]);
+// Update method store() di AssetController.php
+// Ganti bagian validasi maintenance dengan ini:
 
-        $validated['asset_code'] = Asset::generateAssetCode($validated['asset_type_id']);
+public function store(Request $request)
+{
+    $validated = $request->validate([
+        'asset_type_id' => 'required|exists:asset_types,id',
+        'kategori' => 'required|string',
+        'brand' => 'required|string|max:255',
+        'model' => 'required|string|max:255',
+        'serial_number' => 'nullable|string|max:255',
+        'description' => 'nullable|string|max:1000',
+        'purchase_year' => [
+            'required',
+            'numeric',
+            function ($attribute, $value, $fail) {
+                $value = (int) $value;
+                if ($value !== 0 && ($value < 1900 || $value > (date('Y') + 1))) {
+                    $fail('Tahun pembelian harus 0 (tidak diketahui) atau antara 1900 sampai ' . (date('Y') + 1));
+                }
+            }
+        ],
+        'price' => 'nullable|numeric|min:0',
+        'sumber_dana' => 'nullable|string|max:255',
+        'condition' => 'required|in:Baik,Rusak Ringan,Rusak Berat',
+        'status' => 'required|in:Aktif,Nonaktif',
+        'location_id' => 'required|exists:locations,id',
+        'penanggung_jawab' => 'nullable|string|max:255',
+        'intensitas_pemakaian' => 'nullable|string|max:255',
+        'masa_pemakaian' => 'nullable|integer|min:0',
+        'masa_pemakaian_satuan' => 'nullable|in:Bulan,Tahun',
+        'warranty_expiry_date' => 'nullable|date',
+        'photo' => 'nullable|image|max:2048',
+        'invoice_number' => 'nullable|string|max:255',
+
+        // ✅ UPDATE: Validasi Maintenance dengan teknisi manual (Semua Optional)
+        'enable_maintenance' => 'nullable|boolean',
+        'maintenance_start_from' => 'nullable|in:next_month,this_month,custom',
+        'maintenance_custom_date' => 'nullable|date',
+        'maintenance_interval' => 'nullable|integer|in:3,6,12,24',
+        'technician_type' => 'nullable|in:existing,manual',
+        'maintenance_technician_id' => 'nullable|exists:users,id',
+        'maintenance_technician_name' => 'nullable|string|max:255',
+    ]);
+
+    $validated['purchase_year'] = (int) $validated['purchase_year'];
+    $validated['serial_number'] = $validated['serial_number'] ?? null;// ✅ FIX: Default ke string kosong
+    $validated['asset_code'] = Asset::generateAssetCode($validated['asset_type_id']);
+
+    try {
+        DB::beginTransaction();
 
         if ($request->hasFile('photo')) {
             $validated['photo'] = $request->file('photo')->store('assets/photos', 'public');
@@ -95,8 +141,106 @@ class AssetController extends Controller
             'user_id' => auth()->id(),
         ]);
 
-        return redirect()->route('assets.index')
-            ->with('success', 'Aset berhasil ditambahkan dengan kode: ' . $asset->asset_code);
+        // Generate Maintenance Schedules
+        $maintenanceCount = 0;
+        if ($request->has('enable_maintenance') && $request->enable_maintenance) {
+            $maintenanceCount = $this->createMaintenanceSchedules($asset, $request);
+        }
+
+        DB::commit();
+
+        $successMessage = 'Aset berhasil ditambahkan dengan kode: ' . $asset->asset_code;
+        if ($maintenanceCount > 0) {
+            $successMessage .= " dan {$maintenanceCount} jadwal maintenance otomatis telah dibuat (untuk 10 tahun ke depan).";
+        }
+
+        return redirect()->route('assets.index')->with('success', $successMessage);
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        
+        if (isset($validated['photo'])) {
+            Storage::disk('public')->delete($validated['photo']);
+        }
+
+        return redirect()->back()
+            ->withInput()
+            ->with('error', 'Gagal menambahkan aset: ' . $e->getMessage());
+    }
+}
+
+/**
+ * ✅ UPDATED: Generate maintenance schedules dengan support teknisi manual
+ */
+private function createMaintenanceSchedules(Asset $asset, Request $request)
+{
+    $startDate = $this->getMaintenanceStartDate(
+        $request->maintenance_start_from,
+        $request->maintenance_custom_date
+    );
+
+    $interval = (int) $request->input('maintenance_interval', 6);
+    
+    // ✅ Handle teknisi: bisa dari user_id atau nama manual
+    $technicianId = null;
+    $technicianName = null;
+    
+    if ($request->technician_type === 'manual') {
+        $technicianName = $request->maintenance_technician_name;
+    } else {
+        $technicianId = $request->maintenance_technician_id;
+    }
+
+    $durationYears = 10;
+    $totalMonths = $durationYears * 12;
+    $count = (int) floor($totalMonths / $interval);
+
+    $schedules = [];
+    $currentDate = $startDate->copy();
+
+    for ($i = 0; $i < $count; $i++) {
+        $schedules[] = [
+            'asset_id' => $asset->id,
+            'schedule_date' => $currentDate->format('Y-m-d'),
+            'status' => 'Scheduled',
+            'technician_id' => $technicianId ?? 0, // Bisa null jika manual
+            'technician_name' => $technicianName, // ✅ Tambahkan ini
+            'notes' => sprintf(
+                'Auto-generated preventive maintenance #%d (setiap %d bulan)',
+                $i + 1,
+                $interval
+            ),
+            'cost' => 0,
+            'performed_date' => null,
+            'tanggal_penerimaan_barang' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ];
+
+        $currentDate->addMonths($interval);
+    }
+
+    MaintenanceRecord::insert($schedules);
+
+    return count($schedules);
+}
+
+    /**
+     * Tentukan tanggal mulai maintenance
+     */
+    private function getMaintenanceStartDate($startFrom, $customDate = null)
+    {
+        switch ($startFrom) {
+            case 'this_month':
+                return Carbon::now()->startOfMonth();
+                
+            case 'custom':
+                return Carbon::parse($customDate);
+                
+            case 'next_month':
+            default:
+                return Carbon::now()->addMonth()->startOfMonth();
+        }
     }
 
     public function show(Asset $asset)
@@ -119,19 +263,36 @@ class AssetController extends Controller
         $validated = $request->validate([
             'asset_type_id' => 'required|exists:asset_types,id',
             'asset_code' => 'required|unique:assets,asset_code,' . $asset->id,
+            'kategori' => 'required|string',
             'brand' => 'required|string|max:255',
             'model' => 'required|string|max:255',
-            'serial_number' => 'required|unique:assets,serial_number,' . $asset->id,
-            'description' => 'nullable|string|max:1000', // ✅ SUDAH DIPERBAIKI
-            'purchase_year' => 'required|integer|min:1900|max:' . (date('Y') + 1),
+            'serial_number' => 'nullable|string|max:255',
+            'description' => 'nullable|string|max:1000',
+            'purchase_year' => [
+                'required',
+                'numeric',
+                function ($attribute, $value, $fail) {
+                    $value = (int) $value;
+                    if ($value !== 0 && ($value < 1900 || $value > (date('Y') + 1))) {
+                        $fail('Tahun pembelian harus 0 (tidak diketahui) atau antara 1900 sampai ' . (date('Y') + 1));
+                    }
+                }
+            ],
             'price' => 'nullable|numeric|min:0',
+            'sumber_dana' => 'nullable|string|max:255',
             'condition' => 'required|in:Baik,Rusak Ringan,Rusak Berat',
             'status' => 'required|in:Aktif,Nonaktif',
             'location_id' => 'required|exists:locations,id',
+            'penanggung_jawab' => 'nullable|string|max:255',
+            'intensitas_pemakaian' => 'nullable|string|max:255',
+            'masa_pemakaian' => 'nullable|integer|min:0',
+            'masa_pemakaian_satuan' => 'nullable|in:Bulan,Tahun',
             'warranty_expiry_date' => 'nullable|date',
             'photo' => 'nullable|image|max:2048',
             'invoice_number' => 'nullable|string|max:255',
         ]);
+
+        $validated['purchase_year'] = (int) $validated['purchase_year'];
 
         $locationChanged = $asset->location_id != $validated['location_id'];
         $oldLocationId = $asset->location_id;
@@ -201,9 +362,17 @@ class AssetController extends Controller
     public function publicInfo($assetCode)
     {
         $asset = Asset::where('asset_code', $assetCode)
-            ->with(['location', 'assetType', 'histories' => function ($query) {
-                $query->latest()->limit(5);
-            }])
+            ->with([
+                'location', 
+                'assetType', 
+                'histories' => function ($query) {
+                    $query->latest()->limit(5);
+                },
+                'maintenanceRecords' => function ($query) {
+                    $query->latest()->limit(5);
+                },
+                'maintenanceRecords.technician'
+            ])
             ->firstOrFail();
 
         return view('assets.public-info', compact('asset'));
@@ -213,14 +382,14 @@ class AssetController extends Controller
     {
         $url = route('assets.public-info', $asset->asset_code);
 
-        $qrcode = QrCode::format('png')
+        $qrcode = QrCode::format('svg')
             ->size(500)
             ->errorCorrection('H')
             ->generate($url);
 
         return response($qrcode)
-            ->header('Content-Type', 'image/png')
-            ->header('Content-Disposition', 'attachment; filename="qrcode-' . $asset->asset_code . '.png"');
+            ->header('Content-Type', 'image/svg+xml')
+            ->header('Content-Disposition', 'attachment; filename="qrcode-' . $asset->asset_code . '.svg"');
     }
 
     public function printLabel(Asset $asset)
@@ -229,6 +398,25 @@ class AssetController extends Controller
         $qrcode = QrCode::size(200)->generate($url);
 
         return view('assets.print-label', compact('asset', 'qrcode'));
+    }
+
+    public function downloadLabelPdf(Asset $asset)
+    {
+        $url = route('assets.public-info', $asset->asset_code);
+        
+        // Generate QR code as base64 svg to embed in PDF
+        $qrcodeImage = QrCode::format('svg')->size(150)->margin(0)->generate($url);
+        $qrcodeBase64 = base64_encode($qrcodeImage);
+
+        // Ukuran 80x30 mm dalam point (1 mm = 2.83465 pt)
+        // 80 mm = 226.77 pt
+        // 30 mm = 85.04 pt
+        $customPaper = array(0, 0, 226.77, 85.04);
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('assets.label-pdf', compact('asset', 'qrcodeBase64'))
+                ->setPaper($customPaper, 'landscape');
+
+        return $pdf->download('Label_Aset_' . $asset->asset_code . '.pdf');
     }
 
     public function generateCode(Request $request)
@@ -240,8 +428,13 @@ class AssetController extends Controller
         }
 
         try {
+            $assetType = AssetType::findOrFail($assetTypeId);
             $assetCode = Asset::generateAssetCode($assetTypeId);
-            return response()->json(['asset_code' => $assetCode]);
+            
+            return response()->json([
+                'asset_code' => $assetCode,
+                'kategori' => $assetType->kategori
+            ]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 400);
         }

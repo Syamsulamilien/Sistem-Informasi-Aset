@@ -39,6 +39,40 @@
                             @endif
                         </div>
 
+                        <!-- Kategori Asset -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Kategori Asset *</label>
+                            <select id="kategori-select"
+                                class="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 {{ $errors->has('kategori') ? 'border-red-500' : 'border-gray-300' }} border">
+                                <option value="">-- Pilih Kategori --</option>
+                                @foreach($kategoriOptions as $value => $label)
+                                    <option value="{{ $value }}" {{ old('kategori', $assetType->kategori) == $value ? 'selected' : '' }}>
+                                        {{ $label }}
+                                    </option>
+                                @endforeach
+                                <option value="__custom__">✏️ Lainnya (Ketik Manual)</option>
+                            </select>
+
+                            <!-- Input manual (hidden by default) -->
+                            <input type="text"
+                                id="kategori-custom"
+                                name="kategori"
+                                value="{{ old('kategori', $assetType->kategori) }}"
+                                placeholder="Ketik kategori baru..."
+                                style="display: none;"
+                                class="w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 border-gray-300 border mt-2">
+
+                            <!-- Hidden input untuk menyimpan nilai kategori -->
+                            <input type="hidden" id="kategori-value" name="kategori" value="{{ old('kategori', $assetType->kategori) }}">
+
+                            @error('kategori')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                            <p class="mt-1 text-xs text-gray-500">
+                                📁 Pilih kategori atau pilih "Lainnya" untuk input manual
+                            </p>
+                        </div>
+
                         <!-- Preview Kode -->
                         <div class="bg-gray-50 p-4 rounded-lg">
                             <label class="block text-sm font-medium text-gray-700 mb-2">Preview Kode Aset:</label>
@@ -84,12 +118,57 @@
         document.querySelector('input[name="code_prefix"]').addEventListener('input', function(e) {
             let prefix = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
             e.target.value = prefix;
-            
+
             if (prefix) {
                 document.getElementById('preview-code').textContent = prefix + '-{{ date("Y") }}-0001';
             } else {
                 document.getElementById('preview-code').textContent = 'XXX-{{ date("Y") }}-0001';
             }
+        });
+
+        // Handle kategori dropdown dengan opsi custom input
+        const kategoriSelect = document.getElementById('kategori-select');
+        const kategoriCustom = document.getElementById('kategori-custom');
+        const kategoriValue = document.getElementById('kategori-value');
+
+        // Cek apakah ada old value yang bukan dari pilihan default
+        const oldValue = '{{ old("kategori", $assetType->kategori) }}';
+        const defaultOptions = [@foreach($kategoriOptions as $value => $label)'{{ $value }}',@endforeach];
+
+        if (oldValue && !defaultOptions.includes(oldValue)) {
+            // Jika old value adalah custom input
+            kategoriSelect.value = '__custom__';
+            kategoriCustom.style.display = 'block';
+            kategoriCustom.value = oldValue;
+            kategoriCustom.required = true;
+            kategoriSelect.removeAttribute('name');
+        }
+
+        kategoriSelect.addEventListener('change', function() {
+            if (this.value === '__custom__') {
+                // Tampilkan input manual
+                kategoriCustom.style.display = 'block';
+                kategoriCustom.required = true;
+                kategoriCustom.focus();
+                kategoriValue.value = '';
+                // Hapus name dari select, pindahkan ke custom input
+                this.removeAttribute('name');
+                kategoriCustom.setAttribute('name', 'kategori');
+            } else {
+                // Sembunyikan input manual
+                kategoriCustom.style.display = 'none';
+                kategoriCustom.required = false;
+                kategoriCustom.value = '';
+                kategoriValue.value = this.value;
+                // Pindahkan name kembali ke select
+                kategoriCustom.removeAttribute('name');
+                this.setAttribute('name', 'kategori');
+            }
+        });
+
+        // Update hidden value saat custom input berubah
+        kategoriCustom.addEventListener('input', function() {
+            kategoriValue.value = this.value;
         });
     </script>
 </x-app-layout>

@@ -30,6 +30,173 @@
                 </div>
             </div>
 
+            <!-- Filter Tahun - Advanced Searchable Dropdown -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-6">
+                <form method="GET" action="{{ route('maintenance.upcoming') }}" id="filterForm" class="space-y-4">
+                    <!-- Filter Label -->
+                    <div class="flex items-center gap-2">
+                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+                        </svg>
+                        <h3 class="text-sm font-semibold text-gray-700">Filter Berdasarkan Tahun</h3>
+                    </div>
+
+                    <!-- Searchable Dropdown for Year -->
+                    <div x-data="{
+                        open: false,
+                        search: '',
+                        selected: '{{ request('year') }}',
+                        selectedYear: '{{ request('year') }}',
+                        currentPage: 1,
+                        perPage: 5,
+                        items: @js(range(now()->year + 1, now()->year - 5)),
+                        get filteredItems() {
+                            return this.items.filter(item => 
+                                item.toString().includes(this.search)
+                            );
+                        },
+                        get totalPages() {
+                            return Math.ceil(this.filteredItems.length / this.perPage);
+                        },
+                        get paginatedItems() {
+                            const start = (this.currentPage - 1) * this.perPage;
+                            return this.filteredItems.slice(start, start + this.perPage);
+                        },
+                        selectItem(item) {
+                            this.selected = item;
+                            this.selectedYear = item;
+                            this.open = false;
+                            this.search = '';
+                            this.currentPage = 1;
+                        },
+                        clearSelection() {
+                            this.selected = '';
+                            this.selectedYear = '';
+                        }
+                    }" @click.away="open = false" class="relative">
+                        
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Tahun</label>
+                        
+                        <input type="hidden" name="year" x-model="selectedYear">
+                        
+                        <button type="button" @click="open = !open" class="w-full px-4 py-2.5 text-left bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors flex items-center justify-between hover:bg-gray-50">
+                            <div class="flex items-center gap-2">
+                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                                <span x-text="selected || 'Semua Tahun'" :class="selected ? 'text-gray-900' : 'text-gray-500'"></span>
+                            </div>
+                            <svg class="w-5 h-5 text-gray-400 transition-transform" :class="{'rotate-180': open}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+
+                        <div x-show="open" x-transition class="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-lg shadow-xl">
+                            <div class="p-3 border-b border-gray-200">
+                                <div class="relative">
+                                    <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                    </svg>
+                                    <input type="text" x-model="search" @input="currentPage = 1" placeholder="Cari tahun..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+                            </div>
+
+                            <div class="max-h-64 overflow-y-auto">
+                                <button type="button" @click="clearSelection(); open = false;" class="w-full px-4 py-3 text-left hover:bg-blue-50 transition-colors">
+                                    <span class="text-gray-700 hover:text-blue-600 font-medium">Semua Tahun</span>
+                                </button>
+                                
+                                <template x-if="paginatedItems.length > 0">
+                                    <div>
+                                        <template x-for="item in paginatedItems" :key="item">
+                                            <button type="button" @click="selectItem(item)" class="w-full px-4 py-3 text-left hover:bg-blue-50 transition-colors flex items-center justify-between group">
+                                                <span x-text="item" class="text-gray-700 group-hover:text-blue-600 font-medium"></span>
+                                                <svg x-show="selected == item" class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                                </svg>
+                                            </button>
+                                        </template>
+                                    </div>
+                                </template>
+                                
+                                <template x-if="paginatedItems.length === 0 && search !== ''">
+                                    <div class="px-4 py-8 text-center text-gray-500">
+                                        <svg class="w-12 h-12 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                        </svg>
+                                        <p class="text-sm">Tidak ada hasil ditemukan</p>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <div x-show="filteredItems.length > perPage" class="p-3 border-t border-gray-200 flex items-center justify-between bg-gray-50">
+                                <div class="text-xs text-gray-600">
+                                    <span x-text="`${((currentPage-1)*perPage)+1}-${Math.min(currentPage*perPage, filteredItems.length)} of ${filteredItems.length}`"></span>
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    <button type="button" @click="currentPage > 1 && currentPage--" :disabled="currentPage === 1" :class="currentPage === 1 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-200'" class="p-1.5 rounded transition-colors">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                                        </svg>
+                                    </button>
+                                    
+                                    <span class="px-2 py-1 text-xs font-medium text-gray-700" x-text="`${currentPage}/${totalPages}`"></span>
+                                    
+                                    <button type="button" @click="currentPage < totalPages && currentPage++" :disabled="currentPage === totalPages" :class="currentPage === totalPages ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-200'" class="p-1.5 rounded transition-colors">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <button 
+                            type="submit"
+                            class="flex-1 px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 transition-all font-medium inline-flex items-center justify-center gap-2"
+                        >
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+                            </svg>
+                            <span>Terapkan Filter</span>
+                        </button>
+
+                        @if(request('year'))
+                            <a 
+                                href="{{ route('maintenance.upcoming') }}"
+                                class="flex-1 sm:flex-none px-6 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 focus:ring-4 focus:ring-gray-200 transition-all font-medium inline-flex items-center justify-center gap-2"
+                            >
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                                <span>Reset Filter</span>
+                            </a>
+                        @endif
+                    </div>
+
+                    <!-- Active Filter Badge -->
+                    @if(request('year'))
+                        <div class="flex items-center gap-2 pt-3 border-t border-gray-100">
+                            <span class="text-xs text-gray-500">Filter Aktif:</span>
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                                Tahun {{ request('year') }}
+                                <a href="{{ route('maintenance.upcoming') }}" class="ml-1 hover:bg-blue-200 rounded-full p-0.5 transition">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                </a>
+                            </span>
+                        </div>
+                    @endif
+                </form>
+            </div>
+
             <!-- Desktop View -->
             <div class="hidden lg:block bg-white overflow-hidden shadow-sm rounded-lg">
                 <div class="p-6">
@@ -98,7 +265,13 @@
                                                 </svg>
                                             </div>
                                             <p class="text-gray-500 font-medium text-lg">Tidak Ada Jadwal Maintenance Mendatang</p>
-                                            <p class="text-gray-400 text-sm mt-2">Semua maintenance sudah terjadwal dengan baik!</p>
+                                            <p class="text-gray-400 text-sm mt-2">
+                                                @if(request('year'))
+                                                    Tidak ada maintenance yang dijadwalkan untuk tahun {{ request('year') }}
+                                                @else
+                                                    Semua maintenance sudah terjadwal dengan baik!
+                                                @endif
+                                            </p>
                                         </td>
                                     </tr>
                                 @endforelse
@@ -180,7 +353,13 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
                         <p class="text-gray-500 font-medium">Tidak Ada Jadwal Maintenance Mendatang</p>
-                        <p class="text-gray-400 text-sm mt-2">Semua maintenance sudah terjadwal dengan baik!</p>
+                        <p class="text-gray-400 text-sm mt-2">
+                            @if(request('year'))
+                                Tidak ada maintenance yang dijadwalkan untuk tahun {{ request('year') }}
+                            @else
+                                Semua maintenance sudah terjadwal dengan baik!
+                            @endif
+                        </p>
                     </div>
                 @endforelse
 

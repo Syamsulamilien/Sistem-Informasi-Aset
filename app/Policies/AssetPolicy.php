@@ -19,16 +19,19 @@ class AssetPolicy
 
     public function create(User $user): bool
     {
-        return in_array($user->role, ['admin', 'teknisi']);
+        // ✅ Admin, Teknisi, dan Viewer bisa create Asset
+        return in_array($user->role, ['admin', 'teknisi', 'viewer']);
     }
 
     public function update(User $user, Asset $asset): bool
     {
+        // ❌ Hanya Admin dan Teknisi bisa edit
         return in_array($user->role, ['admin', 'teknisi']);
     }
 
     public function delete(User $user, Asset $asset): bool
     {
+        // ❌ Hanya Admin bisa delete
         return $user->role === 'admin';
     }
 }

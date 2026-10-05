@@ -73,17 +73,34 @@
                             <p style="margin-top: 4px; font-size: 12px; color: #6b7280;">Kosongkan jika belum dilaksanakan</p>
                         </div>
 
-                        <!-- Technician Selection -->
+                        <!-- Tanggal Penerimaan Barang -->
+                        <div style="margin-bottom: 24px;">
+                            <label for="tanggal_penerimaan_barang" style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 8px;">
+                                Tanggal Penerimaan Barang <span style="color: #9ca3af;">(Opsional)</span>
+                            </label>
+                            <input type="date" name="tanggal_penerimaan_barang" id="tanggal_penerimaan_barang"
+                                   value="{{ old('tanggal_penerimaan_barang') }}"
+                                   style="width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);"
+                                   onfocus="this.style.borderColor='#3b82f6'; this.style.outline='none'; this.style.boxShadow='0 0 0 3px rgba(59,130,246,0.1)'"
+                                   onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='0 1px 2px rgba(0,0,0,0.05)'"
+                                   @error('tanggal_penerimaan_barang') style="border-color: #ef4444;" @enderror>
+                            @error('tanggal_penerimaan_barang')
+                                <p style="margin-top: 4px; font-size: 14px; color: #dc2626;">{{ $message }}</p>
+                            @enderror
+                            <p style="margin-top: 4px; font-size: 12px; color: #6b7280;">Tanggal barang diterima ketika ingin di maintenance</p>
+                        </div>
+
+                        <!-- ✅ PERBAIKAN: Technician Selection - Tidak wajib lagi -->
                         <div style="margin-bottom: 24px;">
                             <label for="technician_id" style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 8px;">
-                                Teknisi <span style="color: #dc2626;">*</span>
+                                Teknisi <span style="color: #9ca3af;">(Opsional)</span>
                             </label>
-                            <select name="technician_id" id="technician_id" required
+                            <select name="technician_id" id="technician_id"
                                     style="width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);"
                                     onfocus="this.style.borderColor='#3b82f6'; this.style.outline='none'; this.style.boxShadow='0 0 0 3px rgba(59,130,246,0.1)'"
                                     onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='0 1px 2px rgba(0,0,0,0.05)'"
                                     @error('technician_id') style="border-color: #ef4444;" @enderror>
-                                <option value="">Pilih Teknisi</option>
+                                <option value="">Pilih Teknisi (Opsional)</option>
                                 @foreach ($technicians as $technician)
                                     <option value="{{ $technician->id }}" {{ old('technician_id') == $technician->id ? 'selected' : '' }}>
                                         {{ $technician->name }}
@@ -93,6 +110,25 @@
                             @error('technician_id')
                                 <p style="margin-top: 4px; font-size: 14px; color: #dc2626;">{{ $message }}</p>
                             @enderror
+                            <p style="margin-top: 4px; font-size: 12px; color: #6b7280;">Pilih teknisi jika sudah ditentukan</p>
+                        </div>
+
+                        <!-- ✅ TAMBAHAN: Technician Name Manual (jika teknisi tidak ada di sistem) -->
+                        <div style="margin-bottom: 24px;">
+                            <label for="technician_name" style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 8px;">
+                                Atau Masukkan Nama Teknisi Manual <span style="color: #9ca3af;">(Opsional)</span>
+                            </label>
+                            <input type="text" name="technician_name" id="technician_name"
+                                   value="{{ old('technician_name') }}"
+                                   placeholder="Masukkan nama teknisi eksternal..."
+                                   style="width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);"
+                                   onfocus="this.style.borderColor='#3b82f6'; this.style.outline='none'; this.style.boxShadow='0 0 0 3px rgba(59,130,246,0.1)'"
+                                   onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='0 1px 2px rgba(0,0,0,0.05)'"
+                                   @error('technician_name') style="border-color: #ef4444;" @enderror>
+                            @error('technician_name')
+                                <p style="margin-top: 4px; font-size: 14px; color: #dc2626;">{{ $message }}</p>
+                            @enderror
+                            <p style="margin-top: 4px; font-size: 12px; color: #6b7280;">Gunakan ini jika teknisi tidak terdaftar di sistem</p>
                         </div>
 
                         <!-- Cost -->
@@ -123,6 +159,7 @@
                                     onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='0 1px 2px rgba(0,0,0,0.05)'"
                                     @error('status') style="border-color: #ef4444;" @enderror>
                                 <option value="Scheduled" {{ old('status') == 'Scheduled' ? 'selected' : '' }}>Terjadwal</option>
+                                <option value="Proses" {{ old('status') == 'Proses' ? 'selected' : '' }}>Proses</option>
                                 <option value="Completed" {{ old('status') == 'Completed' ? 'selected' : '' }}>Selesai</option>
                                 <option value="Cancelled" {{ old('status') == 'Cancelled' ? 'selected' : '' }}>Dibatalkan</option>
                             </select>
