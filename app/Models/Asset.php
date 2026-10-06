@@ -19,6 +19,7 @@ class Asset extends Model
         'description',
         'purchase_year',
         'price',
+        'sumber_dana',
         'condition',
         'status',
         'location_id',
