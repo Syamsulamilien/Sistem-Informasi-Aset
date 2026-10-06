@@ -56,7 +56,7 @@
                             <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Stok</th>
                             <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Satuan</th>
                             <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Lokasi</th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Aksi</th>
+                            <th class="px-16 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
@@ -101,16 +101,35 @@
                                 <td class="px-6 py-4">
                                     <div class="text-sm text-gray-900">{{ $consumable->location->name ?? '-' }}</div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                    <div class="flex gap-2">
-                                        <a href="{{ route('consumables.show', $consumable) }}" class="text-blue-600 hover:text-blue-800 font-medium">Detail</a>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center gap-1">
+                                        {{-- Detail --}}
+                                        <a href="{{ route('consumables.show', $consumable) }}" title="Detail" aria-label="Detail {{ $consumable->name }}"
+                                           class="p-2 rounded-lg text-blue-600 hover:bg-blue-50 hover:text-blue-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+                                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                                                <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+                                                <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
+                                            </svg>
+                                        </a>
+
                                         @if(Auth::user()->isAdmin() || Auth::user()->isLaboran())
-                                            <a href="{{ route('consumables.edit', $consumable) }}" class="text-yellow-600 hover:text-yellow-800 font-medium">Edit</a>
-                                            <form action="{{ route('consumables.destroy', $consumable) }}" method="POST" class="inline" onsubmit="return confirm('Yakin ingin menghapus?');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="text-red-600 hover:text-red-800 font-medium">Hapus</button>
-                                            </form>
+                                            {{-- Edit --}}
+                                            <a href="{{ route('consumables.edit', $consumable) }}" title="Edit" aria-label="Edit {{ $consumable->name }}"
+                                               class="p-2 rounded-lg text-yellow-500 hover:bg-yellow-50 hover:text-yellow-600 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-yellow-500">
+                                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                                                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
+                                                </svg>
+                                            </a>
+
+                                            {{-- Hapus: membuka modal konfirmasi --}}
+                                            <button type="button"
+                                                    onclick="openDeleteModal(@js(route('consumables.destroy', $consumable)), @js($consumable->name))"
+                                                    title="Hapus" aria-label="Hapus {{ $consumable->name }}"
+                                                    class="p-2 rounded-lg text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500">
+                                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                                                    <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                                </svg>
+                                            </button>
                                         @endif
                                     </div>
                                 </td>
@@ -179,4 +198,59 @@
             {{ $consumables->links() }}
         </div>
     </div>
+
+    {{-- ============ MODAL KONFIRMASI HAPUS ============ --}}
+    <div id="deleteModal" style="display: none;" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+         role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle">
+        <div class="bg-white rounded-xl shadow-xl max-w-md w-full">
+            <div class="p-6">
+                <div class="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full mb-4">
+                    <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                </div>
+                <h3 id="deleteModalTitle" class="text-lg font-semibold text-gray-900 text-center mb-2">Konfirmasi Hapus</h3>
+                <p class="text-sm text-gray-600 text-center mb-6">
+                    Apakah Anda yakin ingin menghapus barang <strong id="deleteItemName"></strong>? Tindakan ini tidak dapat dibatalkan.
+                </p>
+                <form id="deleteForm" method="POST" onsubmit="this.querySelector('[type=submit]').disabled = true;">
+                    @csrf
+                    @method('DELETE')
+                    <div class="flex gap-3">
+                        <button type="button" id="deleteCancelBtn" onclick="closeDeleteModal()" class="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400">
+                            Batal
+                        </button>
+                        <button type="submit" class="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-red-500 disabled:opacity-60 disabled:cursor-not-allowed">
+                            Ya, Hapus
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openDeleteModal(actionUrl, itemName) {
+            const form = document.getElementById('deleteForm');
+            form.action = actionUrl;
+            form.querySelector('[type=submit]').disabled = false;
+            document.getElementById('deleteItemName').textContent = itemName;
+            document.getElementById('deleteModal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+            document.getElementById('deleteCancelBtn').focus();
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').style.display = 'none';
+            document.body.style.overflow = '';
+        }
+
+        document.getElementById('deleteModal').addEventListener('click', function (e) {
+            if (e.target === this) closeDeleteModal();
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') closeDeleteModal();
+        });
+    </script>
 </x-app-layout>

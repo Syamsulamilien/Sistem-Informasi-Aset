@@ -1,587 +1,299 @@
 <x-app-layout>
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <!-- Header -->
-        <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-                <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Record Maintenance</h1>
-                <p class="text-sm text-gray-600 mt-1">Kelola dan pantau riwayat pemeliharaan aset</p>
+    @php
+        $statusLabel = [
+            'Scheduled' => 'Terjadwal',
+            'Proses'    => 'Proses',
+            'Completed' => 'Selesai',
+            'Cancelled' => 'Dibatalkan',
+        ];
+        $inputClass = 'w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition';
+        $labelClass = 'block text-sm font-bold text-gray-900 mb-2';
+    @endphp
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        {{-- ===== Top bar: sapaan user ===== --}}
+        <div class="flex justify-end pt-12 lg:pt-0 mb-4">
+            <div class="flex items-center gap-3">
+                <div class="text-right leading-tight">
+                    <p class="text-base text-gray-700">Hallo, <span class="font-bold text-gray-900">{{ Auth::user()->name }}</span></p>
+                    <p class="text-xs text-gray-500 capitalize mt-0.5">{{ Auth::user()->role }}</p>
+                </div>
+                <div class="w-11 h-11 rounded-full bg-gradient-to-br from-pink-400 to-orange-300 flex items-center justify-center text-white text-base font-bold">
+                    {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                </div>
             </div>
-            <a href="{{ route('maintenance.create') }}" class="inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium shadow-sm">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                </svg>
+        </div>
+
+        {{-- ===== Judul + tombol tambah ===== --}}
+        <div class="mb-6 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+            <div>
+                <h1 class="text-4xl font-extrabold text-gray-900">Maintenance</h1>
+                <p class="text-sm text-gray-500 mt-1.5">Kelola dan pantau riwayat pemeliharaan asset</p>
+            </div>
+            <a href="{{ route('maintenance.create') }}" class="inline-flex items-center justify-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-base font-semibold shadow-sm transition-colors">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
                 Tambah Maintenance
             </a>
         </div>
 
-        @if (session('success'))
-                <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
-                    <span class="block sm:inline">{{ session('success') }}</span>
+        {{-- ===== Filter ===== --}}
+        <form method="GET" action="{{ route('maintenance.index') }}" class="bg-white rounded-xl shadow-sm p-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+
+                {{-- Pencarian --}}
+                <div>
+                    <label class="{{ $labelClass }}">Pencarian</label>
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari kode asset, merek, atau serial.." class="{{ $inputClass }}">
                 </div>
-                @php session()->forget('success'); @endphp
-            @endif
 
-            <!-- Filter Section -->
-            <div class="bg-white overflow-visible shadow-sm rounded-lg mb-6">
-                <div class="p-4 sm:p-6 overflow-visible">
-                    <form method="GET" action="{{ route('maintenance.index') }}">
-                        <!-- Filter Row 1: Search and Dropdowns -->
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4 relative z-10">
-                            <!-- Search -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Pencarian</label>
-                                <input type="text" name="search" value="{{ request('search') }}" 
-                                       placeholder="Cari kode aset, merek, atau serial..." 
-                                       class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition">
-                            </div>
-
-                            <!-- Searchable Asset Dropdown -->
-                            <div x-data="{
-                                open: false,
-                                search: '',
-                                selected: '{{ $assets->firstWhere('id', request('asset_id'))->label ?? '' }}',
-                                selectedId: '{{ request('asset_id') ?? '' }}',
-                                currentPage: 1,
-                                perPage: 8,
-                                items: @js($assets->map(fn($a) => ['id' => $a->id, 'label' => $a->label])),
-                                get filteredItems() {
-                                    return this.items.filter(item => 
-                                        item.label.toLowerCase().includes(this.search.toLowerCase())
-                                    );
-                                },
-                                get totalPages() {
-                                    return Math.ceil(this.filteredItems.length / this.perPage);
-                                },
-                                get paginatedItems() {
-                                    const start = (this.currentPage - 1) * this.perPage;
-                                    return this.filteredItems.slice(start, start + this.perPage);
-                                },
-                                selectItem(item) {
-                                    this.selected = item.label;
-                                    this.selectedId = item.id;
-                                    this.open = false;
-                                    this.search = '';
-                                    this.currentPage = 1;
-                                },
-                                clearSelection() {
-                                    this.selected = '';
-                                    this.selectedId = '';
-                                }
-                            }" @click.away="open = false" class="relative">
-                                
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Aset</label>
-                                
-                                <input type="hidden" name="asset_id" x-model="selectedId">
-                                
-                                <button type="button" @click="open = !open" class="w-full px-4 py-2 text-left bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors flex items-center justify-between hover:bg-gray-50">
-                                    <span x-text="selected || 'Semua Aset'" :class="selected ? 'text-gray-900' : 'text-gray-500'" class="truncate"></span>
-                                    <svg class="w-5 h-5 text-gray-400 transition-transform flex-shrink-0" :class="{'rotate-180': open}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                    </svg>
-                                </button>
-
-                                <div x-show="open" 
-                                     x-transition:enter="transition ease-out duration-200"
-                                     x-transition:enter-start="opacity-0 -translate-y-2"
-                                     x-transition:enter-end="opacity-100 translate-y-0"
-                                     x-transition:leave="transition ease-in duration-150"
-                                     x-transition:leave-start="opacity-100 translate-y-0"
-                                     x-transition:leave-end="opacity-0 -translate-y-2"
-                                     class="absolute left-0 right-0 z-[9999] mt-2 bg-white border border-gray-300 rounded-lg shadow-2xl"
-                                     style="min-width: 280px;">
-                                    <div class="p-3 border-b border-gray-200">
-                                        <div class="relative">
-                                            <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                                            </svg>
-                                            <input type="text" x-model="search" @input="currentPage = 1" placeholder="Cari aset..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                        </div>
-                                    </div>
-
-                                    <div class="max-h-64 overflow-y-auto">
-                                        <button type="button" @click="clearSelection(); open = false;" class="w-full px-4 py-3 text-left hover:bg-blue-50 transition-colors">
-                                            <span class="text-gray-700 hover:text-blue-600 font-medium">Semua Aset</span>
-                                        </button>
-                                        
-                                        <template x-if="paginatedItems.length > 0">
-                                            <div>
-                                                <template x-for="item in paginatedItems" :key="item.id">
-                                                    <button type="button" @click="selectItem(item)" class="w-full px-4 py-2.5 text-left hover:bg-blue-50 transition-colors flex items-center justify-between group">
-                                                        <span x-text="item.label" class="text-gray-700 group-hover:text-blue-600 font-medium text-sm flex-1 text-left"></span>
-                                                        <svg x-show="selected === item.label" class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                                                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-                                                        </svg>
-                                                    </button>
-                                                </template>
-                                            </div>
-                                        </template>
-                                        
-                                        <template x-if="paginatedItems.length === 0 && search !== ''">
-                                            <div class="px-4 py-8 text-center text-gray-500">
-                                                <svg class="w-12 h-12 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                                                </svg>
-                                                <p class="text-sm">Tidak ada hasil ditemukan</p>
-                                            </div>
-                                        </template>
-                                    </div>
-
-                                    <div x-show="filteredItems.length > perPage" class="p-3 border-t border-gray-200 flex items-center justify-between bg-gray-50">
-                                        <div class="text-xs text-gray-600">
-                                            <span x-text="`${((currentPage-1)*perPage)+1}-${Math.min(currentPage*perPage, filteredItems.length)} dari ${filteredItems.length}`"></span>
-                                        </div>
-                                        <div class="flex items-center gap-1">
-                                            <button type="button" @click="currentPage > 1 && currentPage--" :disabled="currentPage === 1" :class="currentPage === 1 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-200'" class="p-1.5 rounded transition-colors">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                                                </svg>
-                                            </button>
-                                            
-                                            <span class="px-2 py-1 text-xs font-medium text-gray-700" x-text="`${currentPage}/${totalPages}`"></span>
-                                            
-                                            <button type="button" @click="currentPage < totalPages && currentPage++" :disabled="currentPage === totalPages" :class="currentPage === totalPages ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-200'" class="p-1.5 rounded transition-colors">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Searchable Technician Dropdown -->
-                            <div x-data="{
-                                open: false,
-                                search: '',
-                                selected: '{{ $technicians->firstWhere('id', request('technician_id'))->name ?? '' }}',
-                                selectedId: '{{ request('technician_id') ?? '' }}',
-                                currentPage: 1,
-                                perPage: 8,
-                                items: @js($technicians->map(fn($t) => ['id' => $t->id, 'name' => $t->name])),
-                                get filteredItems() {
-                                    return this.items.filter(item => 
-                                        item.name.toLowerCase().includes(this.search.toLowerCase())
-                                    );
-                                },
-                                get totalPages() {
-                                    return Math.ceil(this.filteredItems.length / this.perPage);
-                                },
-                                get paginatedItems() {
-                                    const start = (this.currentPage - 1) * this.perPage;
-                                    return this.filteredItems.slice(start, start + this.perPage);
-                                },
-                                selectItem(item) {
-                                    this.selected = item.name;
-                                    this.selectedId = item.id;
-                                    this.open = false;
-                                    this.search = '';
-                                    this.currentPage = 1;
-                                },
-                                clearSelection() {
-                                    this.selected = '';
-                                    this.selectedId = '';
-                                }
-                            }" @click.away="open = false" class="relative">
-                                
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Teknisi</label>
-                                
-                                <input type="hidden" name="technician_id" x-model="selectedId">
-                                
-                                <button type="button" @click="open = !open" class="w-full px-4 py-2 text-left bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors flex items-center justify-between hover:bg-gray-50">
-                                    <span x-text="selected || 'Semua Teknisi'" :class="selected ? 'text-gray-900' : 'text-gray-500'" class="truncate"></span>
-                                    <svg class="w-5 h-5 text-gray-400 transition-transform flex-shrink-0" :class="{'rotate-180': open}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                    </svg>
-                                </button>
-
-                                <div x-show="open" x-transition class="absolute z-[100] w-full mt-2 bg-white border border-gray-200 rounded-lg shadow-2xl max-w-full">
-                                    <div class="p-3 border-b border-gray-200">
-                                        <div class="relative">
-                                            <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                                            </svg>
-                                            <input type="text" x-model="search" @input="currentPage = 1" placeholder="Cari teknisi..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                        </div>
-                                    </div>
-
-                                    <div class="max-h-64 overflow-y-auto">
-                                        <button type="button" @click="clearSelection(); open = false;" class="w-full px-4 py-3 text-left hover:bg-blue-50 transition-colors">
-                                            <span class="text-gray-700 hover:text-blue-600 font-medium">Semua Teknisi</span>
-                                        </button>
-                                        
-                                        <template x-if="paginatedItems.length > 0">
-                                            <div>
-                                                <template x-for="item in paginatedItems" :key="item.id">
-                                                    <button type="button" @click="selectItem(item)" class="w-full px-4 py-3 text-left hover:bg-blue-50 transition-colors flex items-center justify-between group">
-                                                        <span x-text="item.name" class="text-gray-700 group-hover:text-blue-600 font-medium text-sm break-words pr-2"></span>
-                                                        <svg x-show="selected === item.name" class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                                                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-                                                        </svg>
-                                                    </button>
-                                                </template>
-                                            </div>
-                                        </template>
-                                        
-                                        <template x-if="paginatedItems.length === 0 && search !== ''">
-                                            <div class="px-4 py-8 text-center text-gray-500">
-                                                <svg class="w-12 h-12 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                                                </svg>
-                                                <p class="text-sm">Tidak ada hasil ditemukan</p>
-                                            </div>
-                                        </template>
-                                    </div>
-
-                                    <div x-show="filteredItems.length > perPage" class="p-3 border-t border-gray-200 flex items-center justify-between bg-gray-50">
-                                        <div class="text-xs text-gray-600">
-                                            <span x-text="`${((currentPage-1)*perPage)+1}-${Math.min(currentPage*perPage, filteredItems.length)} dari ${filteredItems.length}`"></span>
-                                        </div>
-                                        <div class="flex items-center gap-1">
-                                            <button type="button" @click="currentPage > 1 && currentPage--" :disabled="currentPage === 1" :class="currentPage === 1 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-200'" class="p-1.5 rounded transition-colors">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                                                </svg>
-                                            </button>
-                                            
-                                            <span class="px-2 py-1 text-xs font-medium text-gray-700" x-text="`${currentPage}/${totalPages}`"></span>
-                                            
-                                            <button type="button" @click="currentPage < totalPages && currentPage++" :disabled="currentPage === totalPages" :class="currentPage === totalPages ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-200'" class="p-1.5 rounded transition-colors">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Status -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                                <select name="status" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition appearance-none bg-white">
-                                    <option value="">Semua Status</option>
-                                    <option value="Scheduled" {{ request('status') == 'Scheduled' ? 'selected' : '' }}>Terjadwal</option>
-                                    <option value="Proses" {{ request('status') == 'Proses' ? 'selected' : '' }}>Proses</option>
-                                    <option value="Completed" {{ request('status') == 'Completed' ? 'selected' : '' }}>Selesai</option>
-                                    <option value="Cancelled" {{ request('status') == 'Cancelled' ? 'selected' : '' }}>Dibatalkan</option>
-                                </select>
-                            </div>
+                {{-- Aset (searchable) --}}
+                <div x-data="{
+                        open: false,
+                        search: '',
+                        selected: @js($assets->firstWhere('id', request('asset_id'))->label ?? ''),
+                        selectedId: @js(request('asset_id') ?? ''),
+                        items: @js($assets->map(fn($a) => ['id' => $a->id, 'label' => $a->label])->values()),
+                        get filtered() { return this.items.filter(i => i.label.toLowerCase().includes(this.search.toLowerCase())); },
+                        pick(i) { this.selected = i.label; this.selectedId = i.id; this.open = false; this.search = ''; },
+                        clear() { this.selected = ''; this.selectedId = ''; this.open = false; }
+                    }" @click.away="open = false" class="relative">
+                    <label class="{{ $labelClass }}">Aset</label>
+                    <input type="hidden" name="asset_id" x-model="selectedId">
+                    <button type="button" @click="open = !open" class="{{ $inputClass }} flex items-center justify-between text-left">
+                        <span x-text="selected || 'Semua Asset'" :class="selected ? 'text-gray-900' : 'text-gray-400'" class="truncate"></span>
+                        <svg class="w-5 h-5 text-gray-400 flex-shrink-0 transition-transform" :class="{'rotate-180': open}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
+                    <div x-show="open" x-transition class="absolute left-0 right-0 z-50 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl" style="min-width: 260px;">
+                        <div class="p-2.5 border-b border-gray-100">
+                            <input type="text" x-model="search" placeholder="Cari aset..." class="{{ $inputClass }}">
                         </div>
-
-                        <!-- Filter Row 2: Compact Date Range and Buttons -->
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 items-end">
-                            <!-- Start Date -->
-                            <div class="lg:col-span-1">
-                                <label class="block text-xs font-medium text-gray-700 mb-1.5">Tanggal Mulai</label>
-                                <input type="date" name="start_date" value="{{ request('start_date') }}" 
-                                       class="w-full px-3 py-1.5 text-sm rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition">
-                            </div>
-
-                            <!-- End Date -->
-                            <div class="lg:col-span-1">
-                                <label class="block text-xs font-medium text-gray-700 mb-1.5">Tanggal Akhir</label>
-                                <input type="date" name="end_date" value="{{ request('end_date') }}" 
-                                       class="w-full px-3 py-1.5 text-sm rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition">
-                            </div>
-
-                            <!-- Buttons -->
-                            <div class="lg:col-span-4 flex flex-col sm:flex-row gap-2">
-                                <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg inline-flex items-center justify-center transition text-sm">
-                                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                                    </svg>
-                                    Filter
-                                </button>
-                                <a href="{{ route('maintenance.index') }}" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg inline-flex items-center justify-center transition text-sm">
-                                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                                    </svg>
-                                    Reset
-                                </a>
-                                <a href="{{ route('maintenance.create') }}" class="flex-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg inline-flex items-center justify-center transition">
-                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                                        </svg>
-                                        Tambah Maintenance
-                                    </a>
-                            </div>
+                        <div class="max-h-60 overflow-y-auto">
+                            <button type="button" @click="clear()" class="w-full px-4 py-2.5 text-left text-sm font-medium text-gray-700 hover:bg-blue-50">Semua Asset</button>
+                            <template x-for="item in filtered" :key="item.id">
+                                <button type="button" @click="pick(item)" x-text="item.label" class="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600"></button>
+                            </template>
+                            <p x-show="filtered.length === 0" class="px-4 py-5 text-center text-sm text-gray-400">Tidak ada hasil</p>
                         </div>
-                    </form>
+                    </div>
+                </div>
+
+                {{-- Teknisi (searchable) --}}
+                <div x-data="{
+                        open: false,
+                        search: '',
+                        selected: @js($technicians->firstWhere('id', request('technician_id'))->name ?? ''),
+                        selectedId: @js(request('technician_id') ?? ''),
+                        items: @js($technicians->map(fn($t) => ['id' => $t->id, 'name' => $t->name])->values()),
+                        get filtered() { return this.items.filter(i => i.name.toLowerCase().includes(this.search.toLowerCase())); },
+                        pick(i) { this.selected = i.name; this.selectedId = i.id; this.open = false; this.search = ''; },
+                        clear() { this.selected = ''; this.selectedId = ''; this.open = false; }
+                    }" @click.away="open = false" class="relative">
+                    <label class="{{ $labelClass }}">Teknisi</label>
+                    <input type="hidden" name="technician_id" x-model="selectedId">
+                    <button type="button" @click="open = !open" class="{{ $inputClass }} flex items-center justify-between text-left">
+                        <span x-text="selected || 'Semua Teknisi'" :class="selected ? 'text-gray-900' : 'text-gray-400'" class="truncate"></span>
+                        <svg class="w-5 h-5 text-gray-400 flex-shrink-0 transition-transform" :class="{'rotate-180': open}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
+                    <div x-show="open" x-transition class="absolute left-0 right-0 z-50 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl">
+                        <div class="p-2.5 border-b border-gray-100">
+                            <input type="text" x-model="search" placeholder="Cari teknisi..." class="{{ $inputClass }}">
+                        </div>
+                        <div class="max-h-60 overflow-y-auto">
+                            <button type="button" @click="clear()" class="w-full px-4 py-2.5 text-left text-sm font-medium text-gray-700 hover:bg-blue-50">Semua Teknisi</button>
+                            <template x-for="item in filtered" :key="item.id">
+                                <button type="button" @click="pick(item)" x-text="item.name" class="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600"></button>
+                            </template>
+                            <p x-show="filtered.length === 0" class="px-4 py-5 text-center text-sm text-gray-400">Tidak ada hasil</p>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Status --}}
+                <div>
+                    <label class="{{ $labelClass }}">Status</label>
+                    <select name="status" class="{{ $inputClass }}">
+                        <option value="">Semua Status</option>
+                        <option value="Scheduled" {{ request('status') == 'Scheduled' ? 'selected' : '' }}>Terjadwal</option>
+                        <option value="Proses" {{ request('status') == 'Proses' ? 'selected' : '' }}>Proses</option>
+                        <option value="Completed" {{ request('status') == 'Completed' ? 'selected' : '' }}>Selesai</option>
+                        <option value="Cancelled" {{ request('status') == 'Cancelled' ? 'selected' : '' }}>Dibatalkan</option>
+                    </select>
                 </div>
             </div>
 
-            <!-- Quick Stats - Moved Here (Dynamic based on filters) -->
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-                <div class="bg-white overflow-hidden shadow-sm rounded-lg p-4">
-                    <div class="text-gray-500 text-xs mb-1">Total Terjadwal</div>
-                    <div class="text-2xl font-bold text-blue-600">
-                        {{ $stats['scheduled'] }}
-                    </div>
+            {{-- Tanggal --}}
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-5">
+                <div>
+                    <label class="{{ $labelClass }}">Tanggal Mulai</label>
+                    <input type="date" name="start_date" value="{{ request('start_date') }}" class="{{ $inputClass }}">
                 </div>
-                <div class="bg-white overflow-hidden shadow-sm rounded-lg p-4">
-                    <div class="text-gray-500 text-xs mb-1">Selesai</div>
-                    <div class="text-2xl font-bold text-green-600">
-                        {{ $stats['completed'] }}
-                    </div>
-                </div>
-                <div class="bg-white overflow-hidden shadow-sm rounded-lg p-4">
-                    <div class="text-gray-500 text-xs mb-1">Tertinggal</div>
-                    <div class="text-2xl font-bold text-red-600">
-                        {{ $stats['overdue'] }}
-                    </div>
-                </div>
-                <div class="bg-white overflow-hidden shadow-sm rounded-lg p-4">
-                    <div class="text-gray-500 text-xs mb-1">Biaya Bulan Ini</div>
-                    <div class="text-xl font-bold text-purple-600">
-                        Rp {{ number_format($stats['cost_this_month'], 0, ',', '.') }}
-                    </div>
+                <div>
+                    <label class="{{ $labelClass }}">Tanggal Akhir</label>
+                    <input type="date" name="end_date" value="{{ request('end_date') }}" class="{{ $inputClass }}">
                 </div>
             </div>
 
-            <!-- Quick Links -->
-            <div class="flex flex-col sm:flex-row gap-3 mb-6">
-                <a href="{{ route('maintenance.upcoming') }}" class="flex-1 bg-blue-100 hover:bg-blue-200 text-blue-700 px-4 py-2 rounded-lg inline-flex items-center justify-center transition text-sm">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                    </svg>
-                    Jadwal Mendatang
-                </a>
-                <a href="{{ route('maintenance.overdue') }}" class="flex-1 bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 rounded-lg inline-flex items-center justify-center transition text-sm">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                    </svg>
-                    Jadwal Tertinggal
+            {{-- Tombol --}}
+            <div class="flex gap-3 mt-6">
+                <button type="submit" class="inline-flex items-center px-8 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold transition-colors">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    Cari
+                </button>
+                <a href="{{ route('maintenance.index') }}" class="inline-flex items-center px-7 py-2.5 bg-[#5FB890] hover:bg-[#4fa67e] text-white rounded-lg text-sm font-semibold transition-colors">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Reset
                 </a>
             </div>
+        </form>
 
-            <!-- Maintenance Table - Desktop View -->
-            <div class="hidden lg:block bg-white overflow-hidden shadow-sm rounded-lg">
-                <div class="p-6">
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aset</th>
-                                    <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tgl Terjadwal</th>
-                                    <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tgl Pelaksanaan</th>
-                                    <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tgl Penerimaan</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Teknisi</th>
-                                    <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Biaya</th>
-                                    <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                @forelse ($maintenances as $maintenance)
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-4 py-3">
-                                            <div class="font-medium text-gray-900 text-sm">{{ $maintenance->asset->asset_code }}</div>
-                                            <div class="text-xs text-gray-500">
-                                                {{ $maintenance->asset->brand }} {{ $maintenance->asset->model }}
-                                            </div>
-                                            <div class="text-xs text-gray-400">
-                                                {{ $maintenance->asset->assetType->name ?? 'N/A' }}
-                                            </div>
-                                        </td>
-                                        <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
-                                            {{ $maintenance->schedule_date->format('d M Y') }}
-                                        </td>
-                                        <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
-                                            {{ $maintenance->performed_date ? $maintenance->performed_date->format('d M Y') : '-' }}
-                                        </td>
-                                        <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
-                                            @if($maintenance->tanggal_penerimaan_barang)
-                                                <div class="flex items-center">
-                                                    <svg class="w-4 h-4 mr-1 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                                    </svg>
-                                                    <span class="text-xs">{{ $maintenance->tanggal_penerimaan_barang->format('d M Y') }}</span>
-                                                </div>
-                                            @else
-                                                <span class="text-gray-400">-</span>
-                                            @endif
-                                        </td>
-                                        <td class="px-4 py-3 text-sm text-gray-900">
-                                            @if($maintenance->technician_id && $maintenance->technician)
-                                                <div class="flex items-center gap-2">
-                                                    <span class="w-2 h-2 bg-green-500 rounded-full"></span>
-                                                    {{ $maintenance->technician->name }}
-                                                </div>
-                                            @elseif($maintenance->technician_name)
-                                                <div class="flex items-center gap-2">
-                                                    <span class="w-2 h-2 bg-blue-500 rounded-full"></span>
-                                                    {{ $maintenance->technician_name }}
-                                                    <span class="text-xs text-gray-500">(Manual)</span>
-                                                </div>
-                                            @else
-                                                <span class="text-gray-400 italic">Belum ditentukan</span>
-                                            @endif
-                                        </td>
-                                        <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
-                                            Rp {{ number_format($maintenance->cost, 0, ',', '.') }}
-                                        </td>
-                                        <td class="px-3 py-3 whitespace-nowrap">
-                                            @if ($maintenance->status == 'Scheduled')
-                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                                    Terjadwal
-                                                </span>
-                                            @elseif ($maintenance->status == 'Proses')
-                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                                                    Proses
-                                                </span>
-                                            @elseif ($maintenance->status == 'Completed')
-                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                                    Selesai
-                                                </span>
-                                            @else
-                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                                                    Dibatalkan
-                                                </span>
-                                            @endif
-                                        </td>
-                                        <td class="px-4 py-3 whitespace-nowrap text-sm font-medium">
-                                            <div class="flex gap-2">
-                                                <a href="{{ route('maintenance.show', $maintenance) }}" class="text-blue-600 hover:text-blue-900 text-xs">Lihat</a>
-                                                <a href="{{ route('maintenance.edit', $maintenance) }}" class="text-indigo-600 hover:text-indigo-900 text-xs">Edit</a>
-                                                @if ($maintenance->status == 'Scheduled' || $maintenance->status == 'Proses')
-                                                    <button type="button" onclick="openCompleteModal({{ $maintenance->id }}, '{{ $maintenance->asset->asset_code }}')" class="text-green-600 hover:text-green-900 text-xs">Selesai</button>
-                                                @endif
-                                                <button type="button" onclick="openDeleteModal({{ $maintenance->id }}, '{{ $maintenance->asset->asset_code }}')" class="text-red-600 hover:text-red-900 text-xs">Hapus</button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="8" class="px-6 py-12 text-center">
-                                            <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                                            </svg>
-                                            <p class="text-gray-500 text-sm">Tidak ada record maintenance yang ditemukan.</p>
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
+        {{-- ===== Kartu statistik ===== --}}
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-5 mt-6">
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <p class="text-sm text-gray-500">Total Terjadwal</p>
+                <p class="text-4xl font-extrabold text-blue-600 mt-2">{{ $stats['scheduled'] }}</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <p class="text-sm text-gray-500">Selesai</p>
+                <p class="text-4xl font-extrabold text-green-600 mt-2">{{ $stats['completed'] }}</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <p class="text-sm text-gray-500">Tertinggal</p>
+                <p class="text-4xl font-extrabold text-red-600 mt-2">{{ $stats['overdue'] }}</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <p class="text-sm text-gray-500">Biaya Bulan Ini</p>
+                <p class="text-3xl font-extrabold text-[#5B6FD6] mt-2.5">Rp {{ number_format($stats['cost_this_month'], 0, ',', '.') }}</p>
+            </div>
+        </div>
 
-                    <div class="mt-4">
-                        {{ $maintenances->links() }}
-                    </div>
-                </div>
+        {{-- ===== Link cepat ===== --}}
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-6">
+            <a href="{{ route('maintenance.upcoming') }}" class="inline-flex items-center justify-center gap-2 py-3 bg-[#8CABF2] hover:bg-[#7898e6] text-blue-900 rounded-lg text-sm font-semibold transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                Jadwal Mendatang
+            </a>
+            <a href="{{ route('maintenance.overdue') }}" class="inline-flex items-center justify-center gap-2 py-3 bg-[#F28B8B] hover:bg-[#e87878] text-red-900 rounded-lg text-sm font-semibold transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                Jadwal Tertinggal
+            </a>
+        </div>
+
+        {{-- ===== Tabel (desktop) ===== --}}
+        <div class="hidden lg:block bg-white rounded-xl shadow-sm p-6 mt-6">
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-sm">
+                    <thead>
+                        <tr class="bg-gray-100">
+                            <th class="px-5 py-4 text-left text-[13px] font-bold text-gray-900 uppercase first:rounded-l-lg">Aset</th>
+                            <th class="px-4 py-4 text-center text-[13px] font-bold text-gray-900 uppercase">Tgl Terjadwal</th>
+                            <th class="px-4 py-4 text-center text-[13px] font-bold text-gray-900 uppercase">Tgl Pelaksanaan</th>
+                            <th class="px-4 py-4 text-center text-[13px] font-bold text-gray-900 uppercase">Tgl Penerimaan</th>
+                            <th class="px-4 py-4 text-center text-[13px] font-bold text-gray-900 uppercase">Teknisi</th>
+                            <th class="px-4 py-4 text-center text-[13px] font-bold text-gray-900 uppercase">Biaya</th>
+                            <th class="px-4 py-4 text-center text-[13px] font-bold text-gray-900 uppercase">Status</th>
+                            <th class="px-5 py-4 text-center text-[13px] font-bold text-gray-900 uppercase last:rounded-r-lg">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($maintenances as $maintenance)
+                            @php
+                                $techName = $maintenance->technician->name ?? $maintenance->technician_name ?? 'Belum ditentukan';
+                            @endphp
+                            <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors text-gray-800">
+                                <td class="px-5 py-4 whitespace-nowrap font-medium">{{ $maintenance->asset->asset_code }}</td>
+                                <td class="px-4 py-4 text-center whitespace-nowrap">{{ $maintenance->schedule_date->format('d M Y') }}</td>
+                                <td class="px-4 py-4 text-center whitespace-nowrap">{{ $maintenance->performed_date?->format('d M Y') ?? '-' }}</td>
+                                <td class="px-4 py-4 text-center whitespace-nowrap">{{ $maintenance->tanggal_penerimaan_barang?->format('d M Y') ?? '-' }}</td>
+                                <td class="px-4 py-4 text-center">{{ $techName }}</td>
+                                <td class="px-4 py-4 text-center whitespace-nowrap">Rp {{ number_format($maintenance->cost, 0, ',', '.') }}</td>
+                                <td class="px-4 py-4 text-center whitespace-nowrap">{{ $statusLabel[$maintenance->status] ?? $maintenance->status }}</td>
+                                <td class="px-5 py-4">
+                                    <div class="flex items-center justify-center gap-3">
+                                        <a href="{{ route('maintenance.show', $maintenance) }}" title="Lihat" class="text-blue-600 hover:text-blue-800">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                        </a>
+                                        <a href="{{ route('maintenance.edit', $maintenance) }}" title="Edit" class="text-yellow-500 hover:text-yellow-600">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                        </a>
+                                        @if (in_array($maintenance->status, ['Scheduled', 'Proses']))
+                                            {{-- Hapus tombol ini kalau mau persis 3 ikon seperti Figma --}}
+                                            <button type="button" title="Tandai Selesai" onclick="openCompleteModal({{ $maintenance->id }}, '{{ $maintenance->asset->asset_code }}')" class="text-green-600 hover:text-green-700">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                            </button>
+                                        @endif
+                                        <button type="button" title="Hapus" onclick="openDeleteModal({{ $maintenance->id }}, '{{ $maintenance->asset->asset_code }}')" class="text-red-600 hover:text-red-700">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="8" class="px-6 py-14 text-center">
+                                    <p class="text-gray-400 text-sm">Tidak ada record maintenance yang ditemukan.</p>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
 
-            <!-- Maintenance Cards - Mobile View -->
-            <div class="lg:hidden space-y-4">
-                @forelse ($maintenances as $maintenance)
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-                        <!-- Header -->
-                        <div class="flex justify-between items-start mb-3">
-                            <div>
-                                <p class="text-sm font-bold text-gray-900">{{ $maintenance->asset->asset_code }}</p>
-                                <p class="text-xs text-gray-500">{{ $maintenance->asset->brand }} {{ $maintenance->asset->model }}</p>
-                                <p class="text-xs text-gray-400 mt-1">{{ $maintenance->asset->assetType->name ?? 'N/A' }}</p>
-                            </div>
-                            @if ($maintenance->status == 'Scheduled')
-                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                    Terjadwal
-                                </span>
-                            @elseif ($maintenance->status == 'Proses')
-                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                                    Proses
-                                </span>
-                            @elseif ($maintenance->status == 'Completed')
-                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                                    Selesai
-                                </span>
-                            @else
-                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
-                                    Dibatalkan
-                                </span>
-                            @endif
-                        </div>
+            <div class="mt-5">
+                {{ $maintenances->links() }}
+            </div>
+        </div>
 
-                        <!-- Details -->
-                        <div class="space-y-2 mb-3">
-                            <div class="flex justify-between text-sm">
-                                <span class="text-gray-600">Tanggal Terjadwal:</span>
-                                <span class="font-medium text-gray-900">{{ $maintenance->schedule_date->format('d M Y') }}</span>
-                            </div>
-                            <div class="flex justify-between text-sm">
-                                <span class="text-gray-600">Tanggal Pelaksanaan:</span>
-                                <span class="font-medium text-gray-900">{{ $maintenance->performed_date ? $maintenance->performed_date->format('d M Y') : '-' }}</span>
-                            </div>
-                            @if($maintenance->tanggal_penerimaan_barang)
-                                <div class="flex justify-between text-sm">
-                                    <span class="text-gray-600">Tanggal Penerimaan:</span>
-                                    <span class="font-semibold text-green-700 flex items-center">
-                                        <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                        </svg>
-                                        {{ $maintenance->tanggal_penerimaan_barang->format('d M Y') }}
-                                    </span>
-                                </div>
-                            @endif
-                            <div class="flex justify-between text-sm">
-                                <span class="text-gray-600">Teknisi:</span>
-                                <<span class="font-medium text-gray-900">
-                                @if($maintenance->technician_id && $maintenance->technician)
-                                    {{ $maintenance->technician->name }}
-                                @elseif($maintenance->technician_name)
-                                    {{ $maintenance->technician_name }}
-                                @else
-                                    <span class="text-gray-400 italic">Belum ditentukan</span>
-                                @endif
-                            </span>
-                            </div>
-                            <div class="flex justify-between text-sm">
-                                <span class="text-gray-600">Biaya:</span>
-                                <span class="font-semibold text-green-700">Rp {{ number_format($maintenance->cost, 0, ',', '.') }}</span>
-                            </div>
+        {{-- ===== Kartu (mobile) ===== --}}
+        <div class="lg:hidden space-y-4 mt-6">
+            @forelse ($maintenances as $maintenance)
+                @php
+                    $techName = $maintenance->technician->name ?? $maintenance->technician_name ?? 'Belum ditentukan';
+                @endphp
+                <div class="bg-white rounded-xl shadow-sm p-5">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <p class="text-base font-bold text-gray-900">{{ $maintenance->asset->asset_code }}</p>
+                            <p class="text-sm text-gray-500">{{ $maintenance->asset->brand }} {{ $maintenance->asset->model }}</p>
                         </div>
-
-                        <!-- Actions -->
-                        <div class="flex flex-col xs:flex-row gap-2 pt-3 border-t border-gray-200">
-                            <a href="{{ route('maintenance.show', $maintenance) }}" class="flex-1 text-center px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition">
-                                Lihat
-                            </a>
-                            <a href="{{ route('maintenance.edit', $maintenance) }}" class="flex-1 text-center px-3 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition">
-                                Edit
-                            </a>
-                            @if ($maintenance->status == 'Scheduled' || $maintenance->status == 'Proses')
-                                <button onclick="openCompleteModal({{ $maintenance->id }}, '{{ $maintenance->asset->asset_code }}')" class="flex-1 px-3 py-2 text-sm font-medium text-green-600 bg-green-50 rounded-lg hover:bg-green-100 transition">
-                                    Selesai
-                                </button>
-                            @endif
-                            <button onclick="openDeleteModal({{ $maintenance->id }}, '{{ $maintenance->asset->asset_code }}')" class="flex-1 px-3 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition">
-                                Hapus
-                            </button>
-                        </div>
+                        <span class="text-sm font-semibold text-gray-700">{{ $statusLabel[$maintenance->status] ?? $maintenance->status }}</span>
                     </div>
-                @empty
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
-                        <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                        </svg>
-                        <p class="text-gray-500 text-sm">Tidak ada record maintenance yang ditemukan.</p>
-                    </div>
-                @endforelse
 
-                <!-- Pagination for Mobile -->
-                <div class="mt-6">
-                    {{ $maintenances->links() }}
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between"><span class="text-gray-500">Tgl Terjadwal</span><span class="font-medium text-gray-900">{{ $maintenance->schedule_date->format('d M Y') }}</span></div>
+                        <div class="flex justify-between"><span class="text-gray-500">Tgl Pelaksanaan</span><span class="font-medium text-gray-900">{{ $maintenance->performed_date?->format('d M Y') ?? '-' }}</span></div>
+                        <div class="flex justify-between"><span class="text-gray-500">Tgl Penerimaan</span><span class="font-medium text-gray-900">{{ $maintenance->tanggal_penerimaan_barang?->format('d M Y') ?? '-' }}</span></div>
+                        <div class="flex justify-between"><span class="text-gray-500">Teknisi</span><span class="font-medium text-gray-900">{{ $techName }}</span></div>
+                        <div class="flex justify-between"><span class="text-gray-500">Biaya</span><span class="font-semibold text-gray-900">Rp {{ number_format($maintenance->cost, 0, ',', '.') }}</span></div>
+                    </div>
+
+                    <div class="flex gap-2 pt-4 mt-4 border-t border-gray-100">
+                        <a href="{{ route('maintenance.show', $maintenance) }}" class="flex-1 text-center px-3 py-2.5 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100">Lihat</a>
+                        <a href="{{ route('maintenance.edit', $maintenance) }}" class="flex-1 text-center px-3 py-2.5 text-sm font-medium text-yellow-600 bg-yellow-50 rounded-lg hover:bg-yellow-100">Edit</a>
+                        @if (in_array($maintenance->status, ['Scheduled', 'Proses']))
+                            <button type="button" onclick="openCompleteModal({{ $maintenance->id }}, '{{ $maintenance->asset->asset_code }}')" class="flex-1 px-3 py-2.5 text-sm font-medium text-green-600 bg-green-50 rounded-lg hover:bg-green-100">Selesai</button>
+                        @endif
+                        <button type="button" onclick="openDeleteModal({{ $maintenance->id }}, '{{ $maintenance->asset->asset_code }}')" class="flex-1 px-3 py-2.5 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100">Hapus</button>
+                    </div>
                 </div>
+            @empty
+                <div class="bg-white rounded-xl shadow-sm p-12 text-center">
+                    <p class="text-gray-400 text-sm">Tidak ada record maintenance yang ditemukan.</p>
+                </div>
+            @endforelse
+
+            <div class="mt-4">
+                {{ $maintenances->links() }}
             </div>
         </div>
     </div>
 
-    <!-- Delete Confirmation Modal -->
+    {{-- ===== Modal Hapus ===== --}}
     <div id="deleteModal" style="display: none;" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-xl shadow-xl max-w-md w-full">
             <div class="p-6">
                 <div class="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full mb-4">
-                    <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-                    </svg>
+                    <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                 </div>
                 <h3 class="text-lg font-semibold text-gray-900 text-center mb-2">Konfirmasi Hapus</h3>
                 <p class="text-sm text-gray-600 text-center mb-6">
@@ -591,26 +303,20 @@
                     @csrf
                     @method('DELETE')
                     <div class="flex flex-col sm:flex-row gap-3">
-                        <button type="button" onclick="closeDeleteModal()" class="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium">
-                            Batal
-                        </button>
-                        <button type="submit" class="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium">
-                            Ya, Hapus
-                        </button>
+                        <button type="button" onclick="closeDeleteModal()" class="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium">Batal</button>
+                        <button type="submit" class="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium">Ya, Hapus</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 
-    <!-- Complete Confirmation Modal -->
+    {{-- ===== Modal Selesai ===== --}}
     <div id="completeModal" style="display: none;" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-xl shadow-xl max-w-md w-full">
             <div class="p-6">
                 <div class="flex items-center justify-center w-12 h-12 mx-auto bg-green-100 rounded-full mb-4">
-                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                    </svg>
+                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                 </div>
                 <h3 class="text-lg font-semibold text-gray-900 text-center mb-2">Tandai Selesai</h3>
                 <p class="text-sm text-gray-600 text-center mb-6">
@@ -620,21 +326,15 @@
                     @csrf
                     @method('PATCH')
                     <div class="flex flex-col sm:flex-row gap-3">
-                        <button type="button" onclick="closeCompleteModal()" class="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium">
-                            Batal
-                        </button>
-                        <button type="submit" class="flex-1 px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium">
-                            Ya, Selesai
-                        </button>
+                        <button type="button" onclick="closeCompleteModal()" class="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium">Batal</button>
+                        <button type="submit" class="flex-1 px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium">Ya, Selesai</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
-    </div>
 
     <script>
-        // Delete Modal Functions
         function openDeleteModal(id, assetCode) {
             document.getElementById('deleteAssetCode').textContent = assetCode;
             document.getElementById('deleteForm').action = `/maintenance/${id}`;
@@ -647,7 +347,6 @@
             document.body.style.overflow = '';
         }
 
-        // Complete Modal Functions
         function openCompleteModal(id, assetCode) {
             document.getElementById('completeAssetCode').textContent = assetCode;
             document.getElementById('completeForm').action = `/maintenance/${id}/complete`;
@@ -660,17 +359,15 @@
             document.body.style.overflow = '';
         }
 
-        // Close modals when clicking outside
-        document.getElementById('deleteModal').addEventListener('click', function(e) {
+        document.getElementById('deleteModal').addEventListener('click', function (e) {
             if (e.target === this) closeDeleteModal();
         });
 
-        document.getElementById('completeModal').addEventListener('click', function(e) {
+        document.getElementById('completeModal').addEventListener('click', function (e) {
             if (e.target === this) closeCompleteModal();
         });
 
-        // Close modals with Escape key
-        document.addEventListener('keydown', function(e) {
+        document.addEventListener('keydown', function (e) {
             if (e.key === 'Escape') {
                 closeDeleteModal();
                 closeCompleteModal();
