@@ -4,7 +4,7 @@
         <div class="mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
             <div>
                 <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Daftar Unit</h1>
-                <p class="text-sm text-gray-600 mt-1">Kelola unit/ruangan rumah sakit</p>
+                <p class="text-sm text-gray-600 mt-1">Kelola unit/ruangan SMK Kesehatan Binatama</p>
             </div>
             @can('create', App\Models\Location::class)
                 <a href="{{ route('locations.create') }}" class="inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm">
@@ -69,7 +69,8 @@
 
         <!-- Desktop Table -->
         <div class="hidden lg:block bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <table class="min-w-full divide-y divide-gray-200">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Nama Unit</th>
@@ -166,6 +167,7 @@
                     @endforelse
                 </tbody>
             </table>
+            </div>
         </div>
 
         <!-- Mobile Cards -->

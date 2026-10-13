@@ -105,8 +105,8 @@
                 </div>
                 <div class="info-section-print">
                     <div class="header-print">
-                        <h1>RSU PKU Muhammadiyah Bantul</h1>
-                        <p>Aset IT</p>
+                        <h1>SMK Kesehatan Binatama</h1>
+                        <p>SIASET</p>
                     </div>
                     <div class="info-print">
                         <div class="code-print">{{ $asset->asset_code }}</div>

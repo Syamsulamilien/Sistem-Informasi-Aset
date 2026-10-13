@@ -2,8 +2,8 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div class="mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
             <div>
-                <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Daftar Aset </h1>
-                <p class="text-sm text-gray-600 mt-1">Kelola seluruh aset rumah sakit</p>
+                <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Daftar Aset</h1>
+                <p class="text-sm text-gray-600 mt-1">Kelola seluruh aset SMK Kesehatan Binatama</p>
             </div>
             @can('create', App\Models\Asset::class)
                 <a href="{{ route('assets.create') }}" class="inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm">

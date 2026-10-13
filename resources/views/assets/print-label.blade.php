@@ -201,8 +201,8 @@
         </div>
         <div class="info-section">
             <div class="header">
-                <h1>RSU PKU Muhammadiyah Bantul</h1>
-                <p>Aset IT</p>
+                <h1>SMK Kesehatan Binatama</h1>
+                <p>SIASET</p>
             </div>
             <div class="info">
                 <div class="code">{{ $asset->asset_code }}</div>

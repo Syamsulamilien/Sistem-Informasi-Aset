@@ -128,8 +128,8 @@
     @endphp
 
     <div class="header">
-        <h1>LAPORAN ASET IT</h1>
-        <p>RSU PKU Muhammadiyah Bantul</p>
+        <h1>LAPORAN DATA ASET</h1>
+        <p>SMK Kesehatan Binatama</p>
         <p>Tanggal: {{ date('d F Y') }}</p>
     </div>
 
@@ -161,8 +161,8 @@
 
     <div class="description">
         <p>
-            Berdasarkan hasil pendataan terbaru, tercatat sebanyak <strong>{{ $total }}</strong> aset TI di lingkungan
-            <strong>RSU PKU Muhammadiyah Bantul</strong>. Dari jumlah tersebut, sebanyak
+            Berdasarkan hasil pendataan terbaru, tercatat sebanyak <strong>{{ $total }}</strong> aset di lingkungan
+            <strong>SMK Kesehatan Binatama</strong>. Dari jumlah tersebut, sebanyak
             <strong>{{ $aktif }}</strong> aset berstatus aktif dan <strong>{{ $nonaktif }}</strong> aset berstatus nonaktif.
             Total nilai keseluruhan aset mencapai <strong>Rp {{ number_format($nilai, 0, ',', '.') }}</strong>.
         </p>
@@ -170,7 +170,7 @@
             Jenis aset yang paling banyak digunakan adalah <strong>{{ $jenisTerbanyak }}</strong>,
             sedangkan lokasi dengan jumlah aset terbanyak adalah <strong>{{ $lokasiTerbanyak }}</strong>.
             Data ini menunjukkan distribusi aset yang merata di berbagai unit kerja, dengan fokus utama pada
-            pemeliharaan perangkat yang mendukung operasional rumah sakit.
+            pemeliharaan sarana dan prasarana yang mendukung operasional sekolah.
         </p>
     </div>
 

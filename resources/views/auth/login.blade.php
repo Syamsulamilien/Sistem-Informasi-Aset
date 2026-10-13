@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>RSU PKU MUHAMMADIYAH BANTUL - Login</title>
+        <title>SIASET - Login</title>
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800&display=swap" rel="stylesheet" />
         <script src="https://cdn.tailwindcss.com"></script>
@@ -74,18 +74,18 @@
                         <div class="mb-12">
                             <div class="flex items-center space-x-4">
                                 <div class="w-16 h-16 bg-white/20 backdrop-blur-lg rounded-2xl flex items-center justify-center shadow-2xl border border-white/30">
-                                    <img src="{{ asset('images/logo.png') }}" alt="Logo" class="w-12 h-12 object-contain">
+                                    <img src="{{ asset('images/logo.png') }}" alt="Logo" class="w-12 h-12 object-contain" width="48" height="48" loading="eager" decoding="sync">
                                 </div>
-                                <span class="text-3xl font-bold drop-shadow-lg">RSU PKU MUHAMMADIYAH BANTUL</span>
+                                <span class="text-3xl font-bold drop-shadow-lg">SMK KESEHATAN BINATAMA</span>
                             </div>
                         </div>
 
                         <!-- Welcome Text -->
                         <div>
                             <h1 class="text-6xl font-extrabold mb-6 leading-tight drop-shadow-lg">
-                                Asset,<br/>
-                                <span class="bg-gradient-to-r from-white to-cyan-100 bg-clip-text text-transparent">
-                                    Monitoring
+                                SIASET<br/>
+                                <span class="bg-gradient-to-r from-white to-cyan-100 bg-clip-text text-transparent text-4xl">
+                                    Sistem Informasi Aset
                                 </span>
                             </h1>
                             <p class="text-xl text-white/95 leading-relaxed font-medium mb-10 drop-shadow-md">
@@ -128,10 +128,10 @@
                         <div class="lg:hidden text-center mb-8">
                             <div class="flex flex-col items-center justify-center mb-6">
                                 <div class="w-16 h-16 bg-white/20 backdrop-blur-lg rounded-2xl flex items-center justify-center shadow-xl border border-white/30 mb-3">
-                                    <img src="{{ asset('images/logo.png') }}" alt="Logo" class="w-12 h-12 object-contain">
+                                    <img src="{{ asset('images/logo.png') }}" alt="Logo" class="w-12 h-12 object-contain" width="48" height="48" loading="eager" decoding="sync">
                                 </div>
                                 <h2 class="text-xl font-bold text-white drop-shadow-lg leading-tight">
-                                    RSU PKU MUHAMMADIYAH<br/>BANTUL
+                                    SMK KESEHATAN<br/>BINATAMA
                                 </h2>
                             </div>
                             <h1 class="text-3xl font-bold text-white drop-shadow-lg mb-2">Welcome Back!</h1>

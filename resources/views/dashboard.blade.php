@@ -1,23 +1,11 @@
 <x-app-layout>
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
 
-        {{-- ===== Top bar: sapaan user ===== --}}
-        <div class="flex justify-end pt-12 lg:pt-0 mb-2">
-            <div class="flex items-center gap-3">
-                <div class="text-right leading-tight">
-                    <p class="text-sm text-gray-700">Hallo, <span class="font-bold text-gray-900">{{ Auth::user()->name }}</span></p>
-                    <p class="text-[10px] text-gray-500 capitalize">{{ Auth::user()->role }}</p>
-                </div>
-                <div class="w-9 h-9 rounded-full bg-gradient-to-br from-pink-400 to-orange-300 flex items-center justify-center text-white text-sm font-bold">
-                    {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
-                </div>
-            </div>
-        </div>
 
         {{-- ===== Judul ===== --}}
         <div class="mb-6">
             <h1 class="text-3xl font-extrabold text-gray-900">Dashboard Overview</h1>
-            <p class="text-[11px] text-gray-500 mt-1">Sistem Pendataan dan Pencarian Aset SMK Kesehatan Bosatama</p>
+            <p class="text-[11px] text-gray-500 mt-1">Sistem Pendataan dan Pencarian Aset SMK Kesehatan Binatama</p>
         </div>
 
         {{-- ===== Baris 1: kartu statistik ===== --}}

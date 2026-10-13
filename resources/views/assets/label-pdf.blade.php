@@ -69,8 +69,8 @@
                 </td>
                 <td class="info-col">
                     <div class="header">
-                        RSU PKU Muh Bantul<br>
-                        <span style="font-size:5.5pt; font-weight:normal;">Aset IT</span>
+                        SMK Kesehatan Binatama<br>
+                        <span style="font-size:5.5pt; font-weight:normal;">SIASET</span>
                     </div>
                     <div class="code">{{ $asset->asset_code }}</div>
                     <div class="detail"><strong>{{ $asset->assetType->name ?? 'N/A' }}</strong></div>

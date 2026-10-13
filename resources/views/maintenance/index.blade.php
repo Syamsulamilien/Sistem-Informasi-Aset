@@ -12,18 +12,6 @@
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-        {{-- ===== Top bar: sapaan user ===== --}}
-        <div class="flex justify-end pt-12 lg:pt-0 mb-4">
-            <div class="flex items-center gap-3">
-                <div class="text-right leading-tight">
-                    <p class="text-base text-gray-700">Hallo, <span class="font-bold text-gray-900">{{ Auth::user()->name }}</span></p>
-                    <p class="text-xs text-gray-500 capitalize mt-0.5">{{ Auth::user()->role }}</p>
-                </div>
-                <div class="w-11 h-11 rounded-full bg-gradient-to-br from-pink-400 to-orange-300 flex items-center justify-center text-white text-base font-bold">
-                    {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
-                </div>
-            </div>
-        </div>
 
         {{-- ===== Judul + tombol tambah ===== --}}
         <div class="mb-6 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">

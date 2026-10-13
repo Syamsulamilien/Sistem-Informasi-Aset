@@ -1,3 +1,33 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Sidebar Collapsed Styles (Desktop) */
+@media (min-width: 1024px) {
+    html.sidebar-collapsed #sidebar {
+        width: 5rem !important;
+    }
+    html.sidebar-collapsed #main-content-wrapper {
+        margin-left: 5rem !important;
+    }
+    html.sidebar-collapsed .sidebar-text,
+    html.sidebar-collapsed .sidebar-brand-text {
+        display: none !important;
+    }
+    html.sidebar-collapsed .sidebar-item {
+        justify-content: center !important;
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
+        margin-left: 0.5rem !important;
+        margin-right: 0.5rem !important;
+    }
+    html.sidebar-collapsed .sidebar-item svg {
+        margin-right: 0 !important;
+    }
+    html.sidebar-collapsed .sidebar-header-expanded {
+        display: none !important;
+    }
+    html.sidebar-collapsed .sidebar-header-collapsed {
+        display: flex !important;
+    }
+}
