@@ -24,7 +24,7 @@ class SecurityHeaders
         // Header proteksi MIME type sniffing
         $response->headers->set('X-Content-Type-Options', 'nosniff');
 
-        // Header proteksi Reflected XSS
+        // Header proteksi Reflected XSS (legacy browsers)
         $response->headers->set('X-XSS-Protection', '1; mode=block');
 
         // Header referensi kebijakan URL
@@ -32,6 +32,24 @@ class SecurityHeaders
 
         // Proteksi akses fitur browser sensitif
         $response->headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+
+        // Content Security Policy — cegah inline script injeksi XSS
+        $response->headers->set('Content-Security-Policy',
+            "default-src 'self'; " .
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' cdn.jsdelivr.net cdnjs.cloudflare.com unpkg.com; " .
+            "style-src 'self' 'unsafe-inline' cdn.jsdelivr.net cdnjs.cloudflare.com fonts.googleapis.com unpkg.com; " .
+            "font-src 'self' fonts.gstatic.com cdnjs.cloudflare.com data:; " .
+            "img-src 'self' data: blob: *; " .
+            "connect-src 'self'; " .
+            "frame-ancestors 'self'; " .
+            "form-action 'self'; " .
+            "base-uri 'self';"
+        );
+
+        // HSTS — paksa HTTPS (aktif otomatis saat production pakai HTTPS)
+        if ($request->isSecure()) {
+            $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+        }
 
         return $response;
     }

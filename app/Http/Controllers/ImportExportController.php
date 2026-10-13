@@ -49,9 +49,15 @@ class ImportExportController extends Controller
             
             return redirect()->route('assets.index')
                 ->with('success', 'Data berhasil diimport!');
+        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+            $failures = $e->failures();
+            $errors = collect($failures)->map(fn($f) => "Baris {$f->row()}: " . implode(', ', $f->errors()))->implode(' | ');
+            return redirect()->back()->with('error', 'Import gagal validasi data: ' . $errors);
         } catch (\Exception $e) {
+            // Jangan bocorkan detail exception ke user (mencegah information disclosure)
+            \Log::error('Import Excel gagal: ' . $e->getMessage());
             return redirect()->back()
-                ->with('error', 'Import gagal: ' . $e->getMessage());
+                ->with('error', 'Import gagal. Pastikan format file sesuai template dan data valid. Hubungi administrator jika masalah berlanjut.');
         }
     }
 

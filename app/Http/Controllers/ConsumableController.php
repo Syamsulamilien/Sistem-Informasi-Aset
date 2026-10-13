@@ -47,7 +47,7 @@ class ConsumableController extends Controller
             'unit' => 'required|string|max:50',
             'description' => 'nullable|string',
             'location_id' => 'nullable|exists:locations,id',
-            'photo' => 'nullable|image|max:2048',
+            'photo' => 'nullable|file|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
         if ($request->hasFile('photo')) {
@@ -99,7 +99,7 @@ class ConsumableController extends Controller
             'unit' => 'required|string|max:50',
             'description' => 'nullable|string',
             'location_id' => 'nullable|exists:locations,id',
-            'photo' => 'nullable|image|max:2048',
+            'photo' => 'nullable|file|mimes:jpg,jpeg,png,webp|max:2048',
             'remove_photo' => 'nullable|boolean',
         ]);
 

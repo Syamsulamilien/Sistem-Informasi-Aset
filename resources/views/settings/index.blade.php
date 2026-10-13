@@ -65,23 +65,40 @@
                         <p class="text-xs text-gray-500 mt-0.5">Kosongkan jika Anda tidak ingin mengubah password akun saat ini</p>
                     </div>
 
+                    @error('current_password')
+                        <div class="flex items-center gap-2 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">
+                            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            {{ $message }}
+                        </div>
+                    @enderror
+
+                    <!-- Field Password Saat Ini -->
+                    <div>
+                        <label for="current_password" class="block text-sm font-semibold text-gray-700 mb-2">Password Saat Ini</label>
+                        <input type="password" id="current_password" name="current_password" autocomplete="current-password"
+                               class="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 text-sm placeholder-gray-400 transition-colors shadow-sm @error('current_password') border-red-400 @enderror"
+                               placeholder="Masukkan password saat ini untuk ganti password">
+                        <p class="text-[11px] text-gray-400 mt-1">Wajib diisi hanya jika Anda ingin mengubah password</p>
+                    </div>
+
                     <!-- Row 2 Kolom: Password Baru & Konfirmasi Password Baru -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label for="password" class="block text-sm font-semibold text-gray-700 mb-2">Password Baru</label>
                             <input type="password" id="password" name="password" autocomplete="new-password"
                                    class="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 text-sm placeholder-gray-400 transition-colors shadow-sm"
-                                   placeholder="Minimal 8 Karakter">
+                                   placeholder="Min. 8 karakter, huruf besar+kecil+angka">
                         </div>
 
                         <div>
                             <label for="password_confirmation" class="block text-sm font-semibold text-gray-700 mb-2">Konfirmasi Password Baru</label>
                             <input type="password" id="password_confirmation" name="password_confirmation" autocomplete="new-password"
                                    class="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 text-sm placeholder-gray-400 transition-colors shadow-sm"
-                                   placeholder="ketik ulang password">
+                                   placeholder="Ketik ulang password baru">
                         </div>
                     </div>
                 </div>
+
 
                 <!-- Tombol Aksi Batal & Simpan -->
                 <div class="mt-8 pt-4 flex items-center justify-end gap-3">

@@ -107,7 +107,7 @@ class AssetController extends Controller
         'masa_pemakaian' => 'nullable|integer|min:0',
         'masa_pemakaian_satuan' => 'nullable|in:Bulan,Tahun',
         'warranty_expiry_date' => 'nullable|date',
-        'photo' => 'nullable|image|max:2048',
+        'photo' => 'nullable|file|mimes:jpg,jpeg,png,webp|max:2048',
         'invoice_number' => 'nullable|string|max:255',
 
         // ✅ UPDATE: Validasi Maintenance dengan teknisi manual (Semua Optional)
@@ -292,7 +292,7 @@ private function createMaintenanceSchedules(Asset $asset, Request $request)
             'masa_pemakaian' => 'nullable|integer|min:0',
             'masa_pemakaian_satuan' => 'nullable|in:Bulan,Tahun',
             'warranty_expiry_date' => 'nullable|date',
-            'photo' => 'nullable|image|max:2048',
+            'photo' => 'nullable|file|mimes:jpg,jpeg,png,webp|max:2048',
             'remove_photo' => 'nullable|boolean',
             'invoice_number' => 'nullable|string|max:255',
         ]);

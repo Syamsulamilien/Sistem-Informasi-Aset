@@ -14,7 +14,7 @@ class User extends Authenticatable
         'username',
         'email',
         'password',
-        'role',
+        'role', // role selalu di-set eksplisit via array di controller, bukan mass assignment
     ];
 
     protected $hidden = [
