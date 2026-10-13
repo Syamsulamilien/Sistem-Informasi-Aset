@@ -69,17 +69,17 @@ class AssetController extends Controller
 
     public function create()
     {
+        $this->authorize('create', Asset::class);
+
         $locations = Location::all();
         $assetTypes = AssetType::active()->orderBy('name')->get();
 
         return view('assets.create', compact('locations', 'assetTypes'));
     }
 
-// Update method store() di AssetController.php
-// Ganti bagian validasi maintenance dengan ini:
-
-public function store(Request $request)
-{
+    public function store(Request $request)
+    {
+        $this->authorize('create', Asset::class);
     $validated = $request->validate([
         'asset_type_id' => 'required|exists:asset_types,id',
         'kategori' => 'required|string',
@@ -252,6 +252,8 @@ private function createMaintenanceSchedules(Asset $asset, Request $request)
 
     public function edit(Asset $asset)
     {
+        $this->authorize('update', $asset);
+
         $locations = Location::all();
         $assetTypes = AssetType::active()->orderBy('name')->get();
 
@@ -260,6 +262,8 @@ private function createMaintenanceSchedules(Asset $asset, Request $request)
 
     public function update(Request $request, Asset $asset)
     {
+        $this->authorize('update', $asset);
+
         $validated = $request->validate([
             'asset_type_id' => 'required|exists:asset_types,id',
             'asset_code' => 'required|unique:assets,asset_code,' . $asset->id,
@@ -337,6 +341,8 @@ private function createMaintenanceSchedules(Asset $asset, Request $request)
 
     public function destroy(Asset $asset)
     {
+        $this->authorize('delete', $asset);
+
         if ($asset->photo) {
             Storage::disk('public')->delete($asset->photo);
         }
@@ -421,6 +427,8 @@ private function createMaintenanceSchedules(Asset $asset, Request $request)
 
     public function generateCode(Request $request)
     {
+        $this->authorize('create', Asset::class);
+
         $assetTypeId = $request->input('asset_type_id');
 
         if (!$assetTypeId) {

@@ -41,9 +41,9 @@ class UserController extends Controller
         User::create([
             'name' => $request->name,
             'username' => $request->username,
-            'email' => $request->username . '@local.dev',
+            'email' => $request->username . '@smkbinatama.sch.id',
             'password' => Hash::make($request->password),
-            'role' => $request->role, // ✅ TAMBAHAN: Ambil dari input
+            'role' => $request->role,
         ]);
 
         return redirect()->route('users.index')
@@ -93,8 +93,8 @@ class UserController extends Controller
         $data = [
             'name' => $request->name,
             'username' => $request->username,
-            'email' => $request->username . '@local.dev',
-            'role' => $request->role, // ✅ TAMBAHAN: Update role
+            'email' => $request->username . '@smkbinatama.sch.id',
+            'role' => $request->role,
         ];
 
         // Update password hanya jika diisi

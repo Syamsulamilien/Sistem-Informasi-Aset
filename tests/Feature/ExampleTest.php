@@ -14,6 +14,13 @@ class ExampleTest extends TestCase
     {
         $response = $this->get('/');
 
-        $response->assertStatus(200);
+        $response->assertRedirect(route('login'));
+    }
+
+    public function test_unknown_endpoint_redirects_to_login(): void
+    {
+        $response = $this->get('/unknown-random-endpoint');
+
+        $response->assertRedirect(route('login'));
     }
 }

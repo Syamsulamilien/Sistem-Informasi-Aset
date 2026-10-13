@@ -8,9 +8,12 @@ use App\Models\Location;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class ConsumableController extends Controller
 {
+    use AuthorizesRequests;
+
     public function index(Request $request)
     {
         $query = Consumable::with('location');
@@ -26,12 +29,15 @@ class ConsumableController extends Controller
 
     public function create()
     {
+        $this->authorize('create', Consumable::class);
+
         $locations = Location::all();
         return view('consumables.create', compact('locations'));
     }
 
     public function store(Request $request)
     {
+        $this->authorize('create', Consumable::class);
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'kategori' => 'nullable|string|max:255',
@@ -75,12 +81,16 @@ class ConsumableController extends Controller
 
     public function edit(Consumable $consumable)
     {
+        $this->authorize('update', $consumable);
+
         $locations = Location::all();
         return view('consumables.edit', compact('consumable', 'locations'));
     }
 
     public function update(Request $request, Consumable $consumable)
     {
+        $this->authorize('update', $consumable);
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'kategori' => 'nullable|string|max:255',
@@ -106,6 +116,8 @@ class ConsumableController extends Controller
 
     public function destroy(Consumable $consumable)
     {
+        $this->authorize('delete', $consumable);
+
         if ($consumable->photo) {
             Storage::disk('public')->delete($consumable->photo);
         }
@@ -115,11 +127,15 @@ class ConsumableController extends Controller
 
     public function transactionForm(Consumable $consumable)
     {
+        $this->authorize('transaction', $consumable);
+
         return view('consumables.transaction', compact('consumable'));
     }
 
     public function storeTransaction(Request $request, Consumable $consumable)
     {
+        $this->authorize('transaction', $consumable);
+
         $validated = $request->validate([
             'type' => 'required|in:in,out',
             'quantity' => 'required|integer|min:1',

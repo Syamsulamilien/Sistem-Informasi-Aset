@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\AssetType;
 use Illuminate\Http\Request;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class AssetTypeController extends Controller
 {
+    use AuthorizesRequests;
+
     public function index()
     {
         $assetTypes = AssetType::withCount('assets')->latest()->paginate(15);
@@ -15,12 +18,15 @@ class AssetTypeController extends Controller
 
     public function create()
     {
+        $this->authorize('create', AssetType::class);
+
         $kategoriOptions = AssetType::KATEGORI_OPTIONS;
         return view('asset-types.create', compact('kategoriOptions'));
     }
 
     public function store(Request $request)
     {
+        $this->authorize('create', AssetType::class);
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:asset_types',
             'code_prefix' => 'required|string|max:10|unique:asset_types|regex:/^[A-Z0-9]+$/',
@@ -44,12 +50,16 @@ class AssetTypeController extends Controller
 
     public function edit(AssetType $assetType)
     {
+        $this->authorize('update', $assetType);
+
         $kategoriOptions = AssetType::KATEGORI_OPTIONS;
         return view('asset-types.edit', compact('assetType', 'kategoriOptions'));
     }
 
     public function update(Request $request, AssetType $assetType)
     {
+        $this->authorize('update', $assetType);
+
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:asset_types,name,' . $assetType->id,
             'code_prefix' => 'required|string|max:10|unique:asset_types,code_prefix,' . $assetType->id . '|regex:/^[A-Z0-9]+$/',
@@ -69,6 +79,8 @@ class AssetTypeController extends Controller
 
     public function destroy(AssetType $assetType)
     {
+        $this->authorize('delete', $assetType);
+
         if ($assetType->assets()->count() > 0) {
             return redirect()->route('asset-types.index')
                 ->with('error', 'Jenis aset tidak dapat dihapus karena masih digunakan oleh ' . $assetType->assets()->count() . ' aset!');

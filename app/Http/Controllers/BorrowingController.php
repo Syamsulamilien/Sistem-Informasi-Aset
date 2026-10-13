@@ -5,14 +5,17 @@ namespace App\Http\Controllers;
 use App\Models\Borrowing;
 use App\Models\Asset;
 use Illuminate\Http\Request;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class BorrowingController extends Controller
 {
+    use AuthorizesRequests;
+
     public function index(Request $request)
     {
         $query = Borrowing::with(['asset', 'user']);
 
-        // Jika user bukan admin/laboran, hanya tampilkan miliknya
+        // Jika user bukan admin/laboran/teknisi, hanya tampilkan miliknya
         if (auth()->user()->isUserBiasa()) {
             $query->where('user_id', auth()->id());
         }
@@ -27,6 +30,8 @@ class BorrowingController extends Controller
 
     public function create()
     {
+        $this->authorize('create', Borrowing::class);
+
         // Hanya aset aktif yang bisa dipinjam
         $assets = Asset::where('status', 'Aktif')->get();
         return view('borrowings.create', compact('assets'));
@@ -34,6 +39,7 @@ class BorrowingController extends Controller
 
     public function store(Request $request)
     {
+        $this->authorize('create', Borrowing::class);
         $validated = $request->validate([
             'asset_id' => 'required|exists:assets,id',
             'borrow_date' => 'required|date|after_or_equal:today',
@@ -57,17 +63,14 @@ class BorrowingController extends Controller
 
     public function edit(Borrowing $borrowing)
     {
-        if (auth()->user()->isUserBiasa()) {
-            abort(403);
-        }
+        $this->authorize('update', $borrowing);
+
         return view('borrowings.edit', compact('borrowing'));
     }
 
     public function update(Request $request, Borrowing $borrowing)
     {
-        if (auth()->user()->isUserBiasa()) {
-            abort(403);
-        }
+        $this->authorize('update', $borrowing);
 
         $validated = $request->validate([
             'status' => 'required|in:pending,approved,rejected,borrowed,returned',
@@ -86,9 +89,7 @@ class BorrowingController extends Controller
 
     public function destroy(Borrowing $borrowing)
     {
-        if (auth()->user()->isUserBiasa()) {
-            abort(403);
-        }
+        $this->authorize('delete', $borrowing);
 
         $borrowing->delete();
         return redirect()->route('borrowings.index')->with('success', 'Data peminjaman berhasil dihapus!');

@@ -7,9 +7,11 @@ use App\Models\Asset;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class MaintenanceController extends Controller
 {
+    use AuthorizesRequests;
     public function index(Request $request)
     {
         $query = MaintenanceRecord::with(['asset.assetType', 'technician']);
@@ -94,6 +96,8 @@ class MaintenanceController extends Controller
 
     public function create()
     {
+        $this->authorize('create', MaintenanceRecord::class);
+
         $assets = Asset::with('assetType')
             ->orderBy('asset_code')
             ->get()
@@ -111,6 +115,8 @@ class MaintenanceController extends Controller
 
     public function store(Request $request)
     {
+        $this->authorize('create', MaintenanceRecord::class);
+
         $validated = $request->validate([
             'asset_id' => 'required|exists:assets,id',
             'schedule_date' => 'required|date',
@@ -140,6 +146,8 @@ class MaintenanceController extends Controller
 
     public function edit(MaintenanceRecord $maintenance)
     {
+        $this->authorize('update', $maintenance);
+
         $assets = Asset::with('assetType')
             ->orderBy('asset_code')
             ->get()
@@ -157,6 +165,8 @@ class MaintenanceController extends Controller
 
     public function update(Request $request, MaintenanceRecord $maintenance)
     {
+        $this->authorize('update', $maintenance);
+
         $validated = $request->validate([
             'asset_id' => 'required|exists:assets,id',
             'schedule_date' => 'required|date',
@@ -179,6 +189,8 @@ class MaintenanceController extends Controller
 
     public function destroy(MaintenanceRecord $maintenance)
     {
+        $this->authorize('delete', $maintenance);
+
         $maintenance->delete();
 
         return redirect()->route('maintenance.index')
@@ -216,6 +228,8 @@ class MaintenanceController extends Controller
 
     public function markInProgress(MaintenanceRecord $maintenance)
     {
+        $this->authorize('markInProgress', $maintenance);
+
         $maintenance->update([
             'status' => 'Proses',
             'performed_date' => $maintenance->performed_date ?? now(),
@@ -227,6 +241,8 @@ class MaintenanceController extends Controller
 
     public function complete(MaintenanceRecord $maintenance)
     {
+        $this->authorize('complete', $maintenance);
+
         $maintenance->update([
             'status' => 'Completed',
             'performed_date' => $maintenance->performed_date ?? now(),

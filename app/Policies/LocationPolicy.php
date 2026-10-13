@@ -19,8 +19,8 @@ class LocationPolicy
 
     public function create(User $user): bool
     {
-        // ✅ Admin dan Viewer bisa create Location
-        return in_array($user->role, ['admin', 'viewer']);
+        // ❌ Hanya Admin yang bisa menambah Lokasi
+        return $user->role === 'admin';
     }
 
     public function update(User $user, Location $location): bool

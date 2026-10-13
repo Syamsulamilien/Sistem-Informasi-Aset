@@ -19,8 +19,8 @@ class MaintenancePolicy
 
     public function create(User $user): bool
     {
-        // ✅ Admin, Teknisi, dan Viewer bisa create Maintenance
-        return in_array($user->role, ['admin', 'teknisi', 'viewer']);
+        // ✅ Hanya Admin dan Teknisi yang bisa create Maintenance
+        return in_array($user->role, ['admin', 'teknisi']);
     }
 
     public function update(User $user, MaintenanceRecord $maintenance): bool
