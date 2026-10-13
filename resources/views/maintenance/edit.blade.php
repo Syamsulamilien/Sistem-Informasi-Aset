@@ -1,21 +1,28 @@
-<x-app-layout>
-    <x-slot name="header">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h2 style="font-weight: 600; font-size: 20px; color: #1f2937;">
-                {{ __('Edit Record Maintenance') }}
-            </h2>
-            <a href="{{ route('maintenance.index') }}" style="background-color: #d1d5db; color: #374151; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; transition: background-color 0.2s;"
-               onmouseover="this.style.backgroundColor='#9ca3af'"
-               onmouseout="this.style.backgroundColor='#d1d5db'">
-                ← Kembali
+<x-app-layout :title="'Edit Record Maintenance'">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <!-- Header -->
+        <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <a href="{{ route('maintenance.index') }}" class="p-2 text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded-xl border border-gray-200 transition-colors shadow-sm" title="Kembali">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                </a>
+                <div>
+                    <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Edit Record Maintenance</h1>
+                    <p class="text-xs sm:text-sm text-gray-500 mt-1">Perbarui data atau status pemeliharaan aset</p>
+                </div>
+            </div>
+            <a href="{{ route('maintenance.index') }}" class="inline-flex items-center justify-center px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-sm font-semibold transition-colors">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Kembali
             </a>
         </div>
-    </x-slot>
 
-    <div style="padding-top: 48px; padding-bottom: 48px;">
-        <div style="max-width: 42rem; margin-left: auto; margin-right: auto; padding-left: 24px; padding-right: 24px;">
-            <div style="background-color: white; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-radius: 8px;">
-                <div style="padding: 24px;">
+        <div class="bg-white overflow-hidden shadow-sm rounded-xl border border-gray-200">
+            <div class="p-6">
                     <form method="POST" action="{{ route('maintenance.update', $maintenance) }}">
                         @csrf
                         @method('PATCH')
@@ -207,7 +214,6 @@
                 </div>
             </div>
         </div>
-    </div>
 
     <script>
         // Auto-set performed date ketika status diubah ke Completed

@@ -31,3 +31,48 @@
         display: flex !important;
     }
 }
+
+/* Table Header Sorting Styles */
+th.sortable-header {
+    cursor: pointer !important;
+    user-select: none;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+th.sortable-header:hover {
+    background-color: rgba(239, 246, 255, 0.7) !important;
+    color: #1d4ed8 !important;
+}
+
+th.sortable-header:hover .sort-arrows-wrapper svg {
+    color: #3b82f6 !important;
+}
+
+th.sortable-header.sorted-asc,
+th.sortable-header.sorted-desc {
+    background-color: rgba(239, 246, 255, 0.9) !important;
+    color: #1d4ed8 !important;
+}
+
+th.sortable-header.sorted-asc .sort-asc {
+    color: #2563eb !important;
+    opacity: 1 !important;
+    transform: scale(1.2);
+}
+
+th.sortable-header.sorted-asc .sort-desc {
+    color: #cbd5e1 !important;
+    opacity: 0.25 !important;
+}
+
+th.sortable-header.sorted-desc .sort-desc {
+    color: #2563eb !important;
+    opacity: 1 !important;
+    transform: scale(1.2);
+}
+
+th.sortable-header.sorted-desc .sort-asc {
+    color: #cbd5e1 !important;
+    opacity: 0.25 !important;
+}
+

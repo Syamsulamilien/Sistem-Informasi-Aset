@@ -12,6 +12,7 @@ use App\Http\Controllers\MaintenanceController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ConsumableController;
 use App\Http\Controllers\BorrowingController;
+use App\Http\Controllers\SettingController;
 
 // ==========================================
 // 🌐 PUBLIC ROUTES (Bebas Login, Dilindungi Throttle)
@@ -30,9 +31,13 @@ Route::get('/asset/{assetCode}/info', [AssetController::class, 'publicInfo'])
 Route::middleware(['auth', 'verified'])->group(function () {
 
     // ------------------------------------------
-    // 1. DASHBOARD & PROFIL (Semua Role)
+    // 1. DASHBOARD & SETTINGS (Semua Role)
     // ------------------------------------------
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Settings terpadu (Profil, Ganti Password, & Kelola User khusus Admin)
+    Route::get('/settings', [SettingController::class, 'index'])->name('settings');
+    Route::match(['put', 'patch'], '/settings/profile', [SettingController::class, 'updateProfile'])->name('settings.update');
 
     Route::prefix('profile')->name('profile.')->group(function () {
         Route::get('/', [ProfileController::class, 'edit'])->name('edit');
@@ -165,6 +170,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         });
 
         // Manajemen User (Akun dibuat & dikelola sepenuhnya oleh Admin)
+        Route::patch('/users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password')->whereNumber('user');
         Route::resource('users', UserController::class)->except(['show']);
     });
 

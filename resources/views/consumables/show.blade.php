@@ -1,29 +1,39 @@
 <x-app-layout :title="'Detail ' . $consumable->name">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div class="mb-8 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <!-- Header -->
+        <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div class="flex items-center gap-3">
-                <a href="{{ route('consumables.index') }}" class="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors">
-                    <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <a href="{{ route('consumables.index') }}" class="p-2 text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded-xl border border-gray-200 transition-colors shadow-sm" title="Kembali">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                     </svg>
-                    Kembali
                 </a>
+                <div>
+                    <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">{{ $consumable->name }}</h1>
+                    <p class="text-xs sm:text-sm text-gray-500 mt-1">Kategori: {{ $consumable->kategori ?? 'Umum' }} • Satuan: {{ $consumable->unit }}</p>
+                </div>
             </div>
-            <div class="flex gap-2">
+            <div class="flex flex-wrap items-center gap-2">
                 @if(Auth::user()->isAdmin() || Auth::user()->isLaboran())
-                    <a href="{{ route('consumables.transaction', $consumable) }}" class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium shadow-sm">
+                    <a href="{{ route('consumables.transaction', $consumable) }}" class="inline-flex items-center justify-center px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl text-sm font-semibold shadow-sm transition-all active:scale-[0.98]">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
                         </svg>
                         Transaksi Stok
                     </a>
-                    <a href="{{ route('consumables.edit', $consumable) }}" class="inline-flex items-center px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors text-sm font-medium shadow-sm">
+                    <a href="{{ route('consumables.edit', $consumable) }}" class="inline-flex items-center justify-center px-4 py-2.5 bg-yellow-600 hover:bg-yellow-700 text-white rounded-xl text-sm font-semibold shadow-sm transition-all active:scale-[0.98]">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                         </svg>
                         Edit
                     </a>
                 @endif
+                <a href="{{ route('consumables.index') }}" class="inline-flex items-center justify-center px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-sm font-semibold transition-colors">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Kembali
+                </a>
             </div>
         </div>
 

@@ -1,22 +1,33 @@
 <x-app-layout :title="'Detail Pemeliharaan ' . ($maintenance->asset->asset_code ?? '')">
-    <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Maintenance Record Details') }}
-            </h2>
-            <div class="flex gap-2">
-                <a href="{{ route('maintenance.edit', $maintenance) }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <!-- Header -->
+        <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <a href="{{ route('maintenance.index') }}" class="p-2 text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded-xl border border-gray-200 transition-colors shadow-sm" title="Kembali">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                </a>
+                <div>
+                    <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Detail Maintenance</h1>
+                    <p class="text-xs sm:text-sm text-gray-500 mt-1">Aset: {{ $maintenance->asset->asset_code ?? '-' }} • {{ $maintenance->asset->brand ?? '' }}</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <a href="{{ route('maintenance.edit', $maintenance) }}" class="inline-flex items-center justify-center px-4 py-2.5 bg-yellow-600 hover:bg-yellow-700 text-white rounded-xl text-sm font-semibold shadow-sm transition-all active:scale-[0.98]">
+                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                    </svg>
                     Edit
                 </a>
-                <a href="{{ route('maintenance.index') }}" class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg">
-                    ← Back
+                <a href="{{ route('maintenance.index') }}" class="inline-flex items-center justify-center px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-sm font-semibold transition-colors">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Kembali
                 </a>
             </div>
         </div>
-    </x-slot>
-
-    <div class="py-12">
-        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
             
             <!-- Status Badge -->
             <div class="mb-6">
@@ -221,14 +232,39 @@
                     </a>
                 </div>
 
-                <form action="{{ route('maintenance.destroy', $maintenance) }}" method="POST" class="w-full md:w-auto" onsubmit="return confirm('Are you sure you want to delete this maintenance record?')">
+                <form id="deleteMaintenanceForm" action="{{ route('maintenance.destroy', $maintenance) }}" method="POST" class="w-full md:w-auto">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="w-full md:w-auto bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition">
-                        🗑️ Delete Record
+                    <button type="button" onclick="confirmDeleteMaintenance()" class="w-full md:w-auto bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition font-medium">
+                        🗑️ Hapus Record
                     </button>
                 </form>
             </div>
         </div>
-    </div>
+
+    <script>
+        function confirmDeleteMaintenance() {
+            Swal.fire({
+                title: 'Konfirmasi Hapus Maintenance',
+                text: 'Apakah Anda yakin ingin menghapus record maintenance ini? Tindakan ini tidak dapat dibatalkan.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Hapus',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#e11d48',
+                cancelButtonColor: '#94a3b8',
+                reverseButtons: true,
+                customClass: {
+                    popup: 'rounded-3xl shadow-2xl border border-gray-100 font-sans p-6',
+                    title: 'text-lg font-black text-gray-900',
+                    confirmButton: 'rounded-xl font-bold px-5 py-2.5 shadow-md shadow-rose-500/20 text-sm',
+                    cancelButton: 'rounded-xl font-semibold px-5 py-2.5 text-sm'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('deleteMaintenanceForm').submit();
+                }
+            });
+        }
+    </script>
 </x-app-layout>

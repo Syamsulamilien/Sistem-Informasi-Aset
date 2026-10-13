@@ -1,13 +1,13 @@
 <x-app-layout>
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <!-- Header -->
-        <div class="mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-                <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Daftar Unit</h1>
-                <p class="text-sm text-gray-600 mt-1">Kelola unit/ruangan SMK Kesehatan Binatama</p>
+                <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Daftar Unit</h1>
+                <p class="text-xs sm:text-sm text-gray-500 mt-1">Kelola unit/ruangan SMK Kesehatan Binatama</p>
             </div>
             @can('create', App\Models\Location::class)
-                <a href="{{ route('locations.create') }}" class="inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm">
+                <a href="{{ route('locations.create') }}" class="inline-flex items-center justify-center px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold shadow-sm transition-all active:scale-[0.98]">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                     </svg>
@@ -285,34 +285,11 @@
         </div>
     </div>
 
-    <!-- Delete Modal -->
-    <div id="deleteModal" style="display: none;" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-xl max-w-md w-full">
-            <div class="p-6">
-                <div class="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full mb-4">
-                    <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-                    </svg>
-                </div>
-                <h3 class="text-lg font-semibold text-gray-900 text-center mb-2">Konfirmasi Hapus</h3>
-                <p class="text-sm text-gray-600 text-center mb-6">
-                    Apakah Anda yakin ingin menghapus unit <strong id="deleteLocationName"></strong>? Tindakan ini tidak dapat dibatalkan.
-                </p>
-                <form id="deleteForm" method="POST">
-                    @csrf
-                    @method('DELETE')
-                    <div class="flex gap-3">
-                        <button type="button" onclick="closeDeleteModal()" class="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium">
-                            Batal
-                        </button>
-                        <button type="submit" class="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium">
-                            Ya, Hapus
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+    <!-- Form Delete Tersembunyi untuk SweetAlert2 -->
+    <form id="deleteForm" method="POST" class="hidden">
+        @csrf
+        @method('DELETE')
+    </form>
 
     <!-- Import Modal -->
     <div id="importModal" style="display: none;" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
@@ -349,17 +326,31 @@
     </div>
 
     <script>
-        // Delete Modal Functions
+        // Delete Modal via SweetAlert2
         function openDeleteModal(locationId, locationName) {
-            document.getElementById('deleteLocationName').textContent = locationName;
-            document.getElementById('deleteForm').action = `/locations/${locationId}`;
-            document.getElementById('deleteModal').style.display = 'flex';
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeDeleteModal() {
-            document.getElementById('deleteModal').style.display = 'none';
-            document.body.style.overflow = '';
+            Swal.fire({
+                title: 'Konfirmasi Hapus Lokasi/Unit',
+                html: `Apakah Anda yakin ingin menghapus unit <b>${locationName}</b>?<br><span class="text-xs text-gray-500 mt-1 block">Tindakan ini tidak dapat dibatalkan.</span>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Hapus',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#e11d48',
+                cancelButtonColor: '#94a3b8',
+                reverseButtons: true,
+                customClass: {
+                    popup: 'rounded-3xl shadow-2xl border border-gray-100 font-sans p-6',
+                    title: 'text-lg font-black text-gray-900',
+                    confirmButton: 'rounded-xl font-bold px-5 py-2.5 shadow-md shadow-rose-500/20 text-sm',
+                    cancelButton: 'rounded-xl font-semibold px-5 py-2.5 text-sm'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const form = document.getElementById('deleteForm');
+                    form.action = `/locations/${locationId}`;
+                    form.submit();
+                }
+            });
         }
 
         // Import Modal Functions
@@ -373,11 +364,6 @@
             document.body.style.overflow = '';
         }
 
-        // Event listener untuk close modal saat klik di luar
-        document.getElementById('deleteModal').addEventListener('click', function(e) {
-            if (e.target === this) closeDeleteModal();
-        });
-
         document.getElementById('importModal').addEventListener('click', function(e) {
             if (e.target === this) closeImportModal();
         });
@@ -385,7 +371,6 @@
         // Close modal dengan tombol Escape
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
-                closeDeleteModal();
                 closeImportModal();
             }
         });

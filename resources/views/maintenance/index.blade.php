@@ -10,17 +10,16 @@
         $labelClass = 'block text-sm font-bold text-gray-900 mb-2';
     @endphp
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
 
         {{-- ===== Judul + tombol tambah ===== --}}
-        <div class="mb-6 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+        <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-                <h1 class="text-4xl font-extrabold text-gray-900">Maintenance</h1>
-                <p class="text-sm text-gray-500 mt-1.5">Kelola dan pantau riwayat pemeliharaan asset</p>
+                <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Maintenance</h1>
+                <p class="text-xs sm:text-sm text-gray-500 mt-1">Kelola dan pantau riwayat pemeliharaan asset</p>
             </div>
-            <a href="{{ route('maintenance.create') }}" class="inline-flex items-center justify-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-base font-semibold shadow-sm transition-colors">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+            <a href="{{ route('maintenance.create') }}" class="inline-flex items-center justify-center px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold shadow-sm transition-all active:scale-[0.98]">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                 Tambah Maintenance
             </a>
         </div>
@@ -276,90 +275,68 @@
         </div>
     </div>
 
-    {{-- ===== Modal Hapus ===== --}}
-    <div id="deleteModal" style="display: none;" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-xl max-w-md w-full">
-            <div class="p-6">
-                <div class="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full mb-4">
-                    <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                </div>
-                <h3 class="text-lg font-semibold text-gray-900 text-center mb-2">Konfirmasi Hapus</h3>
-                <p class="text-sm text-gray-600 text-center mb-6">
-                    Apakah Anda yakin ingin menghapus maintenance record untuk aset <strong id="deleteAssetCode"></strong>? Tindakan ini tidak dapat dibatalkan.
-                </p>
-                <form id="deleteForm" method="POST">
-                    @csrf
-                    @method('DELETE')
-                    <div class="flex flex-col sm:flex-row gap-3">
-                        <button type="button" onclick="closeDeleteModal()" class="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium">Batal</button>
-                        <button type="submit" class="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium">Ya, Hapus</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+    {{-- Form Tersembunyi untuk SweetAlert2 --}}
+    <form id="deleteForm" method="POST" class="hidden">
+        @csrf
+        @method('DELETE')
+    </form>
 
-    {{-- ===== Modal Selesai ===== --}}
-    <div id="completeModal" style="display: none;" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-xl max-w-md w-full">
-            <div class="p-6">
-                <div class="flex items-center justify-center w-12 h-12 mx-auto bg-green-100 rounded-full mb-4">
-                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                </div>
-                <h3 class="text-lg font-semibold text-gray-900 text-center mb-2">Tandai Selesai</h3>
-                <p class="text-sm text-gray-600 text-center mb-6">
-                    Tandai maintenance untuk aset <strong id="completeAssetCode"></strong> sebagai selesai? Tanggal pelaksanaan akan diatur ke hari ini.
-                </p>
-                <form id="completeForm" method="POST">
-                    @csrf
-                    @method('PATCH')
-                    <div class="flex flex-col sm:flex-row gap-3">
-                        <button type="button" onclick="closeCompleteModal()" class="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium">Batal</button>
-                        <button type="submit" class="flex-1 px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium">Ya, Selesai</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+    <form id="completeForm" method="POST" class="hidden">
+        @csrf
+        @method('PATCH')
+    </form>
 
     <script>
         function openDeleteModal(id, assetCode) {
-            document.getElementById('deleteAssetCode').textContent = assetCode;
-            document.getElementById('deleteForm').action = `/maintenance/${id}`;
-            document.getElementById('deleteModal').style.display = 'flex';
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeDeleteModal() {
-            document.getElementById('deleteModal').style.display = 'none';
-            document.body.style.overflow = '';
+            Swal.fire({
+                title: 'Konfirmasi Hapus Maintenance',
+                html: `Apakah Anda yakin ingin menghapus maintenance record untuk aset <b>${assetCode}</b>?<br><span class="text-xs text-gray-500 mt-1 block">Tindakan ini tidak dapat dibatalkan.</span>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Hapus',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#e11d48',
+                cancelButtonColor: '#94a3b8',
+                reverseButtons: true,
+                customClass: {
+                    popup: 'rounded-3xl shadow-2xl border border-gray-100 font-sans p-6',
+                    title: 'text-lg font-black text-gray-900',
+                    confirmButton: 'rounded-xl font-bold px-5 py-2.5 shadow-md shadow-rose-500/20 text-sm',
+                    cancelButton: 'rounded-xl font-semibold px-5 py-2.5 text-sm'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const form = document.getElementById('deleteForm');
+                    form.action = `/maintenance/${id}`;
+                    form.submit();
+                }
+            });
         }
 
         function openCompleteModal(id, assetCode) {
-            document.getElementById('completeAssetCode').textContent = assetCode;
-            document.getElementById('completeForm').action = `/maintenance/${id}/complete`;
-            document.getElementById('completeModal').style.display = 'flex';
-            document.body.style.overflow = 'hidden';
+            Swal.fire({
+                title: 'Tandai Selesai Maintenance',
+                html: `Tandai maintenance untuk aset <b>${assetCode}</b> sebagai selesai?<br><span class="text-xs text-gray-500 mt-1 block">Tanggal pelaksanaan akan diatur ke hari ini.</span>`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Selesai',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#16a34a',
+                cancelButtonColor: '#94a3b8',
+                reverseButtons: true,
+                customClass: {
+                    popup: 'rounded-3xl shadow-2xl border border-gray-100 font-sans p-6',
+                    title: 'text-lg font-black text-gray-900',
+                    confirmButton: 'rounded-xl font-bold px-5 py-2.5 shadow-md shadow-emerald-500/20 text-sm',
+                    cancelButton: 'rounded-xl font-semibold px-5 py-2.5 text-sm'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const form = document.getElementById('completeForm');
+                    form.action = `/maintenance/${id}/complete`;
+                    form.submit();
+                }
+            });
         }
-
-        function closeCompleteModal() {
-            document.getElementById('completeModal').style.display = 'none';
-            document.body.style.overflow = '';
-        }
-
-        document.getElementById('deleteModal').addEventListener('click', function (e) {
-            if (e.target === this) closeDeleteModal();
-        });
-
-        document.getElementById('completeModal').addEventListener('click', function (e) {
-            if (e.target === this) closeCompleteModal();
-        });
-
-        document.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape') {
-                closeDeleteModal();
-                closeCompleteModal();
-            }
-        });
     </script>
 </x-app-layout>

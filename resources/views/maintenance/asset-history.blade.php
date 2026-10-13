@@ -1,22 +1,34 @@
 <x-app-layout :title="'Riwayat Pemeliharaan ' . $asset->asset_code">
-    <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Maintenance History') }} - {{ $asset->asset_code }}
-            </h2>
-            <div class="flex gap-2">
-                <a href="{{ route('assets.show', $asset) }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
-                    View Asset
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <!-- Header -->
+        <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <a href="{{ route('maintenance.index') }}" class="p-2 text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded-xl border border-gray-200 transition-colors shadow-sm" title="Kembali">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
                 </a>
-                <a href="{{ route('maintenance.index') }}" class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg">
-                    ← Back
+                <div>
+                    <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Riwayat Maintenance</h1>
+                    <p class="text-xs sm:text-sm text-gray-500 mt-1">Aset: {{ $asset->asset_code }} • {{ $asset->brand }} {{ $asset->model }}</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <a href="{{ route('assets.show', $asset) }}" class="inline-flex items-center justify-center px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold shadow-sm transition-all active:scale-[0.98]">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                    </svg>
+                    Lihat Aset
+                </a>
+                <a href="{{ route('maintenance.index') }}" class="inline-flex items-center justify-center px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-sm font-semibold transition-colors">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Semua Maintenance
                 </a>
             </div>
         </div>
-    </x-slot>
-
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             
             <!-- Asset Summary Card -->
             <div class="bg-white overflow-hidden shadow-sm rounded-lg mb-6">
@@ -167,5 +179,4 @@
                 </div>
             </div>
         </div>
-    </div>
 </x-app-layout>

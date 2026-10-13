@@ -1,20 +1,25 @@
-<x-app-layout>
-    <x-slot name="header">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Jadwal Maintenance Mendatang') }}
-            </h2>
-            <a href="{{ route('maintenance.index') }}" class="w-full sm:w-auto bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg inline-flex items-center justify-center transition">
+<x-app-layout :title="'Jadwal Maintenance Mendatang'">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <!-- Header -->
+        <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <a href="{{ route('maintenance.index') }}" class="p-2 text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded-xl border border-gray-200 transition-colors shadow-sm" title="Kembali">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                </a>
+                <div>
+                    <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Jadwal Maintenance Mendatang</h1>
+                    <p class="text-xs sm:text-sm text-gray-500 mt-1">Daftar pemeliharaan aset yang akan datang atau jatuh tempo</p>
+                </div>
+            </div>
+            <a href="{{ route('maintenance.index') }}" class="inline-flex items-center justify-center px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-sm font-semibold transition-colors">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                 </svg>
-                Kembali ke Semua Maintenance
+                Semua Maintenance
             </a>
         </div>
-    </x-slot>
-
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             
             <!-- Info Banner -->
             <div class="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -369,7 +374,6 @@
                 </div>
             </div>
         </div>
-    </div>
 
     <!-- Complete Confirmation Modal -->
     <div id="completeModal" style="display: none;" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">

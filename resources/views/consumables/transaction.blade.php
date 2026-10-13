@@ -1,22 +1,30 @@
-<x-app-layout>
-    <div class="w-full px-4 sm:px-6 lg:px-10 py-6">
+<x-app-layout :title="'Transaksi Stok ' . $consumable->name">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
 
         {{-- Header --}}
-        <div class="mb-6 flex flex-wrap items-end justify-between gap-4">
-            <div>
-                <a href="{{ route('consumables.show', $consumable) }}"
-                   class="inline-flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-900 transition-colors rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <a href="{{ route('consumables.show', $consumable) }}" class="p-2 text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded-xl border border-gray-200 transition-colors shadow-sm" title="Kembali">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                     </svg>
-                    Kembali
                 </a>
-                <h1 class="mt-2 text-2xl font-bold text-gray-900">Transaksi stok: {{ $consumable->name }}</h1>
-                <p class="mt-1 text-sm text-gray-600">Catat barang masuk (tambah stok) atau barang keluar (pemakaian).</p>
+                <div>
+                    <div class="flex items-center gap-2.5">
+                        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Transaksi Stok: {{ $consumable->name }}</h1>
+                        <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 border border-blue-200">
+                            {{ $consumable->kategori ?? 'Umum' }}
+                        </span>
+                    </div>
+                    <p class="text-xs sm:text-sm text-gray-500 mt-1">Catat barang masuk (tambah stok) atau barang keluar (pemakaian)</p>
+                </div>
             </div>
-            <span class="px-3 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                {{ $consumable->kategori ?? 'Umum' }}
-            </span>
+            <a href="{{ route('consumables.show', $consumable) }}" class="inline-flex items-center justify-center px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-sm font-semibold transition-colors">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Kembali
+            </a>
         </div>
 
         <form action="{{ route('consumables.storeTransaction', $consumable) }}" method="POST"

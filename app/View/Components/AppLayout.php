@@ -71,6 +71,7 @@ class AppLayout extends Component
             'users.edit' => 'Edit Pengguna',
             'profile.edit' => 'Profil Saya',
             'change-password' => 'Ubah Password',
+            'settings' => 'Settings',
         ];
 
         if ($routeName && isset($titles[$routeName])) {

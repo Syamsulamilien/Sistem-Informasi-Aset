@@ -2,10 +2,10 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
 
 
-        {{-- ===== Judul ===== --}}
+        {{-- ===== Judul Halaman ===== --}}
         <div class="mb-6">
-            <h1 class="text-3xl font-extrabold text-gray-900">Dashboard Overview</h1>
-            <p class="text-[11px] text-gray-500 mt-1">Sistem Pendataan dan Pencarian Aset SMK Kesehatan Binatama</p>
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Dashboard Overview</h1>
+            <p class="text-xs sm:text-sm text-gray-500 mt-1">Sistem Pendataan dan Pencarian Aset SMK Kesehatan Binatama</p>
         </div>
 
         {{-- ===== Baris 1: kartu statistik ===== --}}

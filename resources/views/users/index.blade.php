@@ -1,20 +1,18 @@
 <x-app-layout>
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <!-- Header -->
-        <div class="mb-8">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div>
-                    <h1 class="text-2xl font-bold text-gray-900">Kelola User</h1>
-                    <p class="mt-1 text-sm text-gray-600">Manajemen akun pengguna sistem</p>
-                </div>
-                <div class="flex items-center gap-3">
-                    <a href="{{ route('users.create') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 text-sm font-medium shadow-sm hover:shadow-md">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                        </svg>
-                        Tambah User
-                    </a>
-                </div>
+        <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+                <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Kelola User</h1>
+                <p class="text-xs sm:text-sm text-gray-500 mt-1">Manajemen akun pengguna sistem</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="{{ route('users.create') }}" class="inline-flex items-center justify-center px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold shadow-sm transition-all active:scale-[0.98]">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    Tambah User
+                </a>
             </div>
         </div>
 

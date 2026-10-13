@@ -293,6 +293,7 @@ private function createMaintenanceSchedules(Asset $asset, Request $request)
             'masa_pemakaian_satuan' => 'nullable|in:Bulan,Tahun',
             'warranty_expiry_date' => 'nullable|date',
             'photo' => 'nullable|image|max:2048',
+            'remove_photo' => 'nullable|boolean',
             'invoice_number' => 'nullable|string|max:255',
         ]);
 
@@ -307,7 +308,14 @@ private function createMaintenanceSchedules(Asset $asset, Request $request)
                 Storage::disk('public')->delete($asset->photo);
             }
             $validated['photo'] = $request->file('photo')->store('assets/photos', 'public');
+        } elseif ($request->boolean('remove_photo')) {
+            if ($asset->photo) {
+                Storage::disk('public')->delete($asset->photo);
+            }
+            $validated['photo'] = null;
         }
+
+        unset($validated['remove_photo']);
 
         $asset->update($validated);
 

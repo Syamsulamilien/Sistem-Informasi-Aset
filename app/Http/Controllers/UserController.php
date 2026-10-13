@@ -8,15 +8,13 @@ use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
-    // Tampilkan daftar user
+    // Tampilkan daftar user -> dialihkan ke menu Setting terpadu
     public function index()
     {
-        // ✅ DIPERBAIKI: Tampilkan semua user kecuali admin
-        $users = User::where('role', '!=', 'admin')->latest()->paginate(10)->withQueryString();
-        return view('users.index', compact('users'));
+        return redirect()->route('settings');
     }
 
-    // Form tambah user
+    // Form tambah user (fallback standalone)
     public function create()
     {
         return view('users.create');
@@ -29,7 +27,7 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:users,username|alpha_dash',
             'password' => 'required|min:8|confirmed',
-            'role' => 'required|in:teknisi,viewer,user_biasa,laboran', // ✅ TAMBAHAN: Validasi role
+            'role' => 'required|in:teknisi,viewer,user_biasa,laboran',
         ], [
             'username.alpha_dash' => 'Username hanya boleh berisi huruf, angka, dash dan underscore.',
             'username.unique' => 'Username sudah digunakan.',
@@ -46,22 +44,22 @@ class UserController extends Controller
             'role' => $request->role,
         ]);
 
-        return redirect()->route('users.index')
-            ->with('success', 'User berhasil ditambahkan!');
+        return redirect()->route('settings')
+            ->with('success', 'User baru berhasil ditambahkan!');
     }
 
     // Tampilkan detail user
     public function show(User $user)
     {
-        return view('users.show', compact('user'));
+        return redirect()->route('settings');
     }
 
-    // Form edit user
+    // Form edit user (fallback standalone)
     public function edit(User $user)
     {
         // Cegah edit admin
         if ($user->role === 'admin') {
-            return redirect()->route('users.index')
+            return redirect()->route('settings')
                 ->with('error', 'Tidak bisa mengedit akun admin!');
         }
 
@@ -73,7 +71,7 @@ class UserController extends Controller
     {
         // Cegah edit admin
         if ($user->role === 'admin') {
-            return redirect()->route('users.index')
+            return redirect()->route('settings')
                 ->with('error', 'Tidak bisa mengedit akun admin!');
         }
 
@@ -81,7 +79,7 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:users,username,' . $user->id . '|alpha_dash',
             'password' => 'nullable|min:8|confirmed',
-            'role' => 'required|in:teknisi,viewer,user_biasa,laboran', // ✅ TAMBAHAN: Validasi role
+            'role' => 'required|in:teknisi,viewer,user_biasa,laboran',
         ], [
             'username.alpha_dash' => 'Username hanya boleh berisi huruf, angka, dash dan underscore.',
             'username.unique' => 'Username sudah digunakan.',
@@ -104,8 +102,8 @@ class UserController extends Controller
 
         $user->update($data);
 
-        return redirect()->route('users.index')
-            ->with('success', 'User berhasil diupdate!');
+        return redirect()->route('settings')
+            ->with('success', 'Data user berhasil diperbarui!');
     }
 
     // Hapus user
@@ -113,19 +111,44 @@ class UserController extends Controller
     {
         // Cegah hapus diri sendiri
         if ($user->id === auth()->id()) {
-            return redirect()->route('users.index')
+            return redirect()->route('settings')
                 ->with('error', 'Tidak bisa menghapus akun sendiri!');
         }
 
         // Cegah hapus admin
         if ($user->role === 'admin') {
-            return redirect()->route('users.index')
+            return redirect()->route('settings')
                 ->with('error', 'Tidak bisa menghapus akun admin!');
         }
 
         $user->delete();
         
-        return redirect()->route('users.index')
+        return redirect()->route('settings')
             ->with('success', 'User berhasil dihapus!');
+    }
+
+    // Reset password user jika user lupa password (khusus Administrator)
+    public function resetPassword(Request $request, User $user)
+    {
+        // Cegah reset akun admin lain
+        if ($user->role === 'admin' && $user->id !== auth()->id()) {
+            return redirect()->route('settings')
+                ->with('error', 'Tidak dapat mereset password akun admin lain!');
+        }
+
+        $request->validate([
+            'password' => 'required|string|min:8|confirmed',
+        ], [
+            'password.required' => 'Password baru wajib diisi.',
+            'password.min' => 'Password baru minimal harus 8 karakter.',
+            'password.confirmed' => 'Konfirmasi password baru tidak cocok.',
+        ]);
+
+        $user->update([
+            'password' => Hash::make($request->password),
+        ]);
+
+        return redirect()->route('settings')
+            ->with('success', "Password untuk pengguna '{$user->name}' ({$user->username}) berhasil di-reset!");
     }
 }

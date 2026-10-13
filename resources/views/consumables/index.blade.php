@@ -1,12 +1,12 @@
 <x-app-layout>
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div class="mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-                <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Daftar Barang Habis Pakai</h1>
-                <p class="text-sm text-gray-600 mt-1">Kelola stok barang habis pakai (ATK, reagen, dll)</p>
+                <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Daftar Barang Habis Pakai</h1>
+                <p class="text-xs sm:text-sm text-gray-500 mt-1">Kelola stok barang habis pakai (ATK, reagen, dll)</p>
             </div>
             @if(Auth::user()->isAdmin() || Auth::user()->isLaboran())
-                <a href="{{ route('consumables.create') }}" class="inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm">
+                <a href="{{ route('consumables.create') }}" class="inline-flex items-center justify-center px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold shadow-sm transition-all active:scale-[0.98]">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                     </svg>
@@ -199,58 +199,37 @@
         </div>
     </div>
 
-    {{-- ============ MODAL KONFIRMASI HAPUS ============ --}}
-    <div id="deleteModal" style="display: none;" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
-         role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle">
-        <div class="bg-white rounded-xl shadow-xl max-w-md w-full">
-            <div class="p-6">
-                <div class="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full mb-4">
-                    <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-                    </svg>
-                </div>
-                <h3 id="deleteModalTitle" class="text-lg font-semibold text-gray-900 text-center mb-2">Konfirmasi Hapus</h3>
-                <p class="text-sm text-gray-600 text-center mb-6">
-                    Apakah Anda yakin ingin menghapus barang <strong id="deleteItemName"></strong>? Tindakan ini tidak dapat dibatalkan.
-                </p>
-                <form id="deleteForm" method="POST" onsubmit="this.querySelector('[type=submit]').disabled = true;">
-                    @csrf
-                    @method('DELETE')
-                    <div class="flex gap-3">
-                        <button type="button" id="deleteCancelBtn" onclick="closeDeleteModal()" class="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400">
-                            Batal
-                        </button>
-                        <button type="submit" class="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-red-500 disabled:opacity-60 disabled:cursor-not-allowed">
-                            Ya, Hapus
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+    {{-- Form Delete Tersembunyi untuk SweetAlert2 --}}
+    <form id="deleteForm" method="POST" class="hidden">
+        @csrf
+        @method('DELETE')
+    </form>
 
     <script>
         function openDeleteModal(actionUrl, itemName) {
-            const form = document.getElementById('deleteForm');
-            form.action = actionUrl;
-            form.querySelector('[type=submit]').disabled = false;
-            document.getElementById('deleteItemName').textContent = itemName;
-            document.getElementById('deleteModal').style.display = 'flex';
-            document.body.style.overflow = 'hidden';
-            document.getElementById('deleteCancelBtn').focus();
+            Swal.fire({
+                title: 'Konfirmasi Hapus Barang',
+                html: `Apakah Anda yakin ingin menghapus barang <b>${itemName}</b>?<br><span class="text-xs text-gray-500 mt-1 block">Tindakan ini tidak dapat dibatalkan.</span>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Hapus',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#e11d48',
+                cancelButtonColor: '#94a3b8',
+                reverseButtons: true,
+                customClass: {
+                    popup: 'rounded-3xl shadow-2xl border border-gray-100 font-sans p-6',
+                    title: 'text-lg font-black text-gray-900',
+                    confirmButton: 'rounded-xl font-bold px-5 py-2.5 shadow-md shadow-rose-500/20 text-sm',
+                    cancelButton: 'rounded-xl font-semibold px-5 py-2.5 text-sm'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const form = document.getElementById('deleteForm');
+                    form.action = actionUrl;
+                    form.submit();
+                }
+            });
         }
-
-        function closeDeleteModal() {
-            document.getElementById('deleteModal').style.display = 'none';
-            document.body.style.overflow = '';
-        }
-
-        document.getElementById('deleteModal').addEventListener('click', function (e) {
-            if (e.target === this) closeDeleteModal();
-        });
-
-        document.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape') closeDeleteModal();
-        });
     </script>
 </x-app-layout>

@@ -1,11 +1,11 @@
 <x-app-layout>
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div class="mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-                <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Daftar Peminjaman Aset</h1>
-                <p class="text-sm text-gray-600 mt-1">Kelola data peminjaman aset</p>
+                <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Daftar Peminjaman Aset</h1>
+                <p class="text-xs sm:text-sm text-gray-500 mt-1">Kelola data peminjaman aset</p>
             </div>
-            <a href="{{ route('borrowings.create') }}" class="inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm">
+            <a href="{{ route('borrowings.create') }}" class="inline-flex items-center justify-center px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold shadow-sm transition-all active:scale-[0.98]">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                 </svg>

@@ -1,29 +1,31 @@
 <x-app-layout :title="'Detail Ruangan ' . $location->name">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <!-- Header -->
-        <div class="mb-6">
-            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
-                <div>
-                    <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">{{ $location->name }}</h1>
-                    @if($location->floor)
-                        <div class="mt-2 inline-flex items-center px-3 py-1 text-sm font-medium rounded-lg bg-indigo-100 text-indigo-800">
-                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                            </svg>
-                            {{ $location->floor }}
-                        </div>
-                    @endif
-                    @if($location->description)
-                        <p class="mt-2 text-sm text-gray-600">{{ $location->description }}</p>
-                    @endif
-                </div>
-                <a href="{{ route('locations.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 text-sm font-medium">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <a href="{{ route('locations.index') }}" class="p-2 text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded-xl border border-gray-200 transition-colors shadow-sm" title="Kembali">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                     </svg>
-                    Kembali
                 </a>
+                <div>
+                    <div class="flex items-center gap-2.5">
+                        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">{{ $location->name }}</h1>
+                        @if($location->floor)
+                            <span class="inline-flex items-center px-2.5 py-0.5 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 border border-blue-200">
+                                {{ $location->floor }}
+                            </span>
+                        @endif
+                    </div>
+                    <p class="text-xs sm:text-sm text-gray-500 mt-1">{{ $location->description ?: 'Detail dan daftar aset yang berada di unit ini' }}</p>
+                </div>
             </div>
+            <a href="{{ route('locations.index') }}" class="inline-flex items-center justify-center px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-sm font-semibold transition-colors">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Kembali
+            </a>
         </div>
 
         <!-- Statistik Cards -->

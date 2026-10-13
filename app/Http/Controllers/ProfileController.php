@@ -16,11 +16,9 @@ class ProfileController extends Controller
     /**
      * Display the user's profile form.
      */
-    public function edit(Request $request): View
+    public function edit(Request $request): RedirectResponse
     {
-        return view('profile.edit', [
-            'user' => $request->user(),
-        ]);
+        return redirect()->route('settings');
     }
 
     /**
@@ -63,9 +61,9 @@ class ProfileController extends Controller
     /**
      * Show change password form.
      */
-    public function changePasswordForm(): View
+    public function changePasswordForm(): RedirectResponse
     {
-        return view('profile.change-password');
+        return redirect()->route('settings');
     }
 
     /**

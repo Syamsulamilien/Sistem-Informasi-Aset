@@ -100,6 +100,7 @@ class ConsumableController extends Controller
             'description' => 'nullable|string',
             'location_id' => 'nullable|exists:locations,id',
             'photo' => 'nullable|image|max:2048',
+            'remove_photo' => 'nullable|boolean',
         ]);
 
         if ($request->hasFile('photo')) {
@@ -107,7 +108,14 @@ class ConsumableController extends Controller
                 Storage::disk('public')->delete($consumable->photo);
             }
             $validated['photo'] = $request->file('photo')->store('consumables/photos', 'public');
+        } elseif ($request->boolean('remove_photo')) {
+            if ($consumable->photo) {
+                Storage::disk('public')->delete($consumable->photo);
+            }
+            $validated['photo'] = null;
         }
+
+        unset($validated['remove_photo']);
 
         $consumable->update($validated);
 

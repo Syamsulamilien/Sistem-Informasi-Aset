@@ -32,6 +32,10 @@
 
     <!-- Inline Style untuk Anti-Flicker Collapse Desktop -->
     <style>
+        .sidebar-item {
+            box-sizing: border-box;
+            width: calc(100% - 1.5rem);
+        }
         @media (min-width: 1024px) {
             html.sidebar-collapsed #sidebar {
                 width: 5rem !important;
@@ -49,6 +53,8 @@
                 padding-right: 0.5rem !important;
                 margin-left: 0.5rem !important;
                 margin-right: 0.5rem !important;
+                width: 4rem !important;
+                box-sizing: border-box !important;
             }
             html.sidebar-collapsed .sidebar-item svg {
                 margin-right: 0 !important;
@@ -97,10 +103,10 @@
                         </div>
                     </div>
 
-                    <!-- Sisi Kanan: Sapaan User, Role & Profil -->
-                    <div class="flex items-center gap-3">
+                    <!-- Sisi Kanan: Sapaan User, Role & Profil (Klik ke Settings) -->
+                    <a href="{{ route('settings') }}" title="Buka Pengaturan Akun" class="flex items-center gap-2.5 sm:gap-3 p-1 sm:p-1.5 rounded-2xl hover:bg-gray-100/80 transition-colors">
                         <div class="text-right leading-tight">
-                            <p class="text-sm font-semibold text-gray-800">
+                            <p class="text-xs sm:text-sm font-semibold text-gray-800">
                                 Hallo, <span class="text-blue-600 font-bold">{{ Auth::user()->name }}</span>
                             </p>
                             <div class="flex items-center justify-end gap-1.5 mt-0.5">
@@ -119,38 +125,90 @@
                         </div>
 
                         <!-- Avatar Inisial -->
-                        <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-md ring-2 ring-white flex-shrink-0">
+                        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-xs sm:text-sm shadow-md ring-2 ring-white flex-shrink-0">
                             {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
                         </div>
-                    </div>
+                    </a>
                 </div>
             </header>
 
             {{-- Main Content Slot --}}
             <main class="flex-1">
-                {{-- Alert Messages --}}
-                @if (session('success'))
-                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
-                        <div class="p-4 bg-emerald-50 border border-emerald-300 text-emerald-800 rounded-xl flex items-center gap-3 shadow-sm">
-                            <svg class="w-5 h-5 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                            <span class="text-sm font-medium">{{ session('success') }}</span>
-                        </div>
-                    </div>
-                @endif
-
-                @if (session('error'))
-                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
-                        <div class="p-4 bg-red-50 border border-red-300 text-red-800 rounded-xl flex items-center gap-3 shadow-sm">
-                            <svg class="w-5 h-5 text-red-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                            <span class="text-sm font-medium">{{ session('error') }}</span>
-                        </div>
-                    </div>
-                @endif
-
                 {{ $slot }}
             </main>
         </div>
     </div>
+
+    {{-- SweetAlert2 Notifikasi Global & Pop-up --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            @if (session('success'))
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: @js(session('success')),
+                    timer: 3000,
+                    timerProgressBar: true,
+                    confirmButtonText: 'Tutup',
+                    confirmButtonColor: '#2563eb',
+                    customClass: {
+                        popup: 'rounded-3xl shadow-2xl border border-gray-100 font-sans p-6',
+                        title: 'text-xl font-black text-gray-900',
+                        htmlContainer: 'text-sm text-gray-600 mt-1',
+                        confirmButton: 'rounded-xl font-bold px-6 py-2.5 shadow-md shadow-blue-500/20 text-sm'
+                    }
+                });
+            @endif
+
+            @if (session('error'))
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Perhatian',
+                    text: @js(session('error')),
+                    confirmButtonText: 'Tutup',
+                    confirmButtonColor: '#e11d48',
+                    customClass: {
+                        popup: 'rounded-3xl shadow-2xl border border-gray-100 font-sans p-6',
+                        title: 'text-xl font-black text-gray-900',
+                        htmlContainer: 'text-sm text-gray-600 mt-1',
+                        confirmButton: 'rounded-xl font-bold px-6 py-2.5 shadow-md shadow-rose-500/20 text-sm'
+                    }
+                });
+            @endif
+
+            @if (session('warning'))
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Peringatan',
+                    text: @js(session('warning')),
+                    confirmButtonText: 'Tutup',
+                    confirmButtonColor: '#f59e0b',
+                    customClass: {
+                        popup: 'rounded-3xl shadow-2xl border border-gray-100 font-sans p-6',
+                        title: 'text-xl font-black text-gray-900',
+                        htmlContainer: 'text-sm text-gray-600 mt-1',
+                        confirmButton: 'rounded-xl font-bold px-6 py-2.5 text-sm'
+                    }
+                });
+            @endif
+
+            @if (session('info'))
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Informasi',
+                    text: @js(session('info')),
+                    confirmButtonText: 'Tutup',
+                    confirmButtonColor: '#2563eb',
+                    customClass: {
+                        popup: 'rounded-3xl shadow-2xl border border-gray-100 font-sans p-6',
+                        title: 'text-xl font-black text-gray-900',
+                        htmlContainer: 'text-sm text-gray-600 mt-1',
+                        confirmButton: 'rounded-xl font-bold px-6 py-2.5 text-sm'
+                    }
+                });
+            @endif
+        });
+    </script>
 
     {{-- Stack untuk scripts tambahan --}}
     @stack('scripts')
