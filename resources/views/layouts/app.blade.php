@@ -32,6 +32,23 @@
 
     <!-- Inline Style untuk Anti-Flicker Collapse Desktop -->
     <style>
+        html, body {
+            overflow-x: hidden;
+            max-width: 100vw;
+        }
+        #sidebar {
+            overflow-x: hidden !important;
+        }
+        #sidebar nav {
+            overflow-x: hidden !important;
+            scrollbar-width: none !important;
+            -ms-overflow-style: none !important;
+        }
+        #sidebar nav::-webkit-scrollbar {
+            display: none !important;
+            width: 0 !important;
+            height: 0 !important;
+        }
         .sidebar-item {
             box-sizing: border-box;
             width: calc(100% - 1.5rem);
@@ -39,6 +56,7 @@
         @media (min-width: 1024px) {
             html.sidebar-collapsed #sidebar {
                 width: 5rem !important;
+                overflow-x: hidden !important;
             }
             html.sidebar-collapsed #main-content-wrapper {
                 margin-left: 5rem !important;
@@ -49,12 +67,14 @@
             }
             html.sidebar-collapsed .sidebar-item {
                 justify-content: center !important;
-                padding-left: 0.5rem !important;
-                padding-right: 0.5rem !important;
-                margin-left: 0.5rem !important;
-                margin-right: 0.5rem !important;
-                width: 4rem !important;
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+                margin-left: auto !important;
+                margin-right: auto !important;
+                width: 3.5rem !important;
+                height: 2.75rem !important;
                 box-sizing: border-box !important;
+                flex-shrink: 0 !important;
             }
             html.sidebar-collapsed .sidebar-item svg {
                 margin-right: 0 !important;
@@ -64,19 +84,23 @@
             }
             html.sidebar-collapsed .sidebar-header-collapsed {
                 display: flex !important;
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+                justify-content: center !important;
+                width: 100% !important;
             }
         }
     </style>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="font-sans antialiased bg-gray-50 text-gray-900 selection:bg-blue-600 selection:text-white">
-    <div class="min-h-screen flex bg-gray-50">
+<body class="font-sans antialiased bg-gray-50 text-gray-900 selection:bg-blue-600 selection:text-white overflow-x-hidden">
+    <div class="min-h-screen flex bg-gray-50 w-full overflow-x-hidden">
         {{-- Sidebar --}}
         @include('layouts.sidebar')
 
         {{-- Main Content Wrapper --}}
-        <div id="main-content-wrapper" class="flex-1 lg:ml-64 flex flex-col min-h-screen min-w-0 transition-[margin] duration-300">
+        <div id="main-content-wrapper" class="flex-1 lg:ml-64 flex flex-col min-h-screen min-w-0 overflow-x-hidden transition-[margin] duration-300">
             {{-- Sticky Top Header (Konsisten di semua halaman) --}}
             <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm">
                 <div class="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">

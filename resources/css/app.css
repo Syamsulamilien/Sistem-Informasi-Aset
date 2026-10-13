@@ -6,6 +6,7 @@
 @media (min-width: 1024px) {
     html.sidebar-collapsed #sidebar {
         width: 5rem !important;
+        overflow-x: hidden !important;
     }
     html.sidebar-collapsed #main-content-wrapper {
         margin-left: 5rem !important;
@@ -16,10 +17,14 @@
     }
     html.sidebar-collapsed .sidebar-item {
         justify-content: center !important;
-        padding-left: 0.5rem !important;
-        padding-right: 0.5rem !important;
-        margin-left: 0.5rem !important;
-        margin-right: 0.5rem !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        width: 3.5rem !important;
+        height: 2.75rem !important;
+        box-sizing: border-box !important;
+        flex-shrink: 0 !important;
     }
     html.sidebar-collapsed .sidebar-item svg {
         margin-right: 0 !important;
@@ -29,6 +34,10 @@
     }
     html.sidebar-collapsed .sidebar-header-collapsed {
         display: flex !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        justify-content: center !important;
+        width: 100% !important;
     }
 }
 
