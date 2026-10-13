@@ -12,7 +12,7 @@ class AssetTypeController extends Controller
 
     public function index()
     {
-        $assetTypes = AssetType::withCount('assets')->latest()->paginate(15);
+        $assetTypes = AssetType::withCount('assets')->latest()->paginate(15)->withQueryString();
         return view('asset-types.index', compact('assetTypes'));
     }
 

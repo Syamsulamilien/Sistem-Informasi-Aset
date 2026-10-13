@@ -4,9 +4,20 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ config('app.name', 'SIASET') }}</title>
+    @php
+        $siteName = config('app.name', 'SIASET');
+        $customSection = trim(View::getSection('title', ''));
+        $slotTitle = isset($title) && trim((string)$title) !== '' ? trim((string)$title) : null;
+        $activeTitle = $customSection ?: ($slotTitle ?: ($pageTitle ?? ''));
+        $fullTitle = !empty($activeTitle) ? $activeTitle . ' - ' . $siteName : $siteName;
+    @endphp
+    <title>{{ $fullTitle }}</title>
+    <!-- Favicon Logo Website di Tab Browser -->
+    <link rel="icon" type="image/png" href="{{ asset('images/favicon.png') }}">
+    <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
+    <link rel="apple-touch-icon" href="{{ asset('images/favicon.png') }}">
     <!-- Preload Logo untuk rendering instan -->
-    <link rel="preload" as="image" href="{{ asset('images/logo.png') }}" fetchpriority="high">
+    <link rel="preload" as="image" href="{{ asset('images/logobinatama.png') }}" fetchpriority="high">
 
     <!-- Script cegah flash minimize sidebar desktop -->
     <script>

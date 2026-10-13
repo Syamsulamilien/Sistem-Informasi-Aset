@@ -3,9 +3,14 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>SIASET - Login</title>
+        <title>Login - {{ config('app.name', 'SIASET') }}</title>
+        <!-- Favicon Logo Website di Tab Browser -->
+        <link rel="icon" type="image/png" href="{{ asset('images/favicon.png') }}">
+        <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
+        <link rel="apple-touch-icon" href="{{ asset('images/favicon.png') }}">
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800&display=swap" rel="stylesheet" />
+        <link rel="preload" as="image" href="{{ asset('images/logobinatama.png') }}" fetchpriority="high">
         <script src="https://cdn.tailwindcss.com"></script>
         
         <style>
@@ -74,7 +79,7 @@
                         <div class="mb-12">
                             <div class="flex items-center space-x-4">
                                 <div class="w-16 h-16 bg-white/20 backdrop-blur-lg rounded-2xl flex items-center justify-center shadow-2xl border border-white/30">
-                                    <img src="{{ asset('images/logo.png') }}" alt="Logo" class="w-12 h-12 object-contain" width="48" height="48" loading="eager" decoding="sync">
+                                    <img src="{{ asset('images/logobinatama.png') }}" alt="Logo" class="w-12 h-12 object-contain" width="48" height="48" loading="eager" decoding="sync">
                                 </div>
                                 <span class="text-3xl font-bold drop-shadow-lg">SMK KESEHATAN BINATAMA</span>
                             </div>
@@ -128,7 +133,7 @@
                         <div class="lg:hidden text-center mb-8">
                             <div class="flex flex-col items-center justify-center mb-6">
                                 <div class="w-16 h-16 bg-white/20 backdrop-blur-lg rounded-2xl flex items-center justify-center shadow-xl border border-white/30 mb-3">
-                                    <img src="{{ asset('images/logo.png') }}" alt="Logo" class="w-12 h-12 object-contain" width="48" height="48" loading="eager" decoding="sync">
+                                    <img src="{{ asset('images/logobinatama.png') }}" alt="Logo" class="w-12 h-12 object-contain" width="48" height="48" loading="eager" decoding="sync">
                                 </div>
                                 <h2 class="text-xl font-bold text-white drop-shadow-lg leading-tight">
                                     SMK KESEHATAN<br/>BINATAMA

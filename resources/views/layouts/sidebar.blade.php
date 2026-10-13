@@ -1,6 +1,5 @@
 @php
-    $logoPath = public_path('images/logo.png');
-    $logoSrc = file_exists($logoPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath)) : asset('images/logo.png');
+    $logoSrc = asset('images/logobinatama.png');
 @endphp
 
 <!-- Overlay Latar Belakang Gelap (Mobile) -->
@@ -14,9 +13,7 @@
         <!-- Expanded Mode Header -->
         <div class="sidebar-header-expanded flex items-center justify-between">
             <div class="flex items-center gap-3 min-w-0">
-                <div class="h-10 w-10 rounded-xl bg-white p-1.5 flex items-center justify-center flex-shrink-0 shadow-md">
-                    <img src="{{ $logoSrc }}" alt="Logo" class="h-full w-full object-contain" width="40" height="40" loading="eager" decoding="sync" fetchpriority="high">
-                </div>
+                <img src="{{ $logoSrc }}" alt="Logo" class="w-12 h-12 object-contain flex-shrink-0 aspect-square" width="48" height="48" loading="eager" decoding="sync" fetchpriority="high">
                 <div class="leading-tight min-w-0 sidebar-brand-text">
                     <h2 class="text-base font-black text-white tracking-wider">SIASET</h2>
                     <p class="text-[11px] text-blue-200/90 font-medium truncate">SMK Kesehatan Binatama</p>
@@ -33,9 +30,7 @@
 
         <!-- Collapsed Mode Header (Hanya Logo di tengah tanpa tombol) -->
         <div class="sidebar-header-collapsed hidden items-center justify-center">
-            <div class="h-10 w-10 rounded-xl bg-white p-1.5 flex items-center justify-center shadow-md">
-                <img src="{{ $logoSrc }}" alt="Logo" class="h-full w-full object-contain" width="40" height="40" loading="eager" decoding="sync" fetchpriority="high">
-            </div>
+            <img src="{{ $logoSrc }}" alt="Logo" class="w-12 h-12 object-contain flex-shrink-0 aspect-square" width="48" height="48" loading="eager" decoding="sync" fetchpriority="high">
         </div>
     </div>
 

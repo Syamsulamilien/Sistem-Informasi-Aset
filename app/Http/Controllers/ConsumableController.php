@@ -23,7 +23,7 @@ class ConsumableController extends Controller
                   ->orWhere('kategori', 'like', "%{$request->search}%");
         }
 
-        $consumables = $query->latest()->paginate(15);
+        $consumables = $query->latest()->paginate(15)->withQueryString();
         return view('consumables.index', compact('consumables'));
     }
 

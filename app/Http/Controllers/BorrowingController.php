@@ -24,7 +24,7 @@ class BorrowingController extends Controller
             $query->where('status', $request->status);
         }
 
-        $borrowings = $query->latest()->paginate(15);
+        $borrowings = $query->latest()->paginate(15)->withQueryString();
         return view('borrowings.index', compact('borrowings'));
     }
 

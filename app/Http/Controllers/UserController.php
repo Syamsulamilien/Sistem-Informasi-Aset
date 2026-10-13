@@ -12,7 +12,7 @@ class UserController extends Controller
     public function index()
     {
         // ✅ DIPERBAIKI: Tampilkan semua user kecuali admin
-        $users = User::where('role', '!=', 'admin')->latest()->paginate(10);
+        $users = User::where('role', '!=', 'admin')->latest()->paginate(10)->withQueryString();
         return view('users.index', compact('users'));
     }
 

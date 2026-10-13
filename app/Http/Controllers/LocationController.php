@@ -27,7 +27,8 @@ class LocationController extends Controller
                             ->orWhere('description', 'like', "%{$search}%");
             })
             ->orderBy('created_at', 'desc')
-            ->paginate(15);
+            ->paginate(15)
+            ->withQueryString();
 
         return view('locations.index', compact('locations'));
     }
