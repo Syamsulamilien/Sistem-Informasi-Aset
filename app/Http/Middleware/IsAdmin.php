@@ -25,8 +25,8 @@ class IsAdmin
         //     'is_admin' => $user->role === 'admin'
         // ]);
         
-        // ✅ Pastikan ini benar
-        if ($user->role !== 'admin') {
+        // Mendukung role super_admin dan admin
+        if (!in_array($user->role, ['super_admin', 'admin'], true)) {
             abort(403, 'Anda tidak memiliki akses ke halaman ini.');
         }
 

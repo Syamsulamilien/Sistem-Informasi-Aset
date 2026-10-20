@@ -16,9 +16,9 @@ class SettingController extends Controller
     {
         $user = $request->user();
 
-        // Hanya Administrator yang memuat data daftar user untuk Kelola User
+        // Hanya Super Administrator yang memuat data daftar user untuk Kelola User
         $users = null;
-        if ($user->role === 'admin') {
+        if ($user->role === 'super_admin') {
             $users = User::latest()->paginate(10)->withQueryString();
         }
 

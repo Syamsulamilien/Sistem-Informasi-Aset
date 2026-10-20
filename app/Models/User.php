@@ -30,9 +30,14 @@ class User extends Authenticatable
         ];
     }
 
+    public function isSuperAdmin()
+    {
+        return $this->role === 'super_admin';
+    }
+
     public function isAdmin()
     {
-        return $this->role === 'admin';
+        return in_array($this->role, ['super_admin', 'admin']);
     }
 
     public function isTeknisi()

@@ -109,10 +109,12 @@
                                 id="role" 
                                 class="{{ $roleClass }}"
                                 required>
+                            <option value="admin" {{ old('role', $user->role) == 'admin' ? 'selected' : '' }}>Admin</option>
                             <option value="teknisi" {{ old('role', $user->role) == 'teknisi' ? 'selected' : '' }}>Teknisi</option>
-                            <option value="viewer" {{ old('role', $user->role) == 'viewer' ? 'selected' : '' }}>Viewer</option>
                             <option value="laboran" {{ old('role', $user->role) == 'laboran' ? 'selected' : '' }}>Laboran</option>
+                            <option value="viewer" {{ old('role', $user->role) == 'viewer' ? 'selected' : '' }}>Viewer</option>
                             <option value="user_biasa" {{ old('role', $user->role) == 'user_biasa' ? 'selected' : '' }}>User Biasa</option>
+                            <option value="super_admin" {{ old('role', $user->role) == 'super_admin' ? 'selected' : '' }}>Super Admin</option>
                         </select>
                     </div>
                     @error('role')

@@ -19,19 +19,19 @@ class LocationPolicy
 
     public function create(User $user): bool
     {
-        // ❌ Hanya Admin yang bisa menambah Lokasi
-        return $user->role === 'admin';
+        // ✅ Super Admin dan Admin bisa menambah Lokasi
+        return in_array($user->role, ['super_admin', 'admin']);
     }
 
     public function update(User $user, Location $location): bool
     {
-        // ❌ Hanya Admin bisa edit
-        return $user->role === 'admin';
+        // ✅ Super Admin dan Admin bisa edit Lokasi
+        return in_array($user->role, ['super_admin', 'admin']);
     }
 
     public function delete(User $user, Location $location): bool
     {
-        // ❌ Hanya Admin bisa delete
-        return $user->role === 'admin';
+        // ✅ Super Admin dan Admin bisa delete Lokasi
+        return in_array($user->role, ['super_admin', 'admin']);
     }
 }

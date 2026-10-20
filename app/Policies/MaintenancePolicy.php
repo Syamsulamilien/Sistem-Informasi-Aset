@@ -19,31 +19,31 @@ class MaintenancePolicy
 
     public function create(User $user): bool
     {
-        // ✅ Hanya Admin dan Teknisi yang bisa create Maintenance
-        return in_array($user->role, ['admin', 'teknisi']);
+        // ✅ Super Admin, Admin, dan Teknisi yang bisa create Maintenance
+        return in_array($user->role, ['super_admin', 'admin', 'teknisi']);
     }
 
     public function update(User $user, MaintenanceRecord $maintenance): bool
     {
-        // ❌ Hanya Admin dan Teknisi bisa edit
-        return in_array($user->role, ['admin', 'teknisi']);
+        // ✅ Super Admin, Admin, dan Teknisi bisa edit
+        return in_array($user->role, ['super_admin', 'admin', 'teknisi']);
     }
 
     public function delete(User $user, MaintenanceRecord $maintenance): bool
     {
-        // ❌ Hanya Admin bisa delete
-        return $user->role === 'admin';
+        // ✅ Super Admin dan Admin bisa delete
+        return in_array($user->role, ['super_admin', 'admin']);
     }
 
     public function complete(User $user, MaintenanceRecord $maintenance): bool
     {
-        // ✅ Admin dan Teknisi bisa complete maintenance
-        return in_array($user->role, ['admin', 'teknisi']);
+        // ✅ Super Admin, Admin, dan Teknisi bisa complete maintenance
+        return in_array($user->role, ['super_admin', 'admin', 'teknisi']);
     }
 
     public function markInProgress(User $user, MaintenanceRecord $maintenance): bool
     {
-        // ✅ Admin dan Teknisi bisa mark in progress
-        return in_array($user->role, ['admin', 'teknisi']);
+        // ✅ Super Admin, Admin, dan Teknisi bisa mark in progress
+        return in_array($user->role, ['super_admin', 'admin', 'teknisi']);
     }
 }

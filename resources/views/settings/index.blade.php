@@ -8,7 +8,7 @@
         </div>
 
         <!-- ======================================================== -->
-        <!-- KARTU 1: INFORMASI USER & GANTI PASSWORD (SEMUA ROLE)    -->
+        <!-- KARTU 1: PROFIL AKUN SAYA & GANTI PASSWORD (SEMUA ROLE)   -->
         <!-- ======================================================== -->
         <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 sm:p-8 transition-all hover:shadow-md">
             <form action="{{ route('settings.update') }}" method="POST">
@@ -18,8 +18,8 @@
                 <!-- Sub-bagian 1: Informasi User -->
                 <div class="space-y-6">
                     <div>
-                        <h2 class="text-lg font-bold text-gray-900 tracking-tight">Informasi User</h2>
-                        <p class="text-xs text-gray-500 mt-0.5">Data identitas akun yang digunakan untuk login</p>
+                        <h2 class="text-lg font-bold text-gray-900 tracking-tight">Profil Akun Saya</h2>
+                        <p class="text-xs text-gray-500 mt-0.5">Data identitas akun Anda yang sedang aktif saat ini</p>
                     </div>
 
                     <!-- Input: Nama Lengkap (Dapat diubah oleh semua role) -->
@@ -44,13 +44,17 @@
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Role</label>
                             <div class="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-100 text-gray-700 text-sm font-semibold flex items-center justify-between cursor-not-allowed shadow-inner">
                                 <span class="capitalize">
-                                    {{ $user->role === 'admin' ? 'Administrator' : str_replace('_', ' ', $user->role) }}
+                                    {{ match($user->role) {
+                                        'super_admin' => 'Super Administrator',
+                                        'admin' => 'Administrator',
+                                        default => str_replace('_', ' ', $user->role)
+                                    } }}
                                 </span>
                                 <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                                 </svg>
                             </div>
-                            <p class="text-[11px] text-gray-400 mt-1">Hak akses akun diatur langsung oleh Administrator</p>
+                            <p class="text-[11px] text-gray-400 mt-1">Hak akses akun diatur langsung oleh Super Administrator</p>
                         </div>
                     </div>
                 </div>
@@ -109,7 +113,7 @@
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path>
                         </svg>
-                        Simpan
+                        Simpan Profil Saya
                     </button>
                 </div>
             </form>
@@ -117,23 +121,23 @@
 
 
         <!-- ======================================================== -->
-        <!-- KARTU 2: KELOLA USER (HANYA MUNCUL UNTUK ADMINISTRATOR)  -->
+        <!-- KARTU 2: KELOLA PENGGUNA (HANYA MUNCUL UNTUK SUPER ADMIN) -->
         <!-- ======================================================== -->
-        @if ($user->role === 'admin' && $users)
+        @if ($user->role === 'super_admin' && $users)
             <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 sm:p-8 transition-all hover:shadow-md">
                 <!-- Header Card Kelola User -->
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                     <div>
-                        <h2 class="text-xl font-bold text-gray-900 tracking-tight">Kelola User</h2>
-                        <p class="text-xs text-gray-500 mt-0.5">Daftar akun pengguna sistem dan hak akses operasional</p>
+                        <h2 class="text-xl font-bold text-gray-900 tracking-tight">Kelola Pengguna (User Management)</h2>
+                        <p class="text-xs text-gray-500 mt-0.5">Daftar seluruh akun pengguna sistem. Gunakan tombol Tambah User untuk membuat akun pengguna baru.</p>
                     </div>
 
-                    <!-- Tombol Tambah User (Hanya Admin) -->
+                    <!-- Tombol Tambah User (Hanya Super Admin) -->
                     <button type="button" onclick="openAddUserModal()" class="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-sm shadow-md shadow-blue-500/20 transition-all hover:shadow-lg hover:shadow-blue-500/30 active:scale-[0.98]">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                         </svg>
-                        Tambah User
+                        Tambah User Baru
                     </button>
                 </div>
 
@@ -168,6 +172,7 @@
                                     <td class="px-5 py-4">
                                         @php
                                             $badgeClasses = match($u->role) {
+                                                'super_admin' => 'bg-rose-50 text-rose-700 border-rose-200',
                                                 'admin' => 'bg-purple-50 text-purple-700 border-purple-200',
                                                 'teknisi' => 'bg-blue-50 text-blue-700 border-blue-200',
                                                 'laboran' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
@@ -175,6 +180,7 @@
                                                 default => 'bg-slate-50 text-slate-700 border-slate-200',
                                             };
                                             $roleLabel = match($u->role) {
+                                                'super_admin' => 'Super Admin',
                                                 'admin' => 'Admin',
                                                 'teknisi' => 'Teknisi',
                                                 'laboran' => 'Laboran',
@@ -191,7 +197,7 @@
                                     </td>
                                     <td class="px-5 py-4 text-center">
                                         <div class="flex items-center justify-center gap-1.5">
-                                            @if($u->role !== 'admin')
+                                            @if($u->role !== 'super_admin')
                                                 <!-- Tombol Reset Password User (Bila lupa password) -->
                                                 <button type="button"
                                                         onclick="openResetPasswordModal({{ $u->id }}, '{{ addslashes($u->name) }}', '{{ $u->username }}')"
@@ -273,10 +279,12 @@
                         <div>
                             <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Role / Peran</label>
                             <select name="role" required class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                <option value="admin">Admin</option>
                                 <option value="teknisi">Teknisi</option>
                                 <option value="laboran">Laboran</option>
                                 <option value="viewer">Viewer</option>
                                 <option value="user_biasa">User Biasa</option>
+                                <option value="super_admin">Super Admin</option>
                             </select>
                         </div>
 
@@ -326,10 +334,12 @@
                         <div>
                             <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Role / Peran</label>
                             <select id="edit_role" name="role" required class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                <option value="admin">Admin</option>
                                 <option value="teknisi">Teknisi</option>
                                 <option value="laboran">Laboran</option>
                                 <option value="viewer">Viewer</option>
                                 <option value="user_biasa">User Biasa</option>
+                                <option value="super_admin">Super Admin</option>
                             </select>
                         </div>
 
@@ -541,6 +551,11 @@
                         field.type = field.type === 'password' ? 'text' : 'password';
                     }
                 }
+
+                // Buka kembali modal tambah user jika ada error validasi
+                @if ($errors->any() && old('username') && !old('current_password'))
+                    openAddUserModal();
+                @endif
 
                 // Tutup modal jika tombol Escape ditekan
                 document.addEventListener('keydown', function (e) {

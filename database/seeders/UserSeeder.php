@@ -13,11 +13,11 @@ class UserSeeder extends Seeder
         User::updateOrCreate(
             ['username' => 'admin'],
             [
-                'name' => 'Administrator',
+                'name' => 'Super Administrator',
                 'username' => 'admin',
                 'email' => 'admin@smkbinatama.sch.id',
                 'password' => Hash::make('password'),
-                'role' => 'admin',
+                'role' => 'super_admin',
             ]
         );
 

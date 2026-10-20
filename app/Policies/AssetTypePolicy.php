@@ -19,16 +19,16 @@ class AssetTypePolicy
 
     public function create(User $user): bool
     {
-        return $user->role === 'admin';
+        return in_array($user->role, ['super_admin', 'admin']);
     }
 
     public function update(User $user, AssetType $assetType): bool
     {
-        return $user->role === 'admin';
+        return in_array($user->role, ['super_admin', 'admin']);
     }
 
     public function delete(User $user, AssetType $assetType): bool
     {
-        return $user->role === 'admin';
+        return in_array($user->role, ['super_admin', 'admin']);
     }
 }

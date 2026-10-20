@@ -89,8 +89,26 @@
                                     <div class="text-sm text-gray-900">{{ $user->username }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-3 py-1 text-xs font-semibold rounded-full {{ $user->role == 'teknisi' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800' }}">
-                                        {{ ucfirst($user->role) }}
+                                    @php
+                                        $badgeClasses = match($user->role) {
+                                            'super_admin' => 'bg-rose-100 text-rose-800',
+                                            'admin' => 'bg-purple-100 text-purple-800',
+                                            'teknisi' => 'bg-blue-100 text-blue-800',
+                                            'laboran' => 'bg-emerald-100 text-emerald-800',
+                                            'viewer' => 'bg-amber-100 text-amber-800',
+                                            default => 'bg-gray-100 text-gray-800',
+                                        };
+                                        $roleLabel = match($user->role) {
+                                            'super_admin' => 'Super Admin',
+                                            'admin' => 'Admin',
+                                            'teknisi' => 'Teknisi',
+                                            'laboran' => 'Laboran',
+                                            'viewer' => 'Viewer',
+                                            default => ucwords(str_replace('_', ' ', $user->role)),
+                                        };
+                                    @endphp
+                                    <span class="px-3 py-1 text-xs font-semibold rounded-full {{ $badgeClasses }}">
+                                        {{ $roleLabel }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

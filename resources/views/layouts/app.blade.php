@@ -16,6 +16,10 @@
     <link rel="icon" type="image/png" href="{{ asset('images/favicon.png') }}">
     <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
     <link rel="apple-touch-icon" href="{{ asset('images/favicon.png') }}">
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Preload Logo untuk rendering instan -->
     <link rel="preload" as="image" href="{{ asset('images/logobinatama.png') }}" fetchpriority="high">
 
@@ -136,14 +140,20 @@
                             <div class="flex items-center justify-end gap-1.5 mt-0.5">
                                 @php
                                     $roleBadge = match(Auth::user()->role) {
+                                        'super_admin' => 'bg-rose-100 text-rose-700 border-rose-200',
                                         'admin' => 'bg-purple-100 text-purple-700 border-purple-200',
                                         'teknisi' => 'bg-blue-100 text-blue-700 border-blue-200',
-                                        'laboran' => 'bg-amber-100 text-amber-700 border-amber-200',
+                                        'laboran' => 'bg-emerald-100 text-emerald-700 border-emerald-200',
                                         default => 'bg-gray-100 text-gray-700 border-gray-200',
+                                    };
+                                    $roleDisplay = match(Auth::user()->role) {
+                                        'super_admin' => 'SUPER ADMIN',
+                                        'admin' => 'ADMIN',
+                                        default => strtoupper(str_replace('_', ' ', Auth::user()->role)),
                                     };
                                 @endphp
                                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border {{ $roleBadge }}">
-                                    {{ Auth::user()->role }}
+                                    {{ $roleDisplay }}
                                 </span>
                             </div>
                         </div>
@@ -195,6 +205,22 @@
                         popup: 'rounded-3xl shadow-2xl border border-gray-100 font-sans p-6',
                         title: 'text-xl font-black text-gray-900',
                         htmlContainer: 'text-sm text-gray-600 mt-1',
+                        confirmButton: 'rounded-xl font-bold px-6 py-2.5 shadow-md shadow-rose-500/20 text-sm'
+                    }
+                });
+            @endif
+
+            @if ($errors->any())
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Validasi Gagal',
+                    html: @js(implode('<br>', $errors->all())),
+                    confirmButtonText: 'Tutup',
+                    confirmButtonColor: '#e11d48',
+                    customClass: {
+                        popup: 'rounded-3xl shadow-2xl border border-gray-100 font-sans p-6',
+                        title: 'text-xl font-black text-gray-900',
+                        htmlContainer: 'text-sm text-gray-600 mt-1 leading-relaxed',
                         confirmButton: 'rounded-xl font-bold px-6 py-2.5 shadow-md shadow-rose-500/20 text-sm'
                     }
                 });

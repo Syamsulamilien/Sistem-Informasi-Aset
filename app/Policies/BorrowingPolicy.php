@@ -19,16 +19,16 @@ class BorrowingPolicy
 
     public function create(User $user): bool
     {
-        return in_array($user->role, ['admin', 'teknisi', 'laboran']);
+        return in_array($user->role, ['super_admin', 'admin', 'teknisi', 'laboran']);
     }
 
     public function update(User $user, Borrowing $borrowing): bool
     {
-        return in_array($user->role, ['admin', 'teknisi', 'laboran']);
+        return in_array($user->role, ['super_admin', 'admin', 'teknisi', 'laboran']);
     }
 
     public function delete(User $user, Borrowing $borrowing): bool
     {
-        return $user->role === 'admin';
+        return in_array($user->role, ['super_admin', 'admin']);
     }
 }

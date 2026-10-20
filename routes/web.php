@@ -93,10 +93,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 
     // ------------------------------------------
-    // 4. LEVEL OPERASIONAL (ADMIN, TEKNISI, LABORAN)
+    // 4. LEVEL OPERASIONAL (SUPER ADMIN, ADMIN, TEKNISI, LABORAN)
     // Viewer dilarang keras mengakses endpoint manipulasi ini!
     // ------------------------------------------
-    Route::middleware(['role:admin,teknisi,laboran'])->group(function () {
+    Route::middleware(['role:super_admin,admin,teknisi,laboran'])->group(function () {
         // Edit Aset (Update kondisi/lokasi/status)
         Route::get('/assets/{asset}/edit', [AssetController::class, 'edit'])->name('assets.edit')->whereNumber('asset');
         Route::match(['put', 'patch'], '/assets/{asset}', [AssetController::class, 'update'])->name('assets.update')->whereNumber('asset');
@@ -132,10 +132,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 
     // ------------------------------------------
-    // 5. LEVEL MASTER & ADMIN (ADMINISTRATOR SAJA)
-    // Teknisi & Viewer dilarang mengakses tindakan master ini!
+    // 5. LEVEL MASTER & ADMIN (SUPER ADMIN & ADMIN)
+    // Mencakup semuanya: Master Aset, Lokasi, Jenis Aset, Hapus Data Operasional, Import
     // ------------------------------------------
-    Route::middleware(['role:admin'])->group(function () {
+    Route::middleware(['role:super_admin,admin'])->group(function () {
         // Master Aset: Buat aset baru, generate kode, dan hapus aset
         Route::get('/assets/create', [AssetController::class, 'create'])->name('assets.create');
         Route::post('/assets', [AssetController::class, 'store'])->name('assets.store');
@@ -158,7 +158,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::match(['put', 'patch'], '/asset-types/{asset_type}', [AssetTypeController::class, 'update'])->name('asset-types.update')->whereNumber('asset_type');
         Route::delete('/asset-types/{asset_type}', [AssetTypeController::class, 'destroy'])->name('asset-types.destroy')->whereNumber('asset_type');
 
-        // Hapus Data Operasional (Hanya Admin yang berhak menghapus rekam data)
+        // Hapus Data Operasional (Super Admin & Admin yang berhak menghapus rekam data)
         Route::delete('/maintenance/{maintenance}', [MaintenanceController::class, 'destroy'])->name('maintenance.destroy')->whereNumber('maintenance');
         Route::delete('/borrowings/{borrowing}', [BorrowingController::class, 'destroy'])->name('borrowings.destroy')->whereNumber('borrowing');
         Route::delete('/consumables/{consumable}', [ConsumableController::class, 'destroy'])->name('consumables.destroy')->whereNumber('consumable');
@@ -168,8 +168,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/template', [ImportExportController::class, 'downloadTemplate'])->name('template');
             Route::post('/excel', [ImportExportController::class, 'importExcel'])->name('excel');
         });
+    });
 
-        // Manajemen User (Akun dibuat & dikelola sepenuhnya oleh Admin)
+
+    // ------------------------------------------
+    // 6. LEVEL SUPER ADMIN (KHUSUS SUPER ADMIN)
+    // Manajemen User: Akun dibuat & dikelola sepenuhnya oleh Super Admin saja!
+    // Admin biasa dilarang keras mengakses endpoint kelola user ini
+    // ------------------------------------------
+    Route::middleware(['role:super_admin'])->group(function () {
         Route::patch('/users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password')->whereNumber('user');
         Route::resource('users', UserController::class)->except(['show']);
     });

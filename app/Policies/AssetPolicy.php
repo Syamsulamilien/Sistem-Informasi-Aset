@@ -19,19 +19,19 @@ class AssetPolicy
 
     public function create(User $user): bool
     {
-        // ❌ Hanya Admin yang bisa menambah Master Aset
-        return $user->role === 'admin';
+        // ✅ Super Admin dan Admin bisa menambah Master Aset
+        return in_array($user->role, ['super_admin', 'admin']);
     }
 
     public function update(User $user, Asset $asset): bool
     {
-        // ✅ Admin dan Teknisi bisa update data/kondisi
-        return in_array($user->role, ['admin', 'teknisi']);
+        // ✅ Super Admin, Admin, dan Teknisi bisa update data/kondisi
+        return in_array($user->role, ['super_admin', 'admin', 'teknisi']);
     }
 
     public function delete(User $user, Asset $asset): bool
     {
-        // ❌ Hanya Admin yang bisa menghapus Aset
-        return $user->role === 'admin';
+        // ✅ Super Admin dan Admin yang bisa menghapus Aset
+        return in_array($user->role, ['super_admin', 'admin']);
     }
 }

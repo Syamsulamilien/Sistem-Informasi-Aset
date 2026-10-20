@@ -27,13 +27,13 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:users,username|alpha_dash',
             'password' => 'required|min:8|confirmed',
-            'role' => 'required|in:teknisi,viewer,user_biasa,laboran',
+            'role' => 'required|in:super_admin,admin,teknisi,viewer,user_biasa,laboran',
         ], [
             'username.alpha_dash' => 'Username hanya boleh berisi huruf, angka, dash dan underscore.',
             'username.unique' => 'Username sudah digunakan.',
             'password.confirmed' => 'Konfirmasi password tidak cocok.',
             'role.required' => 'Role harus dipilih.',
-            'role.in' => 'Role harus teknisi, viewer, user_biasa, atau laboran.',
+            'role.in' => 'Role yang dipilih tidak valid.',
         ]);
 
         User::create([
@@ -57,10 +57,10 @@ class UserController extends Controller
     // Form edit user (fallback standalone)
     public function edit(User $user)
     {
-        // Cegah edit admin
-        if ($user->role === 'admin') {
+        // Cegah edit akun Super Admin lain
+        if ($user->role === 'super_admin' && $user->id !== auth()->id()) {
             return redirect()->route('settings')
-                ->with('error', 'Tidak bisa mengedit akun admin!');
+                ->with('error', 'Tidak bisa mengedit akun Super Admin lain!');
         }
 
         return view('users.edit', compact('user'));
@@ -69,23 +69,23 @@ class UserController extends Controller
     // Update user
     public function update(Request $request, User $user)
     {
-        // Cegah edit admin
-        if ($user->role === 'admin') {
+        // Cegah edit akun Super Admin lain
+        if ($user->role === 'super_admin' && $user->id !== auth()->id()) {
             return redirect()->route('settings')
-                ->with('error', 'Tidak bisa mengedit akun admin!');
+                ->with('error', 'Tidak bisa mengedit akun Super Admin lain!');
         }
 
         $request->validate([
             'name' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:users,username,' . $user->id . '|alpha_dash',
             'password' => 'nullable|min:8|confirmed',
-            'role' => 'required|in:teknisi,viewer,user_biasa,laboran',
+            'role' => 'required|in:super_admin,admin,teknisi,viewer,user_biasa,laboran',
         ], [
             'username.alpha_dash' => 'Username hanya boleh berisi huruf, angka, dash dan underscore.',
             'username.unique' => 'Username sudah digunakan.',
             'password.confirmed' => 'Konfirmasi password tidak cocok.',
             'role.required' => 'Role harus dipilih.',
-            'role.in' => 'Role harus teknisi, viewer, user_biasa, atau laboran.',
+            'role.in' => 'Role yang dipilih tidak valid.',
         ]);
 
         $data = [
@@ -115,10 +115,10 @@ class UserController extends Controller
                 ->with('error', 'Tidak bisa menghapus akun sendiri!');
         }
 
-        // Cegah hapus admin
-        if ($user->role === 'admin') {
+        // Cegah hapus akun Super Admin
+        if ($user->role === 'super_admin') {
             return redirect()->route('settings')
-                ->with('error', 'Tidak bisa menghapus akun admin!');
+                ->with('error', 'Tidak bisa menghapus akun Super Admin!');
         }
 
         $user->delete();
@@ -127,13 +127,13 @@ class UserController extends Controller
             ->with('success', 'User berhasil dihapus!');
     }
 
-    // Reset password user jika user lupa password (khusus Administrator)
+    // Reset password user jika user lupa password (khusus Super Admin)
     public function resetPassword(Request $request, User $user)
     {
-        // Cegah reset akun admin lain
-        if ($user->role === 'admin' && $user->id !== auth()->id()) {
+        // Cegah reset akun Super Admin lain
+        if ($user->role === 'super_admin' && $user->id !== auth()->id()) {
             return redirect()->route('settings')
-                ->with('error', 'Tidak dapat mereset password akun admin lain!');
+                ->with('error', 'Tidak dapat mereset password akun Super Admin lain!');
         }
 
         $request->validate([

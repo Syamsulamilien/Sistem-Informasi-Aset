@@ -39,8 +39,11 @@ class CheckRole
             }
         }
 
-        // Cek apakah role user ada dalam daftar yang diizinkan
-        if (!in_array($user->role, $allowedRoles, true)) {
+        // Cek apakah role user ada dalam daftar yang diizinkan (super_admin otomatis mewarisi hak admin)
+        $hasAccess = in_array($user->role, $allowedRoles, true)
+            || ($user->role === 'super_admin' && in_array('admin', $allowedRoles, true));
+
+        if (!$hasAccess) {
             abort(403, 'Akses Ditolak: Anda tidak memiliki izin untuk mengakses tindakan atau endpoint ini.');
         }
 

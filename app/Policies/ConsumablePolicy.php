@@ -19,21 +19,21 @@ class ConsumablePolicy
 
     public function create(User $user): bool
     {
-        return in_array($user->role, ['admin', 'teknisi', 'laboran']);
+        return in_array($user->role, ['super_admin', 'admin', 'teknisi', 'laboran']);
     }
 
     public function update(User $user, Consumable $consumable): bool
     {
-        return in_array($user->role, ['admin', 'teknisi', 'laboran']);
+        return in_array($user->role, ['super_admin', 'admin', 'teknisi', 'laboran']);
     }
 
     public function transaction(User $user, Consumable $consumable): bool
     {
-        return in_array($user->role, ['admin', 'teknisi', 'laboran']);
+        return in_array($user->role, ['super_admin', 'admin', 'teknisi', 'laboran']);
     }
 
     public function delete(User $user, Consumable $consumable): bool
     {
-        return $user->role === 'admin';
+        return in_array($user->role, ['super_admin', 'admin']);
     }
 }
