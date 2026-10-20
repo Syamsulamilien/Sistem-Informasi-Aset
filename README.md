@@ -299,18 +299,26 @@ Aplikasi telah diimplementasikan dengan berbagai lapisan keamanan:
 
 ---
 
-## 🤝 Kontribusi
+## 🤝 Tim Pengembang
 
-Project ini dikembangkan sebagai **Capstone Project Semester 7**.
+Project ini dikembangkan sebagai **Capstone Project Semester 7** secara kolaboratif oleh tim berikut:
 
-**Developer:** Syamsul Amilien  
+| No | Nama | Peran |
+|---|---|---|
+| 1 | **Syamsul Amilien** | Project Lead & Full-Stack Developer |
+| 2 | **Dzaki** | Backend Developer |
+| 3 | **Anggi** | Frontend Developer |
+| 4 | **Sindi** | UI/UX Designer & Tester |
+| 5 | **Putri** | Dokumentasi & Tester |
+
 **Institusi:** SMK Kesehatan Binatama  
+**Program Keahlian:** Rekayasa Perangkat Lunak  
 **Tahun:** 2025 – 2026
 
 ---
 
 <div align="center">
 
-Made with ❤️ for **SMK Kesehatan Binatama**
+Made with ❤️ by **Tim Capstone SMK Kesehatan Binatama**
 
 </div>
