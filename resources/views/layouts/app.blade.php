@@ -100,9 +100,9 @@
         @include('layouts.sidebar')
 
         {{-- Main Content Wrapper --}}
-        <div id="main-content-wrapper" class="flex-1 lg:ml-64 flex flex-col h-screen overflow-y-auto overflow-x-hidden min-w-0 transition-[margin] duration-300">
-            {{-- Sticky Top Header (tetap di atas saat scroll, full lebar) --}}
-            <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm" id="main-header">
+        <div id="main-content-wrapper" class="flex-1 lg:ml-64 flex flex-col min-h-screen min-w-0 overflow-x-hidden transition-[margin] duration-300">
+            {{-- Sticky Top Header (Konsisten di semua halaman) --}}
+            <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm">
                 <div class="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
                     <!-- Sisi Kiri: Tombol Hamburger Mobile / Toggle Desktop & Brand -->
                     <div class="flex items-center gap-3">
