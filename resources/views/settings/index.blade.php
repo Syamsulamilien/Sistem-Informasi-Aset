@@ -18,7 +18,7 @@
                 <!-- Sub-bagian 1: Informasi User -->
                 <div class="space-y-6">
                     <div>
-                        <h2 class="text-lg font-bold text-gray-900 tracking-tight">Profil Akun Saya</h2>
+                        <h2 class="text-lg font-bold text-gray-900 tracking-tight">Profil Akun Sayaa</h2>
                         <p class="text-xs text-gray-500 mt-0.5">Data identitas akun Anda yang sedang aktif saat ini</p>
                     </div>
 
