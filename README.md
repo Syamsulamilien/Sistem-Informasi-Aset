@@ -305,9 +305,9 @@ Project ini dikembangkan sebagai **Capstone Project Semester 7** secara kolabora
 
 | No | Nama | Peran |
 |---|---|---|
-| 1 | **Syamsul Amilien** | Project Lead & Full-Stack Developer |
+| 1 | **Anggi** | Project Lead |
 | 2 | **Dzaki** | Backend Developer |
-| 3 | **Anggi** | Frontend Developer |
+| 3 | **Syamsul Amilien** | Frontend Developer |
 | 4 | **Sindi** | UI/UX Designer & Tester |
 | 5 | **Putri** | Dokumentasi & Tester |
 
