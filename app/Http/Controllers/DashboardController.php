@@ -11,6 +11,11 @@ class DashboardController extends Controller
 {
     public function index()
     {
+        // Role Pimpinan Sekolah hanya fokus pada peminjaman dan laporan, alihkan ke peminjaman
+        if (auth()->check() && auth()->user()->isPimpinan()) {
+            return redirect()->route('borrowings.index');
+        }
+
         // ===== Kartu statistik =====
         $totalAssets    = Asset::count();
         $activeAssets   = Asset::where('status', 'Aktif')->count();

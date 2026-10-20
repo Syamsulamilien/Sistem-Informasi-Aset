@@ -110,6 +110,7 @@
                                 required>
                             <option value="" disabled {{ old('role') ? '' : 'selected' }}>Pilih Role</option>
                             <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Admin</option>
+                            <option value="pimpinan" {{ old('role') == 'pimpinan' ? 'selected' : '' }}>Pimpinan Sekolah</option>
                             <option value="teknisi" {{ old('role') == 'teknisi' ? 'selected' : '' }}>Teknisi</option>
                             <option value="laboran" {{ old('role') == 'laboran' ? 'selected' : '' }}>Laboran</option>
                             <option value="viewer" {{ old('role') == 'viewer' ? 'selected' : '' }}>Viewer</option>

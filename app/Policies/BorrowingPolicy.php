@@ -19,7 +19,7 @@ class BorrowingPolicy
 
     public function create(User $user): bool
     {
-        return in_array($user->role, ['super_admin', 'admin', 'teknisi', 'laboran']);
+        return in_array($user->role, ['super_admin', 'admin', 'teknisi', 'laboran', 'pimpinan', 'pimpinan_sekolah']);
     }
 
     public function update(User $user, Borrowing $borrowing): bool

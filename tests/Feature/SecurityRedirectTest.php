@@ -117,4 +117,41 @@ class SecurityRedirectTest extends TestCase
 
         $this->assertTrue(\Illuminate\Support\Facades\Hash::check($plainPassword, $user2->password), 'Password hash check with plain password');
     }
+
+    public function test_pimpinan_role_permissions_and_redirects(): void
+    {
+        $pimpinan = new User([
+            'name' => 'Kepala Sekolah',
+            'username' => 'kepsek',
+            'role' => 'pimpinan',
+        ]);
+        $pimpinan->id = 15;
+
+        $this->assertTrue($pimpinan->isPimpinan());
+        $this->assertFalse($pimpinan->isAdmin());
+        $this->assertFalse($pimpinan->isSuperAdmin());
+
+        // Policy Borrowing::create diizinkan untuk Pimpinan
+        $borrowingPolicy = new \App\Policies\BorrowingPolicy();
+        $this->assertTrue($borrowingPolicy->create($pimpinan));
+        // Pimpinan tidak boleh approve/update status orang lain
+        $this->assertFalse($borrowingPolicy->update($pimpinan, new \App\Models\Borrowing()));
+
+        // Dashboard diarahkan langsung ke borrowings.index
+        $response = $this->actingAs($pimpinan)->get('/dashboard');
+        $response->assertRedirect(route('borrowings.index'));
+
+        // Modul non-peminjaman & non-laporan diblokir
+        $response = $this->actingAs($pimpinan)->get('/assets');
+        $response->assertRedirect(route('dashboard'));
+        $response->assertSessionHas('error');
+
+        $response = $this->actingAs($pimpinan)->get('/maintenance');
+        $response->assertRedirect(route('dashboard'));
+        $response->assertSessionHas('error');
+
+        $response = $this->actingAs($pimpinan)->get('/consumables');
+        $response->assertRedirect(route('dashboard'));
+        $response->assertSessionHas('error');
+    }
 }

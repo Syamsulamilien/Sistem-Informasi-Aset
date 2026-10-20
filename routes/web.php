@@ -64,37 +64,49 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // ------------------------------------------
-    // 3. READ-ONLY ENDPOINTS (Aset, Lokasi, Jenis, Maintenance, Barang, Peminjaman)
-    // Semua role (admin, teknisi, viewer) berhak melihat data & cetak label
+    // 3. READ-ONLY ENDPOINTS MODUL ASET, LOKASI, JENIS, MAINTENANCE, CONSUMABLE
+    // Dapat diakses oleh staf & viewer, tetapi dikecualikan untuk role khusus seperti Pimpinan Sekolah
     // ------------------------------------------
-    Route::get('/assets', [AssetController::class, 'index'])->name('assets.index');
-    Route::get('/assets/{asset}', [AssetController::class, 'show'])->name('assets.show')->whereNumber('asset');
-    Route::get('/assets/{asset}/qrcode', [AssetController::class, 'qrcode'])->name('assets.qrcode')->whereNumber('asset');
-    Route::get('/assets/{asset}/qrcode/download', [AssetController::class, 'downloadQrCode'])->name('assets.qrcode.download')->whereNumber('asset');
-    Route::get('/assets/{asset}/qrcode/print', [AssetController::class, 'printLabel'])->name('assets.qrcode.print')->whereNumber('asset');
-    Route::get('/assets/{asset}/qrcode/pdf', [AssetController::class, 'downloadLabelPdf'])->name('assets.qrcode.pdf')->whereNumber('asset');
+    Route::middleware(['role:super_admin,admin,teknisi,laboran,viewer,user_biasa'])->group(function () {
+        Route::get('/assets', [AssetController::class, 'index'])->name('assets.index');
+        Route::get('/assets/{asset}', [AssetController::class, 'show'])->name('assets.show')->whereNumber('asset');
+        Route::get('/assets/{asset}/qrcode', [AssetController::class, 'qrcode'])->name('assets.qrcode')->whereNumber('asset');
+        Route::get('/assets/{asset}/qrcode/download', [AssetController::class, 'downloadQrCode'])->name('assets.qrcode.download')->whereNumber('asset');
+        Route::get('/assets/{asset}/qrcode/print', [AssetController::class, 'printLabel'])->name('assets.qrcode.print')->whereNumber('asset');
+        Route::get('/assets/{asset}/qrcode/pdf', [AssetController::class, 'downloadLabelPdf'])->name('assets.qrcode.pdf')->whereNumber('asset');
 
-    Route::get('/locations', [LocationController::class, 'index'])->name('locations.index');
-    Route::get('/locations/{location}', [LocationController::class, 'show'])->name('locations.show')->whereNumber('location');
+        Route::get('/locations', [LocationController::class, 'index'])->name('locations.index');
+        Route::get('/locations/{location}', [LocationController::class, 'show'])->name('locations.show')->whereNumber('location');
 
-    Route::get('/asset-types', [AssetTypeController::class, 'index'])->name('asset-types.index');
+        Route::get('/asset-types', [AssetTypeController::class, 'index'])->name('asset-types.index');
 
-    Route::get('/maintenance', [MaintenanceController::class, 'index'])->name('maintenance.index');
-    Route::get('/maintenance/schedules/upcoming', [MaintenanceController::class, 'upcoming'])->name('maintenance.upcoming');
-    Route::get('/maintenance/schedules/overdue', [MaintenanceController::class, 'overdue'])->name('maintenance.overdue');
-    Route::get('/maintenance/asset/{assetId}/history', [MaintenanceController::class, 'assetHistory'])->name('maintenance.asset-history')->whereNumber('assetId');
-    Route::get('/maintenance/{maintenance}', [MaintenanceController::class, 'show'])->name('maintenance.show')->whereNumber('maintenance');
+        Route::get('/maintenance', [MaintenanceController::class, 'index'])->name('maintenance.index');
+        Route::get('/maintenance/schedules/upcoming', [MaintenanceController::class, 'upcoming'])->name('maintenance.upcoming');
+        Route::get('/maintenance/schedules/overdue', [MaintenanceController::class, 'overdue'])->name('maintenance.overdue');
+        Route::get('/maintenance/asset/{assetId}/history', [MaintenanceController::class, 'assetHistory'])->name('maintenance.asset-history')->whereNumber('assetId');
+        Route::get('/maintenance/{maintenance}', [MaintenanceController::class, 'show'])->name('maintenance.show')->whereNumber('maintenance');
 
-    Route::get('/consumables', [ConsumableController::class, 'index'])->name('consumables.index');
-    Route::get('/consumables/{consumable}', [ConsumableController::class, 'show'])->name('consumables.show')->whereNumber('consumable');
+        Route::get('/consumables', [ConsumableController::class, 'index'])->name('consumables.index');
+        Route::get('/consumables/{consumable}', [ConsumableController::class, 'show'])->name('consumables.show')->whereNumber('consumable');
+    });
 
+    // Peminjaman: Read-only dapat diakses semua role terautentikasi (termasuk Pimpinan)
     Route::get('/borrowings', [BorrowingController::class, 'index'])->name('borrowings.index');
     Route::get('/borrowings/{borrowing}', [BorrowingController::class, 'show'])->name('borrowings.show')->whereNumber('borrowing');
 
 
     // ------------------------------------------
-    // 4. LEVEL OPERASIONAL (SUPER ADMIN, ADMIN, TEKNISI, LABORAN)
-    // Viewer dilarang keras mengakses endpoint manipulasi ini!
+    // 4. LEVEL AJUKAN PEMINJAMAN (SEMUA STAF & PIMPINAN SEKOLAH)
+    // ------------------------------------------
+    Route::middleware(['role:super_admin,admin,teknisi,laboran,pimpinan,pimpinan_sekolah'])->group(function () {
+        Route::get('/borrowings/create', [BorrowingController::class, 'create'])->name('borrowings.create');
+        Route::post('/borrowings', [BorrowingController::class, 'store'])->name('borrowings.store');
+    });
+
+
+    // ------------------------------------------
+    // 5. LEVEL OPERASIONAL (SUPER ADMIN, ADMIN, TEKNISI, LABORAN)
+    // Pimpinan dan Viewer dilarang mengakses manipulasi operasional ini!
     // ------------------------------------------
     Route::middleware(['role:super_admin,admin,teknisi,laboran'])->group(function () {
         // Edit Aset (Update kondisi/lokasi/status)
@@ -111,13 +123,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::patch('/{maintenance}/complete', [MaintenanceController::class, 'complete'])->name('complete')->whereNumber('maintenance');
         });
 
-        // Peminjaman Aset (Catat pinjam & update pengembalian)
-        Route::prefix('borrowings')->name('borrowings.')->group(function () {
-            Route::get('/create', [BorrowingController::class, 'create'])->name('create');
-            Route::post('/', [BorrowingController::class, 'store'])->name('store');
-            Route::get('/{borrowing}/edit', [BorrowingController::class, 'edit'])->name('edit')->whereNumber('borrowing');
-            Route::match(['put', 'patch'], '/{borrowing}', [BorrowingController::class, 'update'])->name('update')->whereNumber('borrowing');
-        });
+        // Edit status / approve pengembalian Peminjaman Aset (Khusus staf)
+        Route::get('/borrowings/{borrowing}/edit', [BorrowingController::class, 'edit'])->name('borrowings.edit')->whereNumber('borrowing');
+        Route::match(['put', 'patch'], '/borrowings/{borrowing}', [BorrowingController::class, 'update'])->name('borrowings.update')->whereNumber('borrowing');
 
         // Barang Habis Pakai (Tambah item, edit, dan catat transaksi keluar-masuk)
         Route::prefix('consumables')->name('consumables.')->group(function () {

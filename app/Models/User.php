@@ -60,6 +60,11 @@ class User extends Authenticatable
         return $this->role === 'laboran';
     }
 
+    public function isPimpinan()
+    {
+        return in_array($this->role, ['pimpinan', 'pimpinan_sekolah']);
+    }
+
     public function maintenanceRecords()
     {
         return $this->hasMany(MaintenanceRecord::class, 'technician_id');

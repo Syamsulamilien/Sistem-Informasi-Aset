@@ -93,6 +93,7 @@
                                         $badgeClasses = match($user->role) {
                                             'super_admin' => 'bg-rose-100 text-rose-800',
                                             'admin' => 'bg-purple-100 text-purple-800',
+                                            'pimpinan', 'pimpinan_sekolah' => 'bg-teal-100 text-teal-800',
                                             'teknisi' => 'bg-blue-100 text-blue-800',
                                             'laboran' => 'bg-emerald-100 text-emerald-800',
                                             'viewer' => 'bg-amber-100 text-amber-800',
@@ -101,6 +102,7 @@
                                         $roleLabel = match($user->role) {
                                             'super_admin' => 'Super Admin',
                                             'admin' => 'Admin',
+                                            'pimpinan', 'pimpinan_sekolah' => 'Pimpinan Sekolah',
                                             'teknisi' => 'Teknisi',
                                             'laboran' => 'Laboran',
                                             'viewer' => 'Viewer',

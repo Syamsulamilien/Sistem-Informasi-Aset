@@ -18,7 +18,7 @@
                 <!-- Sub-bagian 1: Informasi User -->
                 <div class="space-y-6">
                     <div>
-                        <h2 class="text-lg font-bold text-gray-900 tracking-tight">Profil Akun Sayaa</h2>
+                        <h2 class="text-lg font-bold text-gray-900 tracking-tight">Profil Akun Saya</h2>
                         <p class="text-xs text-gray-500 mt-0.5">Data identitas akun Anda yang sedang aktif saat ini</p>
                     </div>
 
@@ -47,6 +47,7 @@
                                     {{ match($user->role) {
                                         'super_admin' => 'Super Administrator',
                                         'admin' => 'Administrator',
+                                        'pimpinan', 'pimpinan_sekolah' => 'Pimpinan Sekolah',
                                         default => str_replace('_', ' ', $user->role)
                                     } }}
                                 </span>
@@ -174,6 +175,7 @@
                                             $badgeClasses = match($u->role) {
                                                 'super_admin' => 'bg-rose-50 text-rose-700 border-rose-200',
                                                 'admin' => 'bg-purple-50 text-purple-700 border-purple-200',
+                                                'pimpinan', 'pimpinan_sekolah' => 'bg-teal-50 text-teal-700 border-teal-200',
                                                 'teknisi' => 'bg-blue-50 text-blue-700 border-blue-200',
                                                 'laboran' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
                                                 'viewer' => 'bg-amber-50 text-amber-700 border-amber-200',
@@ -182,6 +184,7 @@
                                             $roleLabel = match($u->role) {
                                                 'super_admin' => 'Super Admin',
                                                 'admin' => 'Admin',
+                                                'pimpinan', 'pimpinan_sekolah' => 'Pimpinan Sekolah',
                                                 'teknisi' => 'Teknisi',
                                                 'laboran' => 'Laboran',
                                                 'viewer' => 'Viewer',
@@ -280,6 +283,7 @@
                             <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Role / Peran</label>
                             <select name="role" required class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
                                 <option value="admin">Admin</option>
+                                <option value="pimpinan">Pimpinan Sekolah</option>
                                 <option value="teknisi">Teknisi</option>
                                 <option value="laboran">Laboran</option>
                                 <option value="viewer">Viewer</option>
@@ -335,6 +339,7 @@
                             <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Role / Peran</label>
                             <select id="edit_role" name="role" required class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
                                 <option value="admin">Admin</option>
+                                <option value="pimpinan">Pimpinan Sekolah</option>
                                 <option value="teknisi">Teknisi</option>
                                 <option value="laboran">Laboran</option>
                                 <option value="viewer">Viewer</option>

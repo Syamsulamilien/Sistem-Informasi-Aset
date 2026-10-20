@@ -110,6 +110,7 @@
                                 class="{{ $roleClass }}"
                                 required>
                             <option value="admin" {{ old('role', $user->role) == 'admin' ? 'selected' : '' }}>Admin</option>
+                            <option value="pimpinan" {{ in_array(old('role', $user->role), ['pimpinan', 'pimpinan_sekolah']) ? 'selected' : '' }}>Pimpinan Sekolah</option>
                             <option value="teknisi" {{ old('role', $user->role) == 'teknisi' ? 'selected' : '' }}>Teknisi</option>
                             <option value="laboran" {{ old('role', $user->role) == 'laboran' ? 'selected' : '' }}>Laboran</option>
                             <option value="viewer" {{ old('role', $user->role) == 'viewer' ? 'selected' : '' }}>Viewer</option>
