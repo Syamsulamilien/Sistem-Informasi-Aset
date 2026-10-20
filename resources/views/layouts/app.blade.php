@@ -61,6 +61,9 @@
             html.sidebar-collapsed #main-content-wrapper {
                 margin-left: 5rem !important;
             }
+            html.sidebar-collapsed #main-header {
+                left: 5rem !important;
+            }
             html.sidebar-collapsed .sidebar-text,
             html.sidebar-collapsed .sidebar-brand-text {
                 display: none !important;
@@ -101,8 +104,8 @@
 
         {{-- Main Content Wrapper --}}
         <div id="main-content-wrapper" class="flex-1 lg:ml-64 flex flex-col min-h-screen min-w-0 overflow-x-hidden transition-[margin] duration-300">
-            {{-- Sticky Top Header (Konsisten di semua halaman) --}}
-            <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm">
+            {{-- Fixed Top Header (selalu tetap di atas saat scroll) --}}
+            <header class="fixed top-0 right-0 left-0 lg:left-64 z-30 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm transition-[left] duration-300" id="main-header">
                 <div class="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
                     <!-- Sisi Kiri: Tombol Hamburger Mobile / Toggle Desktop & Brand -->
                     <div class="flex items-center gap-3">
@@ -156,8 +159,8 @@
                 </div>
             </header>
 
-            {{-- Main Content Slot --}}
-            <main class="flex-1">
+            {{-- Main Content Slot (pt-16 untuk offset header fixed 64px) --}}
+            <main class="flex-1 pt-16">
                 {{ $slot }}
             </main>
         </div>
