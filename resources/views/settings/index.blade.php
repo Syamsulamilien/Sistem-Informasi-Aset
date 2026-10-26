@@ -4,7 +4,7 @@
         <!-- Header Judul Halaman -->
         <div>
             <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Settings</h1>
-            <p class="text-xs sm:text-sm text-gray-500 mt-1">Kelola informasi akun Anda dan manajemen pengguna sistema</p>
+            <p class="text-xs sm:text-sm text-gray-500 mt-1">Kelola informasi akun Anda dan manajemen pengguna sistem</p>
         </div>
 
         <!-- ======================================================== -->
