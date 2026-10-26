@@ -164,39 +164,62 @@ class SecurityRedirectTest extends TestCase
         ]);
         $guru->id = 21;
 
+        $karyawan = new User([
+            'name' => 'Doni Karyawan',
+            'username' => 'donikaryawan',
+            'role' => 'karyawan',
+        ]);
+        $karyawan->id = 22;
+
         $siswa = new User([
             'name' => 'Ahmad Siswa',
             'username' => 'ahmadsiswa',
             'role' => 'siswa',
         ]);
-        $siswa->id = 22;
+        $siswa->id = 23;
 
         $this->assertTrue($guru->isGuru());
         $this->assertTrue($guru->isUser());
         $this->assertFalse($guru->isSiswa());
+        $this->assertFalse($guru->isKaryawan());
+
+        $this->assertTrue($karyawan->isKaryawan());
+        $this->assertTrue($karyawan->isUser());
+        $this->assertFalse($karyawan->isGuru());
+        $this->assertFalse($karyawan->isSiswa());
 
         $this->assertTrue($siswa->isSiswa());
         $this->assertTrue($siswa->isUser());
         $this->assertFalse($siswa->isGuru());
+        $this->assertFalse($siswa->isKaryawan());
 
         $borrowingPolicy = new \App\Policies\BorrowingPolicy();
-        // Policy Borrowing::create diizinkan untuk Guru & Siswa
+        // Policy Borrowing::create diizinkan untuk Guru, Karyawan, & Siswa
         $this->assertTrue($borrowingPolicy->create($guru));
+        $this->assertTrue($borrowingPolicy->create($karyawan));
         $this->assertTrue($borrowingPolicy->create($siswa));
 
-        // Guru & Siswa tidak boleh update status peminjaman
+        // Guru, Karyawan, & Siswa tidak boleh update status peminjaman
         $this->assertFalse($borrowingPolicy->update($guru, new \App\Models\Borrowing()));
+        $this->assertFalse($borrowingPolicy->update($karyawan, new \App\Models\Borrowing()));
         $this->assertFalse($borrowingPolicy->update($siswa, new \App\Models\Borrowing()));
 
         // Dashboard diarahkan langsung ke borrowings.index
         $response = $this->actingAs($guru)->get('/dashboard');
         $response->assertRedirect(route('borrowings.index'));
 
+        $response = $this->actingAs($karyawan)->get('/dashboard');
+        $response->assertRedirect(route('borrowings.index'));
+
         $response = $this->actingAs($siswa)->get('/dashboard');
         $response->assertRedirect(route('borrowings.index'));
 
-        // Modul laporan diblokir untuk guru & siswa
+        // Modul laporan diblokir untuk guru, karyawan, & siswa
         $response = $this->actingAs($guru)->get('/reports');
+        $response->assertRedirect(route('dashboard'));
+        $response->assertSessionHas('error');
+
+        $response = $this->actingAs($karyawan)->get('/reports');
         $response->assertRedirect(route('dashboard'));
         $response->assertSessionHas('error');
 
@@ -206,6 +229,10 @@ class SecurityRedirectTest extends TestCase
 
         // Modul aset diblokir
         $response = $this->actingAs($guru)->get('/assets');
+        $response->assertRedirect(route('dashboard'));
+        $response->assertSessionHas('error');
+
+        $response = $this->actingAs($karyawan)->get('/assets');
         $response->assertRedirect(route('dashboard'));
         $response->assertSessionHas('error');
 

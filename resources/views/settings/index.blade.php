@@ -49,6 +49,7 @@
                                         'admin' => 'Administrator',
                                         'pimpinan', 'pimpinan_sekolah' => 'Pimpinan Sekolah',
                                         'guru' => 'Guru',
+                                        'karyawan' => 'Karyawan',
                                         'siswa' => 'Siswa',
                                         default => str_replace('_', ' ', $user->role)
                                     } }}
@@ -179,6 +180,7 @@
                                                 'admin' => 'bg-purple-50 text-purple-700 border-purple-200',
                                                 'pimpinan', 'pimpinan_sekolah' => 'bg-teal-50 text-teal-700 border-teal-200',
                                                 'guru' => 'bg-indigo-50 text-indigo-700 border-indigo-200',
+                                                'karyawan' => 'bg-amber-50 text-amber-700 border-amber-200',
                                                 'siswa' => 'bg-sky-50 text-sky-700 border-sky-200',
                                                 'teknisi' => 'bg-blue-50 text-blue-700 border-blue-200',
                                                 'laboran' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
@@ -190,6 +192,7 @@
                                                 'admin' => 'Admin',
                                                 'pimpinan', 'pimpinan_sekolah' => 'Pimpinan Sekolah',
                                                 'guru' => 'Guru',
+                                                'karyawan' => 'Karyawan',
                                                 'siswa' => 'Siswa',
                                                 'teknisi' => 'Teknisi',
                                                 'laboran' => 'Laboran',
@@ -291,6 +294,7 @@
                                 <option value="admin">Admin</option>
                                 <option value="pimpinan">Pimpinan Sekolah</option>
                                 <option value="guru">Guru</option>
+                                <option value="karyawan">Karyawan</option>
                                 <option value="siswa">Siswa</option>
                                 <option value="teknisi">Teknisi</option>
                                 <option value="laboran">Laboran</option>
@@ -348,6 +352,7 @@
                                 <option value="admin">Admin</option>
                                 <option value="pimpinan">Pimpinan Sekolah</option>
                                 <option value="guru">Guru</option>
+                                <option value="karyawan">Karyawan</option>
                                 <option value="siswa">Siswa</option>
                                 <option value="teknisi">Teknisi</option>
                                 <option value="laboran">Laboran</option>

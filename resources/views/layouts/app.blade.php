@@ -144,6 +144,7 @@
                                         'admin' => 'bg-purple-100 text-purple-700 border-purple-200',
                                         'pimpinan', 'pimpinan_sekolah' => 'bg-teal-100 text-teal-800 border-teal-200',
                                         'guru' => 'bg-indigo-100 text-indigo-800 border-indigo-200',
+                                        'karyawan' => 'bg-amber-100 text-amber-800 border-amber-200',
                                         'siswa' => 'bg-sky-100 text-sky-800 border-sky-200',
                                         'teknisi' => 'bg-blue-100 text-blue-700 border-blue-200',
                                         'laboran' => 'bg-emerald-100 text-emerald-700 border-emerald-200',
@@ -154,6 +155,7 @@
                                         'admin' => 'ADMIN',
                                         'pimpinan', 'pimpinan_sekolah' => 'PIMPINAN SEKOLAH',
                                         'guru' => 'GURU',
+                                        'karyawan' => 'KARYAWAN',
                                         'siswa' => 'SISWA',
                                         default => strtoupper(str_replace('_', ' ', Auth::user()->role)),
                                     };

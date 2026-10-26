@@ -27,7 +27,7 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:users,username|alpha_dash',
             'password' => 'required|min:8|confirmed',
-            'role' => 'required|in:super_admin,admin,pimpinan,pimpinan_sekolah,guru,siswa,teknisi,viewer,user,user_biasa,siswa_guru,laboran',
+            'role' => 'required|in:super_admin,admin,pimpinan,pimpinan_sekolah,guru,karyawan,siswa,teknisi,viewer,user,user_biasa,siswa_guru,laboran',
         ], [
             'username.alpha_dash' => 'Username hanya boleh berisi huruf, angka, dash dan underscore.',
             'username.unique' => 'Username sudah digunakan.',
@@ -79,7 +79,7 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:users,username,' . $user->id . '|alpha_dash',
             'password' => 'nullable|min:8|confirmed',
-            'role' => 'required|in:super_admin,admin,pimpinan,pimpinan_sekolah,guru,siswa,teknisi,viewer,user,user_biasa,siswa_guru,laboran',
+            'role' => 'required|in:super_admin,admin,pimpinan,pimpinan_sekolah,guru,karyawan,siswa,teknisi,viewer,user,user_biasa,siswa_guru,laboran',
         ], [
             'username.alpha_dash' => 'Username hanya boleh berisi huruf, angka, dash dan underscore.',
             'username.unique' => 'Username sudah digunakan.',

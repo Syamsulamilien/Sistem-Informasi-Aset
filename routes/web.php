@@ -99,9 +99,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 
     // ------------------------------------------
-    // 4. LEVEL AJUKAN PEMINJAMAN (SEMUA STAF, PIMPINAN SEKOLAH, GURU, & SISWA)
+    // 4. LEVEL AJUKAN PEMINJAMAN (SEMUA STAF, PIMPINAN SEKOLAH, GURU, KARYAWAN, & SISWA)
     // ------------------------------------------
-    Route::middleware(['role:super_admin,admin,teknisi,laboran,pimpinan,pimpinan_sekolah,guru,siswa,user,user_biasa,siswa_guru'])->group(function () {
+    Route::middleware(['role:super_admin,admin,teknisi,laboran,pimpinan,pimpinan_sekolah,guru,karyawan,siswa,user,user_biasa,siswa_guru'])->group(function () {
         Route::get('/borrowings/create', [BorrowingController::class, 'create'])->name('borrowings.create');
         Route::post('/borrowings', [BorrowingController::class, 'store'])->name('borrowings.store');
     });

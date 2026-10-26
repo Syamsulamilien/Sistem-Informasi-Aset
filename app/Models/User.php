@@ -60,14 +60,19 @@ class User extends Authenticatable
         return $this->role === 'siswa';
     }
 
+    public function isKaryawan()
+    {
+        return $this->role === 'karyawan';
+    }
+
     public function isUser()
     {
-        return in_array($this->role, ['guru', 'siswa', 'user', 'user_biasa', 'siswa_guru']);
+        return in_array($this->role, ['karyawan', 'guru', 'siswa', 'user', 'user_biasa', 'siswa_guru']);
     }
 
     public function isUserBiasa()
     {
-        return in_array($this->role, ['viewer', 'guru', 'siswa', 'user', 'user_biasa', 'siswa_guru']);
+        return in_array($this->role, ['viewer', 'karyawan', 'guru', 'siswa', 'user', 'user_biasa', 'siswa_guru']);
     }
 
     public function isLaboran()
