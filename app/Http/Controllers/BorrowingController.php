@@ -15,8 +15,8 @@ class BorrowingController extends Controller
     {
         $query = Borrowing::with(['asset', 'user']);
 
-        // Jika user bukan admin/laboran/teknisi, hanya tampilkan miliknya
-        if (auth()->user()->isUserBiasa()) {
+        // Jika user bukan admin/laboran/teknisi (misal: siswa, guru, viewer), hanya tampilkan miliknya
+        if (auth()->user()->isUser() || auth()->user()->isUserBiasa()) {
             $query->where('user_id', auth()->id());
         }
 
@@ -57,6 +57,8 @@ class BorrowingController extends Controller
 
     public function show(Borrowing $borrowing)
     {
+        $this->authorize('view', $borrowing);
+
         $borrowing->load(['asset', 'user']);
         return view('borrowings.show', compact('borrowing'));
     }

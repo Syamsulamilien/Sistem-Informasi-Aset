@@ -219,13 +219,15 @@ php artisan view:cache
 
 ## 👥 Struktur Role & Akses
 
-Aplikasi menggunakan sistem **Role-Based Access Control (RBAC)** dengan 6 level peran:
+Aplikasi menggunakan sistem **Role-Based Access Control (RBAC)** dengan 8 level peran:
 
 | Role | Ikon | Akses |
 |---|---|---|
 | **Super Admin** | 🔴 | Akses absolut — CRUD semua data, kelola semua modul, dan manajemen pengguna (user management) |
 | **Admin** | 🟣 | Akses operasional & master — CRUD aset, lokasi, jenis aset, maintenance, peminjaman, barang habis pakai, import/ekspor, laporan (tanpa manajemen user) |
 | **Pimpinan Sekolah** | 🟢 | Khusus pimpinan — hanya dapat mengajukan peminjaman aset dan melihat/unduh laporan |
+| **Guru** | 👨‍🏫 | Khusus guru — hanya dapat mengajukan permohonan peminjaman aset mandiri |
+| **Siswa** | 🧑‍🎓 | Khusus siswa — hanya dapat mengajukan permohonan peminjaman aset mandiri |
 | **Teknisi** | 🔵 | Kelola aset, update kondisi, catat pemeliharaan |
 | **Laboran** | 🟡 | Kelola peminjaman, barang habis pakai |
 | **Viewer** | ⚪ | Hanya bisa melihat data (read-only) |

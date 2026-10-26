@@ -49,25 +49,28 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/change-password', [ProfileController::class, 'updatePassword'])->name('update-password');
 
     // ------------------------------------------
-    // 2. LAPORAN & EKSPOR DATA (Semua Role boleh baca & unduh)
+    // 2. LAPORAN & EKSPOR DATA (Super Admin, Admin, Teknisi, Laboran, Pimpinan, Viewer)
+    // Siswa / Guru (Role User) dilarang mengakses laporan
     // ------------------------------------------
-    Route::prefix('reports')->name('reports.')->group(function () {
-        Route::get('/', [ReportController::class, 'index'])->name('index');
-        Route::get('/pdf', [ReportController::class, 'exportPdf'])->name('pdf');
-        Route::get('/view', [ReportController::class, 'viewPdf'])->name('view');
-        Route::get('/excel', [ReportController::class, 'exportExcel'])->name('excel');
-    });
+    Route::middleware(['role:super_admin,admin,teknisi,laboran,pimpinan,pimpinan_sekolah,viewer'])->group(function () {
+        Route::prefix('reports')->name('reports.')->group(function () {
+            Route::get('/', [ReportController::class, 'index'])->name('index');
+            Route::get('/pdf', [ReportController::class, 'exportPdf'])->name('pdf');
+            Route::get('/view', [ReportController::class, 'viewPdf'])->name('view');
+            Route::get('/excel', [ReportController::class, 'exportExcel'])->name('excel');
+        });
 
-    Route::prefix('export')->name('export.')->group(function () {
-        Route::get('/excel', [ImportExportController::class, 'exportExcel'])->name('excel');
-        Route::get('/pdf', [ImportExportController::class, 'exportPdf'])->name('pdf');
+        Route::prefix('export')->name('export.')->group(function () {
+            Route::get('/excel', [ImportExportController::class, 'exportExcel'])->name('excel');
+            Route::get('/pdf', [ImportExportController::class, 'exportPdf'])->name('pdf');
+        });
     });
 
     // ------------------------------------------
     // 3. READ-ONLY ENDPOINTS MODUL ASET, LOKASI, JENIS, MAINTENANCE, CONSUMABLE
-    // Dapat diakses oleh staf & viewer, tetapi dikecualikan untuk role khusus seperti Pimpinan Sekolah
+    // Dapat diakses oleh staf & viewer, tetapi dikecualikan untuk Pimpinan Sekolah dan User (Siswa/Guru)
     // ------------------------------------------
-    Route::middleware(['role:super_admin,admin,teknisi,laboran,viewer,user_biasa'])->group(function () {
+    Route::middleware(['role:super_admin,admin,teknisi,laboran,viewer'])->group(function () {
         Route::get('/assets', [AssetController::class, 'index'])->name('assets.index');
         Route::get('/assets/{asset}', [AssetController::class, 'show'])->name('assets.show')->whereNumber('asset');
         Route::get('/assets/{asset}/qrcode', [AssetController::class, 'qrcode'])->name('assets.qrcode')->whereNumber('asset');
@@ -90,15 +93,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/consumables/{consumable}', [ConsumableController::class, 'show'])->name('consumables.show')->whereNumber('consumable');
     });
 
-    // Peminjaman: Read-only dapat diakses semua role terautentikasi (termasuk Pimpinan)
+    // Peminjaman: Read-only dapat diakses semua role terautentikasi (termasuk Pimpinan & Siswa/Guru)
     Route::get('/borrowings', [BorrowingController::class, 'index'])->name('borrowings.index');
     Route::get('/borrowings/{borrowing}', [BorrowingController::class, 'show'])->name('borrowings.show')->whereNumber('borrowing');
 
 
     // ------------------------------------------
-    // 4. LEVEL AJUKAN PEMINJAMAN (SEMUA STAF & PIMPINAN SEKOLAH)
+    // 4. LEVEL AJUKAN PEMINJAMAN (SEMUA STAF, PIMPINAN SEKOLAH, GURU, & SISWA)
     // ------------------------------------------
-    Route::middleware(['role:super_admin,admin,teknisi,laboran,pimpinan,pimpinan_sekolah'])->group(function () {
+    Route::middleware(['role:super_admin,admin,teknisi,laboran,pimpinan,pimpinan_sekolah,guru,siswa,user,user_biasa,siswa_guru'])->group(function () {
         Route::get('/borrowings/create', [BorrowingController::class, 'create'])->name('borrowings.create');
         Route::post('/borrowings', [BorrowingController::class, 'store'])->name('borrowings.store');
     });

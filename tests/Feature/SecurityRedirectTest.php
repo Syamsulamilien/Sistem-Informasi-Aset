@@ -154,4 +154,63 @@ class SecurityRedirectTest extends TestCase
         $response->assertRedirect(route('dashboard'));
         $response->assertSessionHas('error');
     }
+
+    public function test_guru_and_siswa_role_permissions_and_redirects(): void
+    {
+        $guru = new User([
+            'name' => 'Budi Guru',
+            'username' => 'budiguru',
+            'role' => 'guru',
+        ]);
+        $guru->id = 21;
+
+        $siswa = new User([
+            'name' => 'Ahmad Siswa',
+            'username' => 'ahmadsiswa',
+            'role' => 'siswa',
+        ]);
+        $siswa->id = 22;
+
+        $this->assertTrue($guru->isGuru());
+        $this->assertTrue($guru->isUser());
+        $this->assertFalse($guru->isSiswa());
+
+        $this->assertTrue($siswa->isSiswa());
+        $this->assertTrue($siswa->isUser());
+        $this->assertFalse($siswa->isGuru());
+
+        $borrowingPolicy = new \App\Policies\BorrowingPolicy();
+        // Policy Borrowing::create diizinkan untuk Guru & Siswa
+        $this->assertTrue($borrowingPolicy->create($guru));
+        $this->assertTrue($borrowingPolicy->create($siswa));
+
+        // Guru & Siswa tidak boleh update status peminjaman
+        $this->assertFalse($borrowingPolicy->update($guru, new \App\Models\Borrowing()));
+        $this->assertFalse($borrowingPolicy->update($siswa, new \App\Models\Borrowing()));
+
+        // Dashboard diarahkan langsung ke borrowings.index
+        $response = $this->actingAs($guru)->get('/dashboard');
+        $response->assertRedirect(route('borrowings.index'));
+
+        $response = $this->actingAs($siswa)->get('/dashboard');
+        $response->assertRedirect(route('borrowings.index'));
+
+        // Modul laporan diblokir untuk guru & siswa
+        $response = $this->actingAs($guru)->get('/reports');
+        $response->assertRedirect(route('dashboard'));
+        $response->assertSessionHas('error');
+
+        $response = $this->actingAs($siswa)->get('/reports');
+        $response->assertRedirect(route('dashboard'));
+        $response->assertSessionHas('error');
+
+        // Modul aset diblokir
+        $response = $this->actingAs($guru)->get('/assets');
+        $response->assertRedirect(route('dashboard'));
+        $response->assertSessionHas('error');
+
+        $response = $this->actingAs($siswa)->get('/assets');
+        $response->assertRedirect(route('dashboard'));
+        $response->assertSessionHas('error');
+    }
 }

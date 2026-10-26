@@ -11,8 +11,8 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        // Role Pimpinan Sekolah hanya fokus pada peminjaman dan laporan, alihkan ke peminjaman
-        if (auth()->check() && auth()->user()->isPimpinan()) {
+        // Role Pimpinan Sekolah dan User (Siswa/Guru) hanya fokus pada peminjaman, alihkan ke peminjaman
+        if (auth()->check() && (auth()->user()->isPimpinan() || auth()->user()->isUser())) {
             return redirect()->route('borrowings.index');
         }
 
