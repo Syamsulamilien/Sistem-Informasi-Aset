@@ -9,9 +9,12 @@ use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\AssetsExport;
 use App\Imports\AssetsImport;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class ImportExportController extends Controller
 {
+    use AuthorizesRequests;
+
     public function exportExcel(Request $request)
     {
         $query = Asset::with('location', 'assetType');
@@ -106,21 +109,30 @@ class ImportExportController extends Controller
             })
             ->implode(', ');
         
-        $callback = function() use ($headers, $exampleData, $assetTypesList) {
+        $callback = function() use ($headers, $exampleData, $firstAssetType, $firstLocation) {
             $file = fopen('php://output', 'w');
             
             // Header
             fputcsv($file, $headers);
             
-            // Comment: Daftar jenis yang valid
-            fputcsv($file, ['# JENIS YANG VALID: ' . $assetTypesList]);
-            fputcsv($file, ['# Gunakan nama lengkap atau prefix (contoh: PC Desktop atau PC)']);
-            fputcsv($file, ['# Kosongkan asset_code untuk auto-generate']);
-            fputcsv($file, ['# Description: Tambahkan spesifikasi atau catatan (opsional)']);
-            fputcsv($file, ['']);
-            
-            // Example data
+            // Example data baris 1
             fputcsv($file, $exampleData);
+
+            // Example data baris 2
+            fputcsv($file, [
+                '',
+                $firstAssetType->name ?? 'PC Desktop',
+                'HP',
+                'ProDesk 400',
+                'SN987654321',
+                'Core i5 Gen 12, RAM 8GB, SSD 256GB',
+                '2024',
+                '12000000',
+                'Baik',
+                'Aktif',
+                $firstLocation->id ?? '1',
+                '2027-01-01'
+            ]);
             
             fclose($file);
         };

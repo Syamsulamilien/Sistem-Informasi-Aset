@@ -240,4 +240,53 @@ class SecurityRedirectTest extends TestCase
         $response->assertRedirect(route('dashboard'));
         $response->assertSessionHas('error');
     }
+
+    public function test_import_excel_authorization(): void
+    {
+        $superAdmin = new User(['name' => 'Super Admin', 'role' => 'super_admin']);
+        $superAdmin->id = 1;
+
+        $response = $this->actingAs($superAdmin)->post('/import/excel', []);
+        $this->assertNotEquals(500, $response->getStatusCode());
+        $response->assertSessionHasErrors('file');
+    }
+
+    public function test_assets_import_skips_comments_and_empty_rows(): void
+    {
+        $import = new \App\Imports\AssetsImport();
+        
+        // Comment row
+        $commentRow = ['asset_code' => '# JENIS YANG VALID: PC Desktop', 'jenis' => null, 'brand' => null];
+        $this->assertTrue($import->isEmptyWhen($commentRow));
+
+        // Empty row
+        $emptyRow = ['asset_code' => '', 'jenis' => '', 'brand' => '', 'model' => '', 'serial_number' => ''];
+        $this->assertTrue($import->isEmptyWhen($emptyRow));
+
+        // Valid data row
+        $validRow = ['asset_code' => 'PC-001', 'jenis' => 'PC', 'brand' => 'Dell', 'model' => 'Optiplex', 'serial_number' => 'SN123'];
+        $this->assertFalse($import->isEmptyWhen($validRow));
+    }
+
+    public function test_assets_import_supports_school_inventory_format(): void
+    {
+        $import = new \App\Imports\AssetsImport();
+
+        $schoolRow = [
+            'nama_barang' => 'Komputer Server',
+            'merk' => 'Intel Core i7',
+            'jumlah' => 2,
+            'kondisi' => 'Baik',
+            'lokasi' => 'Lab Komputer',
+        ];
+
+        $this->assertFalse($import->isEmptyWhen($schoolRow));
+
+        $prepared = $import->prepareForValidation($schoolRow, 1);
+        $this->assertEquals('Server', $prepared['jenis']);
+        $this->assertEquals('Intel Core i7', $prepared['brand']);
+        $this->assertEquals('Baik', $prepared['condition']);
+        $this->assertEquals('Aktif', $prepared['status']);
+        $this->assertNotNull($prepared['location_id']);
+    }
 }

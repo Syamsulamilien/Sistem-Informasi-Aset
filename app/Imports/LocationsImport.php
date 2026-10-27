@@ -8,9 +8,10 @@ use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
 use Maatwebsite\Excel\Concerns\SkipsOnError;
 use Maatwebsite\Excel\Concerns\SkipsErrors;
+use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
 use Illuminate\Validation\Rule;
 
-class LocationsImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnError
+class LocationsImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnError, SkipsEmptyRows
 {
     use SkipsErrors;
 
