@@ -15,6 +15,9 @@ class User extends Authenticatable
         'email',
         'password',
         'role', // role selalu di-set eksplisit via array di controller, bukan mass assignment
+        'gender', // 'Laki-laki' atau 'Perempuan' untuk semua user
+        'class_name', // Kelas (khusus role siswa, misal 'X Farmasi 1')
+        'location_id', // penugasan ruangan/lab khusus untuk role admin
     ];
 
     protected $hidden = [
@@ -30,6 +33,11 @@ class User extends Authenticatable
         ];
     }
 
+    public function location()
+    {
+        return $this->belongsTo(Location::class);
+    }
+
     public function isSuperAdmin()
     {
         return $this->role === 'super_admin';
@@ -40,6 +48,16 @@ class User extends Authenticatable
         return in_array($this->role, ['super_admin', 'admin']);
     }
 
+    public function isPimpinan()
+    {
+        return in_array($this->role, ['pimpinan', 'pimpinan_sekolah']);
+    }
+
+    public function isUser()
+    {
+        return in_array($this->role, ['user', 'siswa', 'guru', 'karyawan', 'user_biasa', 'siswa_guru', 'viewer']);
+    }
+
     public function isTeknisi()
     {
         return $this->role === 'teknisi';
@@ -48,6 +66,11 @@ class User extends Authenticatable
     public function isViewer()
     {
         return $this->role === 'viewer';
+    }
+
+    public function isLaboran()
+    {
+        return $this->role === 'laboran';
     }
 
     public function isGuru()
@@ -65,24 +88,9 @@ class User extends Authenticatable
         return $this->role === 'karyawan';
     }
 
-    public function isUser()
-    {
-        return in_array($this->role, ['karyawan', 'guru', 'siswa', 'user', 'user_biasa', 'siswa_guru']);
-    }
-
     public function isUserBiasa()
     {
-        return in_array($this->role, ['viewer', 'karyawan', 'guru', 'siswa', 'user', 'user_biasa', 'siswa_guru']);
-    }
-
-    public function isLaboran()
-    {
-        return $this->role === 'laboran';
-    }
-
-    public function isPimpinan()
-    {
-        return in_array($this->role, ['pimpinan', 'pimpinan_sekolah']);
+        return $this->isUser();
     }
 
     public function maintenanceRecords()

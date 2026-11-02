@@ -23,6 +23,11 @@ class AssetController extends Controller
     {
         $query = Asset::with(['location', 'assetType']);
 
+        // Jika Admin terikat ke satu ruangan/lab tertentu, hanya tampilkan aset ruangannya
+        if (auth()->check() && auth()->user()->role === 'admin' && auth()->user()->location_id) {
+            $query->where('location_id', auth()->user()->location_id);
+        }
+
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -54,7 +59,9 @@ class AssetController extends Controller
         }
 
         $assets = $query->latest()->paginate(15)->withQueryString();
-        $locations = Location::all();
+        $locations = (auth()->check() && auth()->user()->role === 'admin' && auth()->user()->location_id)
+            ? Location::where('id', auth()->user()->location_id)->get()
+            : Location::all();
         $assetTypes = AssetType::active()->get();
 
         // Ambil daftar kategori unik dari asset_types
@@ -71,7 +78,11 @@ class AssetController extends Controller
     {
         $this->authorize('create', Asset::class);
 
-        $locations = Location::all();
+        // Jika admin memiliki ruangan khusus, kunci hanya ke ruangan tersebut
+        $locations = (auth()->check() && auth()->user()->role === 'admin' && auth()->user()->location_id)
+            ? Location::where('id', auth()->user()->location_id)->get()
+            : Location::all();
+
         $assetTypes = AssetType::active()->orderBy('name')->get();
 
         return view('assets.create', compact('locations', 'assetTypes'));
@@ -80,6 +91,11 @@ class AssetController extends Controller
     public function store(Request $request)
     {
         $this->authorize('create', Asset::class);
+
+        // Paksa location_id ke ruangan admin jika role admin bertugas di ruangan tertentu
+        if (auth()->check() && auth()->user()->role === 'admin' && auth()->user()->location_id) {
+            $request->merge(['location_id' => auth()->user()->location_id]);
+        }
     $validated = $request->validate([
         'asset_type_id' => 'required|exists:asset_types,id',
         'kategori' => 'required|string',

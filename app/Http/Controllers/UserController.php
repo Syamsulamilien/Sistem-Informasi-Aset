@@ -28,12 +28,18 @@ class UserController extends Controller
             'username' => 'required|string|max:255|unique:users,username|alpha_dash',
             'password' => 'required|min:8|confirmed',
             'role' => 'required|in:super_admin,admin,pimpinan,pimpinan_sekolah,guru,karyawan,siswa,teknisi,viewer,user,user_biasa,siswa_guru,laboran',
+            'gender' => 'required|in:Laki-laki,Perempuan',
+            'class_name' => 'nullable|string|max:50',
+            'location_id' => 'nullable|exists:locations,id',
         ], [
             'username.alpha_dash' => 'Username hanya boleh berisi huruf, angka, dash dan underscore.',
             'username.unique' => 'Username sudah digunakan.',
             'password.confirmed' => 'Konfirmasi password tidak cocok.',
             'role.required' => 'Role harus dipilih.',
             'role.in' => 'Role yang dipilih tidak valid.',
+            'gender.required' => 'Jenis kelamin wajib dipilih.',
+            'gender.in' => 'Jenis kelamin harus Laki-laki atau Perempuan.',
+            'location_id.exists' => 'Ruangan/Lab yang dipilih tidak valid.',
         ]);
 
         User::create([
@@ -42,6 +48,9 @@ class UserController extends Controller
             'email' => $request->username . '@smkbinatama.sch.id',
             'password' => Hash::make($request->password),
             'role' => $request->role,
+            'gender' => $request->gender,
+            'class_name' => $request->role === 'siswa' ? $request->class_name : null,
+            'location_id' => $request->role === 'admin' ? $request->location_id : null,
         ]);
 
         return redirect()->route('settings')
@@ -80,12 +89,18 @@ class UserController extends Controller
             'username' => 'required|string|max:255|unique:users,username,' . $user->id . '|alpha_dash',
             'password' => 'nullable|min:8|confirmed',
             'role' => 'required|in:super_admin,admin,pimpinan,pimpinan_sekolah,guru,karyawan,siswa,teknisi,viewer,user,user_biasa,siswa_guru,laboran',
+            'gender' => 'required|in:Laki-laki,Perempuan',
+            'class_name' => 'nullable|string|max:50',
+            'location_id' => 'nullable|exists:locations,id',
         ], [
             'username.alpha_dash' => 'Username hanya boleh berisi huruf, angka, dash dan underscore.',
             'username.unique' => 'Username sudah digunakan.',
             'password.confirmed' => 'Konfirmasi password tidak cocok.',
             'role.required' => 'Role harus dipilih.',
             'role.in' => 'Role yang dipilih tidak valid.',
+            'gender.required' => 'Jenis kelamin wajib dipilih.',
+            'gender.in' => 'Jenis kelamin harus Laki-laki atau Perempuan.',
+            'location_id.exists' => 'Ruangan/Lab yang dipilih tidak valid.',
         ]);
 
         $data = [
@@ -93,6 +108,9 @@ class UserController extends Controller
             'username' => $request->username,
             'email' => $request->username . '@smkbinatama.sch.id',
             'role' => $request->role,
+            'gender' => $request->gender,
+            'class_name' => $request->role === 'siswa' ? $request->class_name : null,
+            'location_id' => $request->role === 'admin' ? $request->location_id : null,
         ];
 
         // Update password hanya jika diisi

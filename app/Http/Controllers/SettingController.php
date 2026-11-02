@@ -16,13 +16,15 @@ class SettingController extends Controller
     {
         $user = $request->user();
 
-        // Hanya Super Administrator yang memuat data daftar user untuk Kelola User
+        // Hanya Super Administrator yang memuat data daftar user dan lokasi untuk Kelola User
         $users = null;
+        $locations = collect();
         if ($user->role === 'super_admin') {
-            $users = User::latest()->paginate(10)->withQueryString();
+            $users = User::with('location')->latest()->paginate(10)->withQueryString();
+            $locations = \App\Models\Location::orderBy('name')->get();
         }
 
-        return view('settings.index', compact('user', 'users'));
+        return view('settings.index', compact('user', 'users', 'locations'));
     }
 
     /**

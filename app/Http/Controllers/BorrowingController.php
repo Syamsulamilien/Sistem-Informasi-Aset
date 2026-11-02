@@ -13,11 +13,17 @@ class BorrowingController extends Controller
 
     public function index(Request $request)
     {
-        $query = Borrowing::with(['asset', 'user']);
+        $query = Borrowing::with(['asset.location', 'user']);
 
-        // Jika user bukan admin/laboran/teknisi (misal: siswa, guru, viewer), hanya tampilkan miliknya
+        // Jika user adalah siswa, guru, karyawan, atau viewer: hanya tampilkan miliknya sendiri
         if (auth()->user()->isUser() || auth()->user()->isUserBiasa()) {
             $query->where('user_id', auth()->id());
+        } elseif (auth()->user()->role === 'admin' && auth()->user()->location_id) {
+            // Jika Admin terikat ke ruangan/lab tertentu, hanya tampilkan peminjaman barang ruangannya
+            $adminLocId = auth()->user()->location_id;
+            $query->whereHas('asset', function ($q) use ($adminLocId) {
+                $q->where('location_id', $adminLocId);
+            });
         }
 
         if ($request->filled('status')) {

@@ -152,7 +152,7 @@
                                     };
                                     $roleDisplay = match(Auth::user()->role) {
                                         'super_admin' => 'SUPER ADMIN',
-                                        'admin' => 'ADMIN',
+                                        'admin' => Auth::user()->location ? 'ADMIN ' . strtoupper(Auth::user()->location->name) : 'ADMIN',
                                         'pimpinan', 'pimpinan_sekolah' => 'PIMPINAN SEKOLAH',
                                         'guru' => 'GURU',
                                         'karyawan' => 'KARYAWAN',

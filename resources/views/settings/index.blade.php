@@ -153,7 +153,9 @@
                                 <th scope="col" class="px-5 py-3.5 text-center w-16">No</th>
                                 <th scope="col" class="px-5 py-3.5 text-left">Nama</th>
                                 <th scope="col" class="px-5 py-3.5 text-left">Username</th>
-                                <th scope="col" class="px-5 py-3.5 text-left">Role</th>
+                                <th scope="col" class="px-5 py-3.5 text-left">L/P</th>
+                                <th scope="col" class="px-5 py-3.5 text-left">Role / Kelas</th>
+                                <th scope="col" class="px-5 py-3.5 text-left">Penugasan Ruangan</th>
                                 <th scope="col" class="px-5 py-3.5 text-left">Tanggal Dibuat</th>
                                 <th scope="col" class="px-5 py-3.5 text-center w-32">Aksi</th>
                             </tr>
@@ -173,6 +175,15 @@
                                     <td class="px-5 py-4 text-gray-600 font-mono text-xs">
                                         {{ $u->username }}
                                     </td>
+                                    <td class="px-5 py-4 text-xs font-semibold">
+                                        @if($u->gender === 'Laki-laki')
+                                            <span class="text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-md" title="Laki-laki">L</span>
+                                        @elseif($u->gender === 'Perempuan')
+                                            <span class="text-rose-700 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-md" title="Perempuan">P</span>
+                                        @else
+                                            <span class="text-gray-400">-</span>
+                                        @endif
+                                    </td>
                                     <td class="px-5 py-4">
                                         @php
                                             $badgeClasses = match($u->role) {
@@ -189,7 +200,7 @@
                                             };
                                             $roleLabel = match($u->role) {
                                                 'super_admin' => 'Super Admin',
-                                                'admin' => 'Admin',
+                                                'admin' => 'Admin (Pengelola Lab)',
                                                 'pimpinan', 'pimpinan_sekolah' => 'Pimpinan Sekolah',
                                                 'guru' => 'Guru',
                                                 'karyawan' => 'Karyawan',
@@ -200,9 +211,31 @@
                                                 default => ucwords(str_replace('_', ' ', $u->role)),
                                             };
                                         @endphp
-                                        <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold border {{ $badgeClasses }}">
-                                            {{ $roleLabel }}
-                                        </span>
+                                        <div class="space-y-1">
+                                            <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold border {{ $badgeClasses }}">
+                                                {{ $roleLabel }}
+                                            </span>
+                                            @if($u->role === 'siswa' && $u->class_name)
+                                                <div class="text-[11px] font-bold text-gray-700">
+                                                    Kelas: <span class="text-blue-600">{{ $u->class_name }}</span>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td class="px-5 py-4 text-xs">
+                                        @if($u->role === 'admin')
+                                            @if($u->location)
+                                                <span class="inline-flex items-center px-2.5 py-1 rounded-lg font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                                                    📍 {{ $u->location->name }}
+                                                </span>
+                                            @else
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-md font-medium text-amber-700 bg-amber-50 border border-amber-200">
+                                                    ⚠️ Belum Ada Ruangan
+                                                </span>
+                                            @endif
+                                        @else
+                                            <span class="text-gray-400 font-medium">-</span>
+                                        @endif
                                     </td>
                                     <td class="px-5 py-4 text-gray-500 text-xs">
                                         {{ $u->created_at ? $u->created_at->format('d-m-Y') : '-' }}
@@ -222,7 +255,7 @@
 
                                                 <!-- Tombol Edit User -->
                                                 <button type="button"
-                                                        onclick="openEditUserModal({{ json_encode(['id' => $u->id, 'name' => $u->name, 'username' => $u->username, 'role' => $u->role]) }})"
+                                                        onclick="openEditUserModal({{ json_encode(['id' => $u->id, 'name' => $u->name, 'username' => $u->username, 'role' => $u->role, 'gender' => $u->gender, 'class_name' => $u->class_name, 'location_id' => $u->location_id]) }})"
                                                         class="p-1.5 text-amber-600 hover:text-amber-800 hover:bg-amber-50 rounded-lg transition-colors"
                                                         title="Edit User">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -247,7 +280,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="px-5 py-8 text-center text-gray-500 text-sm">
+                                    <td colspan="8" class="px-5 py-8 text-center text-gray-500 text-sm">
                                         Belum ada data user tambahan yang terdaftar.
                                     </td>
                                 </tr>
@@ -289,18 +322,43 @@
                         </div>
 
                         <div>
+                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Jenis Kelamin <span class="text-rose-500">*</span></label>
+                            <select name="gender" required class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                <option value="">-- Pilih Jenis Kelamin --</option>
+                                <option value="Laki-laki">Laki-laki (L)</option>
+                                <option value="Perempuan">Perempuan (P)</option>
+                            </select>
+                        </div>
+
+                        <div>
                             <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Role / Peran</label>
-                            <select name="role" required class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
-                                <option value="admin">Admin</option>
-                                <option value="pimpinan">Pimpinan Sekolah</option>
+                            <select id="add_role" name="role" required onchange="toggleAddRoleFields(this.value)" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                <option value="admin">Admin (Pengelola Lab / Aset)</option>
+                                <option value="pimpinan">Pimpinan Sekolah (Kepsek/Waka)</option>
                                 <option value="guru">Guru</option>
                                 <option value="karyawan">Karyawan</option>
                                 <option value="siswa">Siswa</option>
-                                <option value="teknisi">Teknisi</option>
-                                <option value="laboran">Laboran</option>
-                                <option value="viewer">Viewer</option>
                                 <option value="super_admin">Super Admin</option>
                             </select>
+                        </div>
+
+                        <!-- Ruangan yang ditugaskan (khusus jika role = admin) -->
+                        <div id="add_location_wrapper">
+                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Penugasan Ruangan / Lab <span class="text-rose-500">*</span></label>
+                            <select name="location_id" id="add_location_id" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                <option value="">-- Pilih Ruangan / Lab --</option>
+                                @foreach($locations as $loc)
+                                    <option value="{{ $loc->id }}">{{ $loc->name }} @if($loc->floor)(Lantai {{ $loc->floor }})@endif</option>
+                                @endforeach
+                            </select>
+                            <p class="text-[11px] text-gray-500 mt-1">Admin hanya dapat melihat dan mengelola aset yang berada di ruangan ini.</p>
+                        </div>
+
+                        <!-- Kelas (khusus jika role = siswa) -->
+                        <div id="add_class_wrapper" class="hidden">
+                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Kelas <span class="text-rose-500">*</span></label>
+                            <input type="text" name="class_name" id="add_class_name" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm" placeholder="Contoh: X Farmasi 1, XI Keperawatan 2">
+                            <p class="text-[11px] text-gray-500 mt-1">Digunakan untuk melacak peminjam barang siswa di sekolah.</p>
                         </div>
 
                         <div>
@@ -347,18 +405,43 @@
                         </div>
 
                         <div>
+                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Jenis Kelamin <span class="text-rose-500">*</span></label>
+                            <select id="edit_gender" name="gender" required class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                <option value="">-- Pilih Jenis Kelamin --</option>
+                                <option value="Laki-laki">Laki-laki (L)</option>
+                                <option value="Perempuan">Perempuan (P)</option>
+                            </select>
+                        </div>
+
+                        <div>
                             <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Role / Peran</label>
-                            <select id="edit_role" name="role" required class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
-                                <option value="admin">Admin</option>
-                                <option value="pimpinan">Pimpinan Sekolah</option>
+                            <select id="edit_role" name="role" required onchange="toggleEditRoleFields(this.value)" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                <option value="admin">Admin (Pengelola Lab / Aset)</option>
+                                <option value="pimpinan">Pimpinan Sekolah (Kepsek/Waka)</option>
                                 <option value="guru">Guru</option>
                                 <option value="karyawan">Karyawan</option>
                                 <option value="siswa">Siswa</option>
-                                <option value="teknisi">Teknisi</option>
-                                <option value="laboran">Laboran</option>
-                                <option value="viewer">Viewer</option>
                                 <option value="super_admin">Super Admin</option>
                             </select>
+                        </div>
+
+                        <!-- Ruangan yang ditugaskan (khusus jika role = admin) -->
+                        <div id="edit_location_wrapper">
+                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Penugasan Ruangan / Lab <span class="text-rose-500">*</span></label>
+                            <select name="location_id" id="edit_location_id" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                <option value="">-- Pilih Ruangan / Lab --</option>
+                                @foreach($locations as $loc)
+                                    <option value="{{ $loc->id }}">{{ $loc->name }} @if($loc->floor)(Lantai {{ $loc->floor }})@endif</option>
+                                @endforeach
+                            </select>
+                            <p class="text-[11px] text-gray-500 mt-1">Admin hanya dapat melihat dan mengelola aset yang berada di ruangan ini.</p>
+                        </div>
+
+                        <!-- Kelas (khusus jika role = siswa) -->
+                        <div id="edit_class_wrapper" class="hidden">
+                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Kelas <span class="text-rose-500">*</span></label>
+                            <input type="text" name="class_name" id="edit_class_name" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm" placeholder="Contoh: X Farmasi 1, XI Keperawatan 2">
+                            <p class="text-[11px] text-gray-500 mt-1">Digunakan untuk melacak peminjam barang siswa di sekolah.</p>
                         </div>
 
                         <div>
@@ -461,9 +544,68 @@
 
             <!-- Script Interaktivitas Modal Kelola User -->
             <script>
+                function toggleAddRoleFields(role) {
+                    const locWrapper = document.getElementById('add_location_wrapper');
+                    const locSelect = document.getElementById('add_location_id');
+                    const classWrapper = document.getElementById('add_class_wrapper');
+                    const classInput = document.getElementById('add_class_name');
+
+                    if (locWrapper && locSelect) {
+                        if (role === 'admin') {
+                            locWrapper.classList.remove('hidden');
+                            locSelect.required = true;
+                        } else {
+                            locWrapper.classList.add('hidden');
+                            locSelect.required = false;
+                            locSelect.value = '';
+                        }
+                    }
+
+                    if (classWrapper && classInput) {
+                        if (role === 'siswa') {
+                            classWrapper.classList.remove('hidden');
+                            classInput.required = true;
+                        } else {
+                            classWrapper.classList.add('hidden');
+                            classInput.required = false;
+                            classInput.value = '';
+                        }
+                    }
+                }
+
+                function toggleEditRoleFields(role) {
+                    const locWrapper = document.getElementById('edit_location_wrapper');
+                    const locSelect = document.getElementById('edit_location_id');
+                    const classWrapper = document.getElementById('edit_class_wrapper');
+                    const classInput = document.getElementById('edit_class_name');
+
+                    if (locWrapper && locSelect) {
+                        if (role === 'admin') {
+                            locWrapper.classList.remove('hidden');
+                            locSelect.required = true;
+                        } else {
+                            locWrapper.classList.add('hidden');
+                            locSelect.required = false;
+                            locSelect.value = '';
+                        }
+                    }
+
+                    if (classWrapper && classInput) {
+                        if (role === 'siswa') {
+                            classWrapper.classList.remove('hidden');
+                            classInput.required = true;
+                        } else {
+                            classWrapper.classList.add('hidden');
+                            classInput.required = false;
+                            classInput.value = '';
+                        }
+                    }
+                }
+
                 function openAddUserModal() {
                     const modal = document.getElementById('addUserModal');
                     if (modal) {
+                        toggleAddRoleFields(document.getElementById('add_role').value);
                         modal.classList.remove('hidden');
                         modal.classList.add('flex');
                     }
@@ -485,6 +627,24 @@
                         document.getElementById('edit_name').value = user.name;
                         document.getElementById('edit_username').value = user.username;
                         document.getElementById('edit_role').value = user.role;
+                        
+                        const genderSelect = document.getElementById('edit_gender');
+                        if (genderSelect) {
+                            genderSelect.value = user.gender || '';
+                        }
+
+                        const classInput = document.getElementById('edit_class_name');
+                        if (classInput) {
+                            classInput.value = user.class_name || '';
+                        }
+
+                        const locSelect = document.getElementById('edit_location_id');
+                        if (locSelect) {
+                            locSelect.value = user.location_id || '';
+                        }
+
+                        toggleEditRoleFields(user.role);
+
                         modal.classList.remove('hidden');
                         modal.classList.add('flex');
                     }

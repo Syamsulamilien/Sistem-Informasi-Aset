@@ -25,13 +25,17 @@ class LocationPolicy
 
     public function update(User $user, Location $location): bool
     {
-        // ✅ Super Admin dan Admin bisa edit Lokasi
+        // Admin hanya bisa mengedit informasi ruangannya sendiri
+        if ($user->role === 'admin' && $user->location_id) {
+            return $location->id == $user->location_id;
+        }
+
         return in_array($user->role, ['super_admin', 'admin']);
     }
 
     public function delete(User $user, Location $location): bool
     {
-        // ✅ Super Admin dan Admin bisa delete Lokasi
-        return in_array($user->role, ['super_admin', 'admin']);
+        // Hanya Super Admin yang berhak menghapus master ruangan agar tidak sengaja menghapus aset lab lain
+        return $user->role === 'super_admin';
     }
 }

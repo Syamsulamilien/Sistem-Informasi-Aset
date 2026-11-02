@@ -64,7 +64,20 @@
                                     <div class="text-xs text-gray-500">{{ $borrowing->asset->asset_code }}</div>
                                 </td>
                                 <td class="px-6 py-4">
-                                    <div class="text-sm text-gray-900">{{ $borrowing->user->name }}</div>
+                                    <div class="text-sm font-semibold text-gray-900 flex items-center gap-1.5">
+                                        {{ $borrowing->user->name }}
+                                        @if($borrowing->user->gender === 'Laki-laki')
+                                            <span class="text-[10px] font-bold text-blue-700 bg-blue-50 border border-blue-200 px-1.5 py-0.2 rounded" title="Laki-laki">L</span>
+                                        @elseif($borrowing->user->gender === 'Perempuan')
+                                            <span class="text-[10px] font-bold text-rose-700 bg-rose-50 border border-rose-200 px-1.5 py-0.2 rounded" title="Perempuan">P</span>
+                                        @endif
+                                    </div>
+                                    <div class="text-xs text-gray-500">
+                                        {{ ucfirst($borrowing->user->role) }}
+                                        @if($borrowing->user->role === 'siswa' && $borrowing->user->class_name)
+                                            • <span class="font-semibold text-blue-600">Kelas: {{ $borrowing->user->class_name }}</span>
+                                        @endif
+                                    </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm text-gray-900">{{ $borrowing->borrow_date->format('d M Y') }}</div>
