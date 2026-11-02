@@ -324,6 +324,6 @@ Project ini dikembangkan sebagai **Capstone Project Semester 7** secara kolabora
 
 <div align="center">
 
-Made with ❤️ by **Tim Capstone SMK Kesehatan Binatama**
+Made with  by **Tim Capstone SMK Kesehatan Binatama**
 
 </div>
