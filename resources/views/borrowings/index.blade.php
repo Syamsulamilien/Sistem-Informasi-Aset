@@ -1,68 +1,80 @@
-<x-app-layout>
+<x-app-layout :title="'Daftar Peminjaman Aset'">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <!-- Header -->
         <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-                <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Daftar Peminjaman Aset</h1>
-                <p class="text-xs sm:text-sm text-gray-500 mt-1">Kelola data peminjaman aset</p>
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">Daftar Peminjaman Aset</h1>
+                <p class="text-xs sm:text-sm text-gray-500 mt-1">Kelola data peminjaman dan pencatatan pengembalian aset sekolah</p>
             </div>
             <a href="{{ route('borrowings.create') }}" class="inline-flex items-center justify-center px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold shadow-sm transition-all active:scale-[0.98]">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                 </svg>
-                Ajukan Peminjaman
+                Catat Peminjaman
             </a>
         </div>
 
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 mb-6">
-            <form method="GET" action="{{ route('borrowings.index') }}">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div class="md:col-span-3">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                        <select name="status" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
-                            <option value="">Semua Status</option>
-                            <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
-                            <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Disetujui</option>
-                            <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Ditolak</option>
-                            <option value="borrowed" {{ request('status') == 'borrowed' ? 'selected' : '' }}>Dipinjam</option>
-                            <option value="returned" {{ request('status') == 'returned' ? 'selected' : '' }}>Dikembalikan</option>
-                        </select>
-                    </div>
-                    
-                    <div class="flex items-end gap-2">
-                        <button type="submit" class="flex-1 inline-flex items-center justify-center px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm">
-                            Filter
-                        </button>
-                        <a href="{{ route('borrowings.index') }}" class="inline-flex items-center justify-center px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                            </svg>
+        <!-- Filter Bar -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 sm:p-5 mb-6">
+            <form method="GET" action="{{ route('borrowings.index') }}" class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="w-full sm:w-72">
+                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Filter Status</label>
+                    <select name="status" onchange="this.form.submit()" class="w-full px-3.5 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-800 focus:ring-2 focus:ring-blue-500 focus:bg-white transition-colors">
+                        <option value="">Semua Status (Dipinjam & Dikembalikan)</option>
+                        <option value="borrowed" {{ request('status') == 'borrowed' ? 'selected' : '' }}>🔵 Sedang Dipinjam</option>
+                        <option value="returned" {{ request('status') == 'returned' ? 'selected' : '' }}>🟢 Sudah Dikembalikan</option>
+                    </select>
+                </div>
+
+                <div class="flex items-center gap-2 w-full sm:w-auto self-end">
+                    <button type="submit" class="flex-1 sm:flex-none px-5 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors text-sm font-semibold shadow-sm">
+                        Terapkan
+                    </button>
+                    @if(request('status'))
+                        <a href="{{ route('borrowings.index') }}" class="px-3.5 py-2 bg-gray-100 text-gray-600 rounded-xl hover:bg-gray-200 transition-colors text-xs font-semibold" title="Reset Filter">
+                            Reset
                         </a>
-                    </div>
+                    @endif
                 </div>
             </form>
         </div>
 
         <!-- Desktop Table -->
-        <div class="hidden lg:block bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="hidden lg:block bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
+                    <thead class="bg-slate-50/70 border-b border-gray-200">
                         <tr>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Aset</th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Peminjam</th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Tanggal Pinjam</th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Rencana Kembali</th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Aksi</th>
+                            <th class="px-6 py-3.5 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Aset / Barang</th>
+                            <th class="px-6 py-3.5 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Peminjam</th>
+                            <th class="px-6 py-3.5 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Tgl Pinjam</th>
+                            <th class="px-6 py-3.5 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Rencana Kembali</th>
+                            <th class="px-6 py-3.5 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3.5 text-right text-xs font-bold text-gray-600 uppercase tracking-wider">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
+                    <tbody class="bg-white divide-y divide-gray-100">
                         @forelse($borrowings as $borrowing)
-                            <tr class="hover:bg-gray-50 transition-colors">
+                            <tr class="hover:bg-slate-50/60 transition-colors">
+                                <!-- Aset & Foto Tag -->
                                 <td class="px-6 py-4">
-                                    <div class="text-sm font-medium text-gray-900">{{ $borrowing->asset->brand }} - {{ $borrowing->asset->model }}</div>
-                                    <div class="text-xs text-gray-500">{{ $borrowing->asset->asset_code }}</div>
+                                    <div class="text-sm font-bold text-gray-900">{{ $borrowing->asset->brand }} - {{ $borrowing->asset->model }}</div>
+                                    <div class="text-xs text-gray-500 flex items-center gap-2 mt-0.5">
+                                        <span class="font-mono bg-gray-100 px-1.5 py-0.2 rounded text-[11px] text-gray-700">{{ $borrowing->asset->asset_code }}</span>
+                                        <span class="text-gray-400">•</span>
+                                        <span>{{ $borrowing->asset->location->name ?? 'Umum' }}</span>
+                                        @if($borrowing->borrow_photo || $borrowing->return_photo)
+                                            <span class="inline-flex items-center gap-1 text-[10px] text-blue-700 bg-blue-50 border border-blue-200 px-1.5 py-0.2 rounded font-medium" title="Memiliki Foto Bukti Fisik">
+                                                <svg class="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                                                </svg>
+                                                Foto
+                                            </span>
+                                        @endif
+                                    </div>
                                 </td>
+
+                                <!-- Peminjam -->
                                 <td class="px-6 py-4">
                                     <div class="text-sm font-semibold text-gray-900 flex items-center gap-1.5">
                                         {{ $borrowing->user->name }}
@@ -75,35 +87,58 @@
                                     <div class="text-xs text-gray-500">
                                         {{ ucfirst($borrowing->user->role) }}
                                         @if($borrowing->user->role === 'siswa' && $borrowing->user->class_name)
-                                            • <span class="font-semibold text-blue-600">Kelas: {{ $borrowing->user->class_name }}</span>
+                                            • <span class="font-semibold text-blue-600">Kelas {{ $borrowing->user->class_name }}</span>
                                         @endif
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-gray-900">{{ $borrowing->borrow_date->format('d M Y') }}</div>
+
+                                <!-- Tanggal Pinjam -->
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-medium">
+                                    {{ $borrowing->borrow_date->format('d M Y') }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-gray-900">{{ $borrowing->expected_return_date->format('d M Y') }}</div>
+
+                                <!-- Rencana Kembali -->
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-medium">
+                                    {{ $borrowing->expected_return_date->format('d M Y') }}
                                 </td>
+
+                                <!-- Status (Hanya Dipinjam & Dikembalikan) -->
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    @php
-                                        $statusColors = [
-                                            'pending' => 'bg-yellow-100 text-yellow-800',
-                                            'approved' => 'bg-green-100 text-green-800',
-                                            'rejected' => 'bg-red-100 text-red-800',
-                                            'borrowed' => 'bg-blue-100 text-blue-800',
-                                            'returned' => 'bg-gray-100 text-gray-800',
-                                        ];
-                                    @endphp
-                                    <span class="px-3 py-1 text-xs font-semibold rounded-full {{ $statusColors[$borrowing->status] }}">
-                                        {{ ucfirst($borrowing->status) }}
-                                    </span>
+                                    @if($borrowing->status === 'returned')
+                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                                            Dikembalikan
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse"></span>
+                                            Sedang Dipinjam
+                                        </span>
+                                    @endif
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                    <div class="flex gap-2">
-                                        <a href="{{ route('borrowings.show', $borrowing) }}" class="text-blue-600 hover:text-blue-800 font-medium">Detail</a>
-                                        @if(Auth::user()->isAdmin() || Auth::user()->isLaboran())
-                                            <a href="{{ route('borrowings.edit', $borrowing) }}" class="text-yellow-600 hover:text-yellow-800 font-medium">Update Status</a>
+
+                                <!-- Aksi -->
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
+                                    <div class="flex items-center justify-end gap-2">
+                                        @if($borrowing->status !== 'returned' && (Auth::user()->isAdmin() || Auth::user()->isLaboran() || Auth::user()->isSuperAdmin()))
+                                            <a href="{{ route('borrowings.edit', $borrowing) }}" class="inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm transition-all active:scale-95" title="Proses Pengembalian Barang">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+                                                </svg>
+                                                <span>Kembalikan</span>
+                                            </a>
+                                        @endif
+
+                                        <a href="{{ route('borrowings.show', $borrowing) }}" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition-colors">
+                                            Detail
+                                        </a>
+
+                                        @if($borrowing->status === 'returned' && (Auth::user()->isAdmin() || Auth::user()->isLaboran() || Auth::user()->isSuperAdmin()))
+                                            <a href="{{ route('borrowings.edit', $borrowing) }}" class="p-1.5 text-gray-400 hover:text-gray-700 rounded-lg hover:bg-gray-100 transition-colors" title="Edit Catatan / Foto">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                                </svg>
+                                            </a>
                                         @endif
                                     </div>
                                 </td>
@@ -111,10 +146,13 @@
                         @empty
                             <tr>
                                 <td colspan="6" class="px-6 py-12 text-center">
-                                    <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
-                                    </svg>
-                                    <p class="text-gray-500 text-sm">Tidak ada data peminjaman</p>
+                                    <div class="w-16 h-16 mx-auto mb-3 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-200">
+                                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                                        </svg>
+                                    </div>
+                                    <p class="text-sm font-semibold text-slate-700">Tidak Ada Data Peminjaman</p>
+                                    <p class="text-xs text-slate-400 mt-0.5">Belum ada aktivitas peminjaman aset yang tercatat.</p>
                                 </td>
                             </tr>
                         @endforelse
@@ -123,39 +161,59 @@
             </div>
         </div>
 
-        <!-- Mobile View (Simplified) -->
-        <div class="lg:hidden space-y-4">
+        <!-- Mobile View (Symmetrical Card) -->
+        <div class="lg:hidden space-y-3.5">
             @forelse($borrowings as $borrowing)
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-                    <div class="flex justify-between items-start mb-3">
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 space-y-3">
+                    <div class="flex justify-between items-start">
                         <div>
                             <p class="text-sm font-bold text-gray-900">{{ $borrowing->asset->brand }} - {{ $borrowing->asset->model }}</p>
-                            <p class="text-xs text-gray-500">{{ $borrowing->user->name }}</p>
+                            <div class="flex items-center gap-1.5 mt-0.5">
+                                <span class="text-xs text-gray-500">{{ $borrowing->user->name }}</span>
+                                @if($borrowing->borrow_photo || $borrowing->return_photo)
+                                    <span class="inline-flex items-center gap-0.5 text-[10px] text-blue-700 bg-blue-50 border border-blue-200 px-1.5 py-0.2 rounded font-medium">
+                                        Foto
+                                    </span>
+                                @endif
+                            </div>
                         </div>
-                        @php
-                            $statusColors = [
-                                'pending' => 'bg-yellow-100 text-yellow-800',
-                                'approved' => 'bg-green-100 text-green-800',
-                                'rejected' => 'bg-red-100 text-red-800',
-                                'borrowed' => 'bg-blue-100 text-blue-800',
-                                'returned' => 'bg-gray-100 text-gray-800',
-                            ];
-                        @endphp
-                        <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $statusColors[$borrowing->status] }}">
-                            {{ ucfirst($borrowing->status) }}
-                        </span>
+
+                        @if($borrowing->status === 'returned')
+                            <span class="px-2.5 py-1 text-[11px] font-bold rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                Dikembalikan
+                            </span>
+                        @else
+                            <span class="px-2.5 py-1 text-[11px] font-bold rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+                                Dipinjam
+                            </span>
+                        @endif
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 text-xs text-gray-600 bg-gray-50 p-2.5 rounded-xl">
+                        <div>
+                            <span class="text-gray-400 text-[10px] block">Tanggal Pinjam:</span>
+                            <span class="font-medium text-gray-800">{{ $borrowing->borrow_date->format('d M Y') }}</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-400 text-[10px] block">Rencana Kembali:</span>
+                            <span class="font-medium text-gray-800">{{ $borrowing->expected_return_date->format('d M Y') }}</span>
+                        </div>
                     </div>
                     
-                    <div class="flex gap-2 pt-3 border-t border-gray-200">
-                        <a href="{{ route('borrowings.show', $borrowing) }}" class="flex-1 text-center px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100">Detail</a>
-                        @if(Auth::user()->isAdmin() || Auth::user()->isLaboran())
-                            <a href="{{ route('borrowings.edit', $borrowing) }}" class="flex-1 text-center px-3 py-2 text-sm font-medium text-yellow-600 bg-yellow-50 rounded-lg hover:bg-yellow-100">Update</a>
+                    <div class="flex gap-2 pt-1 border-t border-gray-100">
+                        @if($borrowing->status !== 'returned' && (Auth::user()->isAdmin() || Auth::user()->isLaboran() || Auth::user()->isSuperAdmin()))
+                            <a href="{{ route('borrowings.edit', $borrowing) }}" class="flex-1 text-center px-3 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-sm">
+                                Kembalikan
+                            </a>
                         @endif
+                        <a href="{{ route('borrowings.show', $borrowing) }}" class="flex-1 text-center px-3 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl">
+                            Detail
+                        </a>
                     </div>
                 </div>
             @empty
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
-                    <p class="text-gray-500 text-sm">Tidak ada data</p>
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 text-center text-gray-500 text-xs">
+                    Tidak ada data peminjaman
                 </div>
             @endforelse
         </div>

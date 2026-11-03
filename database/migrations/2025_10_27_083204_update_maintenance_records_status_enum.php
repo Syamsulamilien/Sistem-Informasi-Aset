@@ -18,7 +18,9 @@ return new class extends Migration
             ->update(['status' => 'Scheduled']); // Temporary change to valid value
 
         // Modify the enum column
-        DB::statement("ALTER TABLE `maintenance_records` MODIFY COLUMN `status` ENUM('Scheduled', 'In Progress', 'Cancelled') NOT NULL");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE `maintenance_records` MODIFY COLUMN `status` ENUM('Scheduled', 'In Progress', 'Cancelled') NOT NULL");
+        }
 
         // Update back to 'In Progress'
         DB::table('maintenance_records')
@@ -38,7 +40,9 @@ return new class extends Migration
             ->update(['status' => 'Scheduled']); // Temporary change
 
         // Revert enum to old values
-        DB::statement("ALTER TABLE `maintenance_records` MODIFY COLUMN `status` ENUM('Scheduled', 'Completed', 'Cancelled') NOT NULL");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE `maintenance_records` MODIFY COLUMN `status` ENUM('Scheduled', 'Completed', 'Cancelled') NOT NULL");
+        }
 
         // Update back to 'Completed'
         DB::table('maintenance_records')

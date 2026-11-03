@@ -13,7 +13,9 @@ return new class extends Migration
     public function up(): void
     {
         // Untuk MySQL
-        DB::statement("ALTER TABLE maintenance_records MODIFY COLUMN status ENUM('Scheduled', 'Proses', 'Completed', 'Cancelled') NOT NULL DEFAULT 'Scheduled'");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE maintenance_records MODIFY COLUMN status ENUM('Scheduled', 'Proses', 'Completed', 'Cancelled') NOT NULL DEFAULT 'Scheduled'");
+        }
         
         // Jika menggunakan PostgreSQL, uncomment baris di bawah dan comment baris MySQL di atas
         // DB::statement("ALTER TABLE maintenance_records DROP CONSTRAINT maintenance_records_status_check");
@@ -26,7 +28,9 @@ return new class extends Migration
     public function down(): void
     {
         // Rollback ke status lama (tanpa 'Proses')
-        DB::statement("ALTER TABLE maintenance_records MODIFY COLUMN status ENUM('Scheduled', 'Completed', 'Cancelled') NOT NULL DEFAULT 'Scheduled'");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE maintenance_records MODIFY COLUMN status ENUM('Scheduled', 'Completed', 'Cancelled') NOT NULL DEFAULT 'Scheduled'");
+        }
         
         // Untuk PostgreSQL:
         // DB::statement("ALTER TABLE maintenance_records DROP CONSTRAINT maintenance_records_status_check");

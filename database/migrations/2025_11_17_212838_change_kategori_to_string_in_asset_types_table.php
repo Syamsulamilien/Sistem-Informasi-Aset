@@ -13,7 +13,9 @@ return new class extends Migration
     public function up(): void
     {
         // Ubah kolom kategori dari ENUM ke STRING agar bisa input manual
-        DB::statement("ALTER TABLE asset_types MODIFY COLUMN kategori VARCHAR(255) NOT NULL");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE asset_types MODIFY COLUMN kategori VARCHAR(255) NOT NULL");
+        }
     }
 
     /**
@@ -22,6 +24,8 @@ return new class extends Migration
     public function down(): void
     {
         // Kembalikan ke ENUM jika rollback
-        DB::statement("ALTER TABLE asset_types MODIFY COLUMN kategori ENUM('Asset TI', 'Asset Rumah Tangga', 'Asset Transportasi', 'Asset Gizi', 'Asset Lainnya') NOT NULL DEFAULT 'Asset TI'");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE asset_types MODIFY COLUMN kategori ENUM('Asset TI', 'Asset Rumah Tangga', 'Asset Transportasi', 'Asset Gizi', 'Asset Lainnya') NOT NULL DEFAULT 'Asset TI'");
+        }
     }
 };

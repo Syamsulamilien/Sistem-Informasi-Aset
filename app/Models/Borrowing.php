@@ -14,6 +14,8 @@ class Borrowing extends Model
         'actual_return_date',
         'status',
         'notes',
+        'borrow_photo',
+        'return_photo',
     ];
 
     protected function casts(): array

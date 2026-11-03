@@ -13,7 +13,9 @@ return new class extends Migration
     public function up(): void
     {
         // Modify the enum column to include all 4 statuses
-        DB::statement("ALTER TABLE `maintenance_records` MODIFY COLUMN `status` ENUM('Scheduled', 'In Progress', 'Completed', 'Cancelled') NOT NULL");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE `maintenance_records` MODIFY COLUMN `status` ENUM('Scheduled', 'In Progress', 'Completed', 'Cancelled') NOT NULL");
+        }
     }
 
     /**
@@ -27,6 +29,8 @@ return new class extends Migration
             ->update(['status' => 'In Progress']);
 
         // Revert enum to 3 statuses
-        DB::statement("ALTER TABLE `maintenance_records` MODIFY COLUMN `status` ENUM('Scheduled', 'In Progress', 'Cancelled') NOT NULL");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE `maintenance_records` MODIFY COLUMN `status` ENUM('Scheduled', 'In Progress', 'Cancelled') NOT NULL");
+        }
     }
 };

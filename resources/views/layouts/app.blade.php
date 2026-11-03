@@ -268,6 +268,9 @@
         });
     </script>
 
+    {{-- Global Image Lightbox Modal --}}
+    <x-image-modal />
+
     {{-- Stack untuk scripts tambahan --}}
     @stack('scripts')
 </body>
