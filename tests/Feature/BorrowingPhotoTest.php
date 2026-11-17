@@ -143,6 +143,35 @@ class BorrowingPhotoTest extends TestCase
         $response->assertSessionHasErrors('asset_id');
     }
 
+    public function test_cannot_borrow_asset_that_has_pending_request(): void
+    {
+        // Peminjaman pertama berstatus pending
+        Borrowing::create([
+            'user_id' => $this->user->id,
+            'asset_id' => $this->asset->id,
+            'borrow_date' => now(),
+            'expected_return_date' => now()->addDay(),
+            'status' => 'pending',
+        ]);
+
+        $user2 = User::create([
+            'name' => 'Siswa Lain',
+            'email' => 'siswa_lain@example.com',
+            'password' => Hash::make('password123'),
+            'role' => 'siswa',
+            'gender' => 'Laki-laki',
+        ]);
+
+        $response = $this->actingAs($user2)->post(route('borrowings.store'), [
+            'asset_id' => $this->asset->id,
+            'borrow_date' => now()->toDateString(),
+            'expected_return_date' => now()->addDay()->toDateString(),
+            'notes' => 'Mencoba meminjam aset yang masih pending',
+        ]);
+
+        $response->assertSessionHasErrors('asset_id');
+    }
+
     public function test_admin_can_update_status_and_add_return_photo(): void
     {
         $borrowing = Borrowing::create([

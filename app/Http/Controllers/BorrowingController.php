@@ -81,10 +81,10 @@ class BorrowingController extends Controller
     {
         $this->authorize('create', Borrowing::class);
 
-        // Hanya aset aktif yang TIDAK sedang dipinjam (tidak berstatus 'borrowed')
+        // Hanya aset aktif yang TIDAK sedang dipinjam dan TIDAK sedang menunggu persetujuan/ACC (pending/borrowed)
         $query = Asset::where('status', 'Aktif')
             ->whereDoesntHave('borrowings', function ($q) {
-                $q->where('status', 'borrowed');
+                $q->whereIn('status', ['borrowed', 'pending']);
             });
 
         $user = auth()->user();
@@ -113,21 +113,21 @@ class BorrowingController extends Controller
         $this->authorize('create', Borrowing::class);
         $validated = $request->validate([
             'asset_id' => 'required|exists:assets,id',
-            'borrow_date' => 'required|date|after_or_equal:today',
+            'borrow_date' => 'required|date',
             'expected_return_date' => 'required|date|after_or_equal:borrow_date',
             'notes' => 'nullable|string',
             'borrow_photo' => 'nullable|file|mimes:jpg,jpeg,png,webp|max:5120',
             'borrow_photo_base64' => 'nullable|string',
         ]);
 
-        // Cegah barang yang sedang dipinjam untuk dipinjam kembali
-        $isAlreadyBorrowed = Borrowing::where('asset_id', $validated['asset_id'])
-            ->where('status', 'borrowed')
+        // Cegah barang yang sedang dipinjam atau sedang menunggu ACC (pending) untuk dipinjam kembali
+        $isAlreadyUnavailable = Borrowing::where('asset_id', $validated['asset_id'])
+            ->whereIn('status', ['borrowed', 'pending'])
             ->exists();
 
-        if ($isAlreadyBorrowed) {
+        if ($isAlreadyUnavailable) {
             return back()->withInput()->withErrors([
-                'asset_id' => 'Barang/aset ini sedang dalam masa peminjaman dan belum dikembalikan. Silakan pilih aset lain.'
+                'asset_id' => 'Barang/aset ini sedang dalam masa peminjaman atau sedang menunggu persetujuan (ACC). Silakan pilih aset lain yang tersedia.'
             ]);
         }
 
@@ -333,25 +333,29 @@ class BorrowingController extends Controller
      */
     private function handleImageUpload(Request $request, string $fileKey, string $base64Key, string $prefix): ?string
     {
-        // 1. Prioritaskan data base64 terkompresi dari browser (< 100 KB)
-        $base64Data = $request->input($base64Key);
-        if ($base64Data && preg_match('/^data:image\/(\w+);base64,/', $base64Data, $matches)) {
-            $imageType = strtolower($matches[1]);
-            if (in_array($imageType, ['jpeg', 'jpg', 'png', 'webp'])) {
-                $data = substr($base64Data, strpos($base64Data, ',') + 1);
-                $decoded = base64_decode($data);
-                if ($decoded !== false) {
-                    $ext = ($imageType === 'jpeg') ? 'jpg' : $imageType;
-                    $filename = 'borrowings/photos/' . $prefix . '_' . uniqid() . '_' . time() . '.' . $ext;
-                    Storage::disk('public')->put($filename, $decoded);
-                    return $filename;
+        try {
+            // 1. Prioritaskan data base64 terkompresi dari browser (< 100 KB)
+            $base64Data = $request->input($base64Key);
+            if ($base64Data && preg_match('/^data:image\/(\w+);base64,/', $base64Data, $matches)) {
+                $imageType = strtolower($matches[1]);
+                if (in_array($imageType, ['jpeg', 'jpg', 'png', 'webp'])) {
+                    $data = substr($base64Data, strpos($base64Data, ',') + 1);
+                    $decoded = base64_decode($data);
+                    if ($decoded !== false) {
+                        $ext = ($imageType === 'jpeg') ? 'jpg' : $imageType;
+                        $filename = 'borrowings/photos/' . $prefix . '_' . uniqid() . '_' . time() . '.' . $ext;
+                        Storage::disk('public')->put($filename, $decoded);
+                        return $filename;
+                    }
                 }
             }
-        }
 
-        // 2. Fallback berkas upload multipart langsung
-        if ($request->hasFile($fileKey)) {
-            return $request->file($fileKey)->store('borrowings/photos', 'public');
+            // 2. Fallback berkas upload multipart langsung
+            if ($request->hasFile($fileKey)) {
+                return $request->file($fileKey)->store('borrowings/photos', 'public');
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error("Image upload failed for {$fileKey}: " . $e->getMessage());
         }
 
         return null;

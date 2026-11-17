@@ -213,10 +213,8 @@
             const isSecure = window.isSecureContext || isLocalhost;
 
             if (!isSecure) {
-                self.showCameraError(
-                    'Kamera Langsung Memerlukan HTTPS',
-                    'Akses webcam langsung di browser membutuhkan protokol aman (HTTPS). Karena saat ini menggunakan alamat HTTP non-localhost (' + window.location.hostname + '), silakan gunakan tombol di bawah untuk memilih file foto langsung dari laptop atau gunakan HP Anda.'
-                );
+                // Langsung arahkan ke dialog pemilihan file/kamera sistem agar pengguna laptop tidak terhenti
+                this.triggerNativeCamera();
                 return;
             }
 
