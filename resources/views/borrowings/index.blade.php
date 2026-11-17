@@ -364,7 +364,7 @@
     <!-- ============================================================== -->
     <!-- MODAL 1: PENGEMBALIAN LANGSUNG (1-KLIK USER FRIENDLY RETURN)  -->
     <!-- ============================================================== -->
-    <div id="directReturnModal" onclick="if(event.target === this) closeDirectReturnModal()" class="fixed inset-0 z-50 hidden overflow-y-auto bg-black/60 backdrop-blur-sm p-4 flex items-center justify-center transition-all">
+    <div id="directReturnModal" onclick="if(event.target === this) closeDirectReturnModal()" style="z-index: 9999;" class="fixed inset-0 hidden overflow-y-auto bg-black/60 backdrop-blur-sm p-4 flex items-center justify-center transition-all">
         <div class="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-200 flex flex-col my-8">
             <!-- Modal Header -->
             <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-slate-50/80">
@@ -445,7 +445,7 @@
     <!-- ============================================================== -->
     <!-- MODAL 2: TOLAK PENGAJUAN PEMINJAMAN                            -->
     <!-- ============================================================== -->
-    <div id="rejectBorrowingModal" onclick="if(event.target === this) closeRejectBorrowingModal()" class="fixed inset-0 z-50 hidden overflow-y-auto bg-black/60 backdrop-blur-sm p-4 flex items-center justify-center transition-all">
+    <div id="rejectBorrowingModal" onclick="if(event.target === this) closeRejectBorrowingModal()" style="z-index: 9999;" class="fixed inset-0 hidden overflow-y-auto bg-black/60 backdrop-blur-sm p-4 flex items-center justify-center transition-all">
         <div class="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-200 flex flex-col">
             <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-rose-50/70">
                 <div class="flex items-center gap-3">
