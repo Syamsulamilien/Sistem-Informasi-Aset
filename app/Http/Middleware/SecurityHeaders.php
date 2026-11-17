@@ -30,8 +30,8 @@ class SecurityHeaders
         // Header referensi kebijakan URL
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
 
-        // Proteksi akses fitur browser sensitif
-        $response->headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+        // Proteksi akses fitur browser sensitif (izinkan kamera untuk origin sendiri agar webcam berfungsi)
+        $response->headers->set('Permissions-Policy', 'camera=(self), microphone=(), geolocation=()');
 
         // Content Security Policy — cegah inline script injeksi XSS
         $response->headers->set('Content-Security-Policy',
@@ -40,6 +40,7 @@ class SecurityHeaders
             "style-src 'self' 'unsafe-inline' cdn.jsdelivr.net cdnjs.cloudflare.com fonts.googleapis.com unpkg.com; " .
             "font-src 'self' fonts.gstatic.com cdnjs.cloudflare.com data:; " .
             "img-src 'self' data: blob: *; " .
+            "media-src 'self' blob: data:; " .
             "connect-src 'self'; " .
             "frame-ancestors 'self'; " .
             "form-action 'self'; " .

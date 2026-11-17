@@ -213,8 +213,10 @@
             const isSecure = window.isSecureContext || isLocalhost;
 
             if (!isSecure) {
-                // Langsung arahkan ke dialog pemilihan file/kamera sistem agar pengguna laptop tidak terhenti
-                this.triggerNativeCamera();
+                self.showCameraError(
+                    'Kamera Membutuhkan Protokol Aman (HTTPS / Localhost)',
+                    'Browser memblokir akses webcam langsung pada protokol HTTP (' + window.location.hostname + '). Silakan akses via HTTPS atau gunakan tombol Pilih Foto di bawah.'
+                );
                 return;
             }
 
@@ -247,57 +249,78 @@
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
                 self.showCameraError(
                     'Browser Tidak Mengizinkan Akses Kamera',
-                    'Browser tidak mengizinkan akses webcam pada protokol ini. Silakan gunakan tombol Pilih Foto dari Komputer.'
+                    'Browser tidak mendukung getUserMedia pada konteks halaman ini. Silakan gunakan tombol Pilih Foto dari Komputer.'
                 );
                 return;
             }
 
-            // Minta akses webcam
-            navigator.mediaDevices.getUserMedia({ video: true, audio: false })
-                .then(function(stream) {
-                    self.stream = stream;
-                    video.muted = true;
-                    video.playsInline = true;
-                    video.setAttribute('playsinline', '');
-                    video.setAttribute('muted', '');
-                    video.srcObject = stream;
+            // Fungsi untuk memasang stream ke video
+            const attachStream = function(stream) {
+                self.stream = stream;
+                video.muted = true;
+                video.playsInline = true;
+                video.setAttribute('playsinline', '');
+                video.setAttribute('muted', '');
+                video.srcObject = stream;
 
-                    const dismissLoading = function() {
-                        if (loading) loading.style.display = 'none';
-                    };
+                const dismissLoading = function() {
+                    if (loading) loading.style.display = 'none';
+                };
 
-                    video.onloadeddata = dismissLoading;
-                    video.onloadedmetadata = dismissLoading;
-                    video.oncanplay = dismissLoading;
+                video.onloadeddata = dismissLoading;
+                video.onloadedmetadata = dismissLoading;
+                video.oncanplay = dismissLoading;
 
-                    video.play().then(dismissLoading).catch(function(e) {
-                        console.warn("Video play notice:", e);
-                        dismissLoading();
-                    });
-
-                    setTimeout(dismissLoading, 400);
-                })
-                .catch(function(err) {
-                    console.error("Camera access error:", err);
-                    let title = 'Akses Kamera Tidak Diizinkan';
-                    let hint = '';
-
-                    if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-                        title = 'Izin Kamera Diblokir di Browser';
-                        hint = 'Browser menolak izin akses webcam. Silakan klik ikon pengaturan / gembok di sebelah kiri URL (' + window.location.origin + ') dan ubah izin Kamera menjadi "Allow". Tips laptop: Buka via http://localhost:8000 (bukan 127.0.0.1) agar browser otomatis mengizinkan kamera.';
-                    } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
-                        title = 'Webcam Sedang Digunakan Aplikasi Lain';
-                        hint = 'Webcam laptop sedang dipakai oleh aplikasi lain (Zoom, Teams, Meet, atau Windows Camera) atau privacy slider kamera tertutup. Tutup aplikasi lain lalu coba lagi.';
-                    } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
-                        title = 'Webcam Tidak Terdeteksi';
-                        hint = 'Periksa apakah ada tombol fisik kamera di keyboard (misal Fn + F10 di laptop ASUS) atau slider penutup webcam.';
-                    } else {
-                        title = 'Gagal Menghubungkan Kamera';
-                        hint = 'Error: [' + err.name + ' - ' + (err.message || 'Tidak diizinkan') + ']. Anda dapat langsung memilih file foto dari komputer.';
-                    }
-
-                    self.showCameraError(title, hint);
+                video.play().then(dismissLoading).catch(function(e) {
+                    console.warn("Video play notice:", e);
+                    dismissLoading();
                 });
+
+                setTimeout(dismissLoading, 500);
+            };
+
+            const handleCameraError = function(err) {
+                console.error("Camera access error:", err);
+                let title = 'Akses Kamera Tidak Diizinkan';
+                let hint = '';
+
+                if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+                    title = 'Izin Kamera Diblokir di Browser / Windows';
+                    hint = '1. Klik ikon gembok / pengaturan di sebelah kiri URL (' + window.location.hostname + ') lalu ubah "Camera" menjadi "Allow".\n2. Di Windows: Buka Settings > Privacy & Security > Camera, aktifkan "Let desktop apps access your camera".\n3. Jika tombol keyboard ASUS: periksa tombol Fn + F10.';
+                } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+                    title = 'Webcam Sedang Digunakan Aplikasi Lain';
+                    hint = 'Webcam sedang dipakai oleh aplikasi lain (Zoom, Teams, Google Meet, atau Windows Camera) atau slider fisik kamera tertutup. Tutup aplikasi tersebut lalu coba lagi.';
+                } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+                    title = 'Webcam Tidak Terdeteksi di Laptop';
+                    hint = 'Tidak ada perangkat kamera yang terdeteksi. Periksa slider penutup webcam fisik atau tombol Fn + F10 pada laptop ASUS Anda.';
+                } else {
+                    title = 'Gagal Membuka Kamera';
+                    hint = 'Terjadi kendala (' + err.name + ': ' + (err.message || 'Akses ditolak') + '). Silakan coba lagi atau gunakan tombol Pilih Foto.';
+                }
+
+                self.showCameraError(title, hint);
+            };
+
+            // Minta akses webcam (coba ideal constraints dulu, lalu fallback ke generic jika gagal)
+            navigator.mediaDevices.getUserMedia({
+                video: {
+                    facingMode: self.currentFacingMode || 'user',
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                },
+                audio: false
+            })
+            .then(attachStream)
+            .catch(function(err) {
+                // Jika error karena parameter constraint, coba opsi video generic
+                if (err.name === 'OverconstrainedError' || err.name === 'ConstraintNotSatisfiedError') {
+                    navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+                        .then(attachStream)
+                        .catch(handleCameraError);
+                } else {
+                    handleCameraError(err);
+                }
+            });
         },
 
         showCameraError: function(title, hint) {
