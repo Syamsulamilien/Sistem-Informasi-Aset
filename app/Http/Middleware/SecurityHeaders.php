@@ -52,6 +52,16 @@ class SecurityHeaders
             $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
         }
 
+        // Proteksi Cache Browser (Anti-Back Button setelah Logout / Session Habis)
+        // Jika pengguna sudah login, cegah browser menyimpan halaman ke disk/bfcache.
+        // Saat user logout dan menekan tombol 'Back' di browser, halaman lama tidak akan bisa dibuka
+        // dan browser otomatis diarahkan kembali ke form Login.
+        if ($request->user()) {
+            $response->headers->set('Cache-Control', 'no-cache, no-store, max-age=0, must-revalidate');
+            $response->headers->set('Pragma', 'no-cache');
+            $response->headers->set('Expires', 'Sun, 02 Jan 1990 00:00:00 GMT');
+        }
+
         return $response;
     }
 }
