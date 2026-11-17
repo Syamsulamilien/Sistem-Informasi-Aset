@@ -355,6 +355,47 @@
             this.startCamera();
         },
 
+        compressImage: function(fileOrDataUrl, maxWidth, maxHeight, quality, callback) {
+            const img = new Image();
+            img.onload = function() {
+                let width = img.width;
+                let height = img.height;
+
+                // Hitung aspek rasio agar resolusi mengecil secara proporsional (max 960px)
+                if (width > height) {
+                    if (width > maxWidth) {
+                        height = Math.round((height * maxWidth) / width);
+                        width = maxWidth;
+                    }
+                } else {
+                    if (height > maxHeight) {
+                        width = Math.round((width * maxHeight) / height);
+                        height = maxHeight;
+                    }
+                }
+
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+
+                // Kompresi ke format JPEG (kualitas 0.65 menghasilkan ~40KB - 90KB)
+                const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+                callback(compressedDataUrl);
+            };
+
+            if (typeof fileOrDataUrl === 'string') {
+                img.src = fileOrDataUrl;
+            } else {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(fileOrDataUrl);
+            }
+        },
+
         snapPhoto: function() {
             const video = document.getElementById(id + '-video');
             const canvas = document.getElementById(id + '-canvas');
@@ -362,16 +403,32 @@
 
             const w = video.videoWidth || 1280;
             const h = video.videoHeight || 720;
-            canvas.width = w;
-            canvas.height = h;
+            
+            // Batasi ukuran ke max 960px agar hasil dalam hitungan KB
+            let targetW = w;
+            let targetH = h;
+            const maxDim = 960;
+            if (targetW > maxDim || targetH > maxDim) {
+                if (targetW > targetH) {
+                    targetH = Math.round((targetH * maxDim) / targetW);
+                    targetW = maxDim;
+                } else {
+                    targetW = Math.round((targetW * maxDim) / targetH);
+                    targetH = maxDim;
+                }
+            }
+
+            canvas.width = targetW;
+            canvas.height = targetH;
 
             const ctx = canvas.getContext('2d');
-            ctx.drawImage(video, 0, 0, w, h);
+            ctx.drawImage(video, 0, 0, targetW, targetH);
 
-            const base64Data = canvas.toDataURL('image/jpeg', 0.85);
+            const base64Data = canvas.toDataURL('image/jpeg', 0.65);
 
             document.getElementById(id + '-base64-input').value = base64Data;
-            document.getElementById(id + '-file-input').value = '';
+            const fileInput = document.getElementById(id + '-file-input');
+            if (fileInput) fileInput.value = '';
             const fallback = document.getElementById(id + '-camera-fallback-input');
             if (fallback) fallback.value = '';
 
@@ -379,11 +436,14 @@
                 document.getElementById(id + '-remove-input').value = '0';
             }
 
+            const approxBytes = Math.round((base64Data.length - 22) * 3 / 4);
+            const sizeKb = Math.round(approxBytes / 1024);
+
             this.stopStream();
-            this.showPreview(base64Data);
+            this.showPreview(base64Data, sizeKb);
         },
 
-        showPreview: function(srcUrl) {
+        showPreview: function(srcUrl, sizeKb) {
             const previewImg = document.getElementById(id + '-preview-img');
             const emptyState = document.getElementById(id + '-empty-state');
             const cameraState = document.getElementById(id + '-camera-state');
@@ -400,13 +460,13 @@
             if (previewState) previewState.style.display = 'flex';
             
             if (previewBox) {
-                previewBox.classList.remove('border-dashed', 'border-gray-300');
+                previewBox.classList.remove('border-dashed', 'border-gray-300', 'border-amber-300');
                 previewBox.classList.add('border-solid', 'border-blue-400');
             }
 
             if (badge) {
                 badge.className = 'text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200';
-                badge.innerText = 'Foto Tersedia';
+                badge.innerText = sizeKb ? ('Foto Siap (' + sizeKb + ' KB)') : 'Foto Tersedia';
             }
         },
 
@@ -463,23 +523,37 @@
             alert('Format berkas harus berupa JPG, PNG, atau WebP.');
             return;
         }
-        if (file.size > 5 * 1024 * 1024) {
-            alert('Ukuran berkas melebihi batas maksimum 5MB.');
-            return;
+
+        const badge = document.getElementById(id + '-badge');
+        if (badge) {
+            badge.className = 'text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 animate-pulse';
+            badge.innerText = 'Mengompres Foto...';
         }
 
-        const reader = new FileReader();
-        reader.onload = function(evt) {
+        // Kompresi otomatis ke resolusi optimal (max 960px) & kualitas 0.65 (~40KB - 90KB)
+        window[jsName].compressImage(file, 960, 960, 0.65, function(compressedDataUrl) {
             const base64Input = document.getElementById(id + '-base64-input');
             if (base64Input) {
-                base64Input.value = evt.target.result;
+                base64Input.value = compressedDataUrl;
             }
+
+            // Kosongkan fileInput agar browser tidak mengunggah file raw berukuran besar (MB)
+            const fileInput = document.getElementById(id + '-file-input');
+            if (fileInput) fileInput.value = '';
+
+            const fallback = document.getElementById(id + '-camera-fallback-input');
+            if (fallback) fallback.value = '';
+
             if (document.getElementById(id + '-remove-input')) {
                 document.getElementById(id + '-remove-input').value = '0';
             }
-            window[jsName].showPreview(evt.target.result);
-        };
-        reader.readAsDataURL(file);
+
+            // Hitung ukuran hasil kompresi dalam KB
+            const approxBytes = Math.round((compressedDataUrl.length - 22) * 3 / 4);
+            const sizeKb = Math.round(approxBytes / 1024);
+
+            window[jsName].showPreview(compressedDataUrl, sizeKb);
+        });
     }
 
     const fileInput = document.getElementById(id + '-file-input');

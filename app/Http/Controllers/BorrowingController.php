@@ -333,10 +333,7 @@ class BorrowingController extends Controller
      */
     private function handleImageUpload(Request $request, string $fileKey, string $base64Key, string $prefix): ?string
     {
-        if ($request->hasFile($fileKey)) {
-            return $request->file($fileKey)->store('borrowings/photos', 'public');
-        }
-
+        // 1. Prioritaskan data base64 terkompresi dari browser (< 100 KB)
         $base64Data = $request->input($base64Key);
         if ($base64Data && preg_match('/^data:image\/(\w+);base64,/', $base64Data, $matches)) {
             $imageType = strtolower($matches[1]);
@@ -350,6 +347,11 @@ class BorrowingController extends Controller
                     return $filename;
                 }
             }
+        }
+
+        // 2. Fallback berkas upload multipart langsung
+        if ($request->hasFile($fileKey)) {
+            return $request->file($fileKey)->store('borrowings/photos', 'public');
         }
 
         return null;
