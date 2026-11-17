@@ -40,18 +40,41 @@
             $baseClass = 'sidebar-item flex items-center px-4 py-2.5 mx-3 rounded-xl text-sm font-semibold transition-all duration-200';
             $activeClass = 'bg-blue-600 text-white shadow-md shadow-blue-600/30 font-bold';
             $inactiveClass = 'text-slate-300 hover:bg-white/10 hover:text-white';
-            $isUser = Auth::check() && Auth::user()->isUser();
             $isPimpinan = Auth::check() && Auth::user()->isPimpinan();
+            $isUser = Auth::check() && Auth::user()->isUser() && !$isPimpinan;
         @endphp
 
         @if ($isUser)
-            <!-- Khusus Role User (Siswa dan Guru): Hanya Pengajuan Peminjaman -->
+            <!-- Khusus Role User (Siswa dan Guru): Pengajuan Peminjaman & Barang Habis Pakai -->
             <a href="{{ route('borrowings.index') }}" title="Pengajuan Peminjaman" class="{{ $baseClass }} {{ request()->routeIs('borrowings.*') ? $activeClass : $inactiveClass }}">
                 <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
                 <span class="sidebar-text truncate">Pengajuan Peminjaman</span>
             </a>
+
+            <a href="{{ route('consumables.index') }}" title="Barang Habis Pakai" class="{{ $baseClass }} {{ request()->routeIs('consumables.*') ? $activeClass : $inactiveClass }}">
+                <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                <span class="sidebar-text truncate">Barang Habis Pakai</span>
+            </a>
         @elseif ($isPimpinan)
-            <!-- Khusus Role Pimpinan Sekolah: Hanya Peminjaman dan Laporan -->
+            <!-- Khusus Role Pimpinan & Waka: Dashboard Overview, Aset, Barang Habis Pakai, Peminjaman, dan Laporan -->
+            <!-- Dashboard -->
+            <a href="{{ route('dashboard') }}" title="Dashboard" class="{{ $baseClass }} {{ request()->routeIs('dashboard') ? $activeClass : $inactiveClass }}">
+                <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                <span class="sidebar-text truncate">Dashboard</span>
+            </a>
+
+            <!-- Data Aset (Read-only) -->
+            <a href="{{ route('assets.index') }}" title="Data Aset" class="{{ $baseClass }} {{ request()->routeIs('assets.*') ? $activeClass : $inactiveClass }}">
+                <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path></svg>
+                <span class="sidebar-text truncate">Aset</span>
+            </a>
+
+            <!-- Barang Habis Pakai -->
+            <a href="{{ route('consumables.index') }}" title="Barang Habis Pakai" class="{{ $baseClass }} {{ request()->routeIs('consumables.*') ? $activeClass : $inactiveClass }}">
+                <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                <span class="sidebar-text truncate">Barang Habis Pakai</span>
+            </a>
+
             <!-- Peminjaman -->
             <a href="{{ route('borrowings.index') }}" title="Peminjaman" class="{{ $baseClass }} {{ request()->routeIs('borrowings.*') ? $activeClass : $inactiveClass }}">
                 <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>

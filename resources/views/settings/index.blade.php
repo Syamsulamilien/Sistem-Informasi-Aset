@@ -48,6 +48,7 @@
                                         'super_admin' => 'Super Administrator',
                                         'admin' => 'Administrator',
                                         'pimpinan', 'pimpinan_sekolah' => 'Pimpinan Sekolah',
+                                        'waka', 'wakasek' => 'Wakasek / Waka',
                                         'guru' => 'Guru',
                                         'karyawan' => 'Karyawan',
                                         'siswa' => 'Siswa',
@@ -189,7 +190,7 @@
                                             $badgeClasses = match($u->role) {
                                                 'super_admin' => 'bg-rose-50 text-rose-700 border-rose-200',
                                                 'admin' => 'bg-purple-50 text-purple-700 border-purple-200',
-                                                'pimpinan', 'pimpinan_sekolah' => 'bg-teal-50 text-teal-700 border-teal-200',
+                                                'pimpinan', 'pimpinan_sekolah', 'waka', 'wakasek' => 'bg-teal-50 text-teal-700 border-teal-200',
                                                 'guru' => 'bg-indigo-50 text-indigo-700 border-indigo-200',
                                                 'karyawan' => 'bg-amber-50 text-amber-700 border-amber-200',
                                                 'siswa' => 'bg-sky-50 text-sky-700 border-sky-200',
@@ -202,6 +203,7 @@
                                                 'super_admin' => 'Super Admin',
                                                 'admin' => 'Admin (Pengelola Lab)',
                                                 'pimpinan', 'pimpinan_sekolah' => 'Pimpinan Sekolah',
+                                        'waka', 'wakasek' => 'Wakasek / Waka',
                                                 'guru' => 'Guru',
                                                 'karyawan' => 'Karyawan',
                                                 'siswa' => 'Siswa',
@@ -229,8 +231,8 @@
                                                     📍 {{ $u->location->name }}
                                                 </span>
                                             @else
-                                                <span class="inline-flex items-center px-2 py-0.5 rounded-md font-medium text-amber-700 bg-amber-50 border border-amber-200">
-                                                    ⚠️ Belum Ada Ruangan
+                                                <span class="inline-flex items-center px-2.5 py-1 rounded-lg font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                                                    🌐 Admin Barang Umum
                                                 </span>
                                             @endif
                                         @else
@@ -300,7 +302,7 @@
             <!-- ======================================================== -->
             <!-- MODAL 1: TAMBAH USER BARU (KHUSUS ADMIN)                 -->
             <!-- ======================================================== -->
-            <div id="addUserModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+            <div id="addUserModal" onclick="if(event.target === this) closeAddUserModal()" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
                 <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden animate-fade-in border border-gray-100">
                     <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
                         <h3 class="text-lg font-bold text-gray-900">Tambah User Baru</h3>
@@ -334,7 +336,8 @@
                             <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Role / Peran</label>
                             <select id="add_role" name="role" required onchange="toggleAddRoleFields(this.value)" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
                                 <option value="admin">Admin (Pengelola Lab / Aset)</option>
-                                <option value="pimpinan">Pimpinan Sekolah (Kepsek/Waka)</option>
+                                <option value="waka">Wakasek (Waka)</option>
+                                <option value="pimpinan">Pimpinan Sekolah (Kepsek)</option>
                                 <option value="guru">Guru</option>
                                 <option value="karyawan">Karyawan</option>
                                 <option value="siswa">Siswa</option>
@@ -344,9 +347,9 @@
 
                         <!-- Ruangan yang ditugaskan (khusus jika role = admin) -->
                         <div id="add_location_wrapper">
-                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Penugasan Ruangan / Lab <span class="text-rose-500">*</span></label>
+                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Penugasan Ruangan / Lab</label>
                             <select name="location_id" id="add_location_id" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
-                                <option value="">-- Pilih Ruangan / Lab --</option>
+                                <option value="">🌐 Admin Barang Umum (Seluruh Aset Non-Lab)</option>
                                 @foreach($locations as $loc)
                                     <option value="{{ $loc->id }}">{{ $loc->name }} @if($loc->floor)(Lantai {{ $loc->floor }})@endif</option>
                                 @endforeach
@@ -382,7 +385,7 @@
             <!-- ======================================================== -->
             <!-- MODAL 2: EDIT USER (KHUSUS ADMIN)                        -->
             <!-- ======================================================== -->
-            <div id="editUserModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+            <div id="editUserModal" onclick="if(event.target === this) closeEditUserModal()" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
                 <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden animate-fade-in border border-gray-100">
                     <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
                         <h3 class="text-lg font-bold text-gray-900">Edit Data User</h3>
@@ -417,7 +420,8 @@
                             <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Role / Peran</label>
                             <select id="edit_role" name="role" required onchange="toggleEditRoleFields(this.value)" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
                                 <option value="admin">Admin (Pengelola Lab / Aset)</option>
-                                <option value="pimpinan">Pimpinan Sekolah (Kepsek/Waka)</option>
+                                <option value="waka">Wakasek (Waka)</option>
+                                <option value="pimpinan">Pimpinan Sekolah (Kepsek)</option>
                                 <option value="guru">Guru</option>
                                 <option value="karyawan">Karyawan</option>
                                 <option value="siswa">Siswa</option>
@@ -427,9 +431,9 @@
 
                         <!-- Ruangan yang ditugaskan (khusus jika role = admin) -->
                         <div id="edit_location_wrapper">
-                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Penugasan Ruangan / Lab <span class="text-rose-500">*</span></label>
+                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Penugasan Ruangan / Lab</label>
                             <select name="location_id" id="edit_location_id" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
-                                <option value="">-- Pilih Ruangan / Lab --</option>
+                                <option value="">🌐 Admin Barang Umum (Seluruh Aset Non-Lab)</option>
                                 @foreach($locations as $loc)
                                     <option value="{{ $loc->id }}">{{ $loc->name }} @if($loc->floor)(Lantai {{ $loc->floor }})@endif</option>
                                 @endforeach
@@ -467,7 +471,7 @@
             <!-- ======================================================== -->
             <!-- MODAL 4: RESET PASSWORD USER (KHUSUS ADMIN)              -->
             <!-- ======================================================== -->
-            <div id="resetPasswordModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+            <div id="resetPasswordModal" onclick="if(event.target === this) closeResetPasswordModal()" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
                 <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden animate-fade-in border border-gray-100">
                     <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
                         <div class="flex items-center gap-2.5">
@@ -553,7 +557,7 @@
                     if (locWrapper && locSelect) {
                         if (role === 'admin') {
                             locWrapper.classList.remove('hidden');
-                            locSelect.required = true;
+                            locSelect.required = false;
                         } else {
                             locWrapper.classList.add('hidden');
                             locSelect.required = false;
@@ -582,7 +586,7 @@
                     if (locWrapper && locSelect) {
                         if (role === 'admin') {
                             locWrapper.classList.remove('hidden');
-                            locSelect.required = true;
+                            locSelect.required = false;
                         } else {
                             locWrapper.classList.add('hidden');
                             locSelect.required = false;

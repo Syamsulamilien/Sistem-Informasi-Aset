@@ -4,9 +4,11 @@ namespace Tests\Feature;
 
 use Tests\TestCase;
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class SecurityRedirectTest extends TestCase
 {
+    use RefreshDatabase;
     public function test_guest_unknown_endpoint_redirects_to_login(): void
     {
         $response = $this->get('/non-existent-page-12345');
@@ -137,20 +139,19 @@ class SecurityRedirectTest extends TestCase
         // Pimpinan tidak boleh approve/update status orang lain
         $this->assertFalse($borrowingPolicy->update($pimpinan, new \App\Models\Borrowing()));
 
-        // Dashboard diarahkan langsung ke borrowings.index
+        // Waka / Pimpinan sekarang dapat melihat Dashboard Overview (Sesuai Requirement 3)
         $response = $this->actingAs($pimpinan)->get('/dashboard');
-        $response->assertRedirect(route('borrowings.index'));
+        $response->assertOk();
 
-        // Modul non-peminjaman & non-laporan diblokir
+        // Modul aset dan barang habis pakai dapat diakses read-only oleh Pimpinan & Waka
         $response = $this->actingAs($pimpinan)->get('/assets');
-        $response->assertRedirect(route('dashboard'));
-        $response->assertSessionHas('error');
-
-        $response = $this->actingAs($pimpinan)->get('/maintenance');
-        $response->assertRedirect(route('dashboard'));
-        $response->assertSessionHas('error');
+        $response->assertOk();
 
         $response = $this->actingAs($pimpinan)->get('/consumables');
+        $response->assertOk();
+
+        // Aksi operasional seperti create aset tetap diblokir untuk pimpinan (auto redirect ke dashboard dengan error)
+        $response = $this->actingAs($pimpinan)->get('/assets/create');
         $response->assertRedirect(route('dashboard'));
         $response->assertSessionHas('error');
     }

@@ -16,6 +16,9 @@ class Borrowing extends Model
         'notes',
         'borrow_photo',
         'return_photo',
+        'approved_by',
+        'approval_date',
+        'approval_notes',
     ];
 
     protected function casts(): array
@@ -24,6 +27,7 @@ class Borrowing extends Model
             'borrow_date' => 'date',
             'expected_return_date' => 'date',
             'actual_return_date' => 'date',
+            'approval_date' => 'datetime',
         ];
     }
 
@@ -35,5 +39,10 @@ class Borrowing extends Model
     public function asset()
     {
         return $this->belongsTo(Asset::class);
+    }
+
+    public function approver()
+    {
+        return $this->belongsTo(User::class, 'approved_by');
     }
 }

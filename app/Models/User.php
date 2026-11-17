@@ -51,7 +51,51 @@ class User extends Authenticatable
 
     public function isPimpinan()
     {
-        return in_array($this->role, ['pimpinan', 'pimpinan_sekolah']);
+        return in_array($this->role, ['pimpinan', 'pimpinan_sekolah', 'waka', 'wakasek']);
+    }
+
+    public function isWaka()
+    {
+        return in_array($this->role, ['waka', 'wakasek']);
+    }
+
+    public function isGeneralAdmin()
+    {
+        return $this->role === 'admin' && is_null($this->location_id);
+    }
+
+    /**
+     * Memeriksa apakah user berwenang mengelola aset/barang di lokasi tertentu.
+     * - Super admin berwenang di semua lokasi.
+     * - Admin dengan location_id hanya berwenang di lokasinya sendiri.
+     * - Admin tanpa location_id (Admin Barang Umum) berwenang atas barang umum (lokasi null atau lokasi tanpa admin khusus).
+     */
+    public function managesLocation($locationId): bool
+    {
+        if ($this->isSuperAdmin()) {
+            return true;
+        }
+
+        if ($this->role === 'admin') {
+            if ($this->location_id) {
+                return (int)$this->location_id === (int)$locationId;
+            }
+
+            // Jika Admin Barang Umum (location_id null):
+            if (is_null($locationId)) {
+                return true;
+            }
+
+            // Cek apakah lokasi ini memiliki admin khusus yang ditugaskan
+            $hasDedicatedAdmin = self::where('role', 'admin')
+                ->where('location_id', $locationId)
+                ->where('id', '!=', $this->id)
+                ->exists();
+
+            return !$hasDedicatedAdmin;
+        }
+
+        return false;
     }
 
     public function isUser()
@@ -107,6 +151,11 @@ class User extends Authenticatable
     public function consumableTransactions()
     {
         return $this->hasMany(ConsumableTransaction::class);
+    }
+
+    public function consumableRequests()
+    {
+        return $this->hasMany(ConsumableRequest::class);
     }
 }
 

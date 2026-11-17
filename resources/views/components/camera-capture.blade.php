@@ -109,7 +109,7 @@
 </div>
 
 <!-- Modal Pop-up Live Webcam / Camera -->
-<div id="{{ $id }}-camera-modal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-black/80 backdrop-blur-sm p-4 flex items-center justify-center transition-all">
+<div id="{{ $id }}-camera-modal" class="fixed inset-0 z-[70] hidden overflow-y-auto bg-black/80 backdrop-blur-sm p-4 flex items-center justify-center transition-all">
     <div class="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-200 flex flex-col max-h-[90vh]">
         <!-- Modal Header -->
         <div class="flex items-center justify-between px-5 py-3.5 border-b border-gray-200 bg-gray-50">
@@ -186,6 +186,9 @@ window.{{ $id }}Capture = {
 
     openCameraModal: function() {
         const modal = document.getElementById('{{ $id }}-camera-modal');
+        if (modal && modal.parentElement !== document.body) {
+            document.body.appendChild(modal);
+        }
         const loading = document.getElementById('{{ $id }}-camera-loading');
         const error = document.getElementById('{{ $id }}-camera-error');
         
@@ -200,7 +203,9 @@ window.{{ $id }}Capture = {
     closeCameraModal: function() {
         const modal = document.getElementById('{{ $id }}-camera-modal');
         modal.classList.add('hidden');
-        document.body.classList.remove('overflow-hidden');
+        if (!document.querySelector('.fixed.inset-0:not(.hidden)')) {
+            document.body.classList.remove('overflow-hidden');
+        }
         this.stopStream();
     },
 

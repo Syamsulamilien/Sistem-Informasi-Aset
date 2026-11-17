@@ -49,10 +49,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/change-password', [ProfileController::class, 'updatePassword'])->name('update-password');
 
     // ------------------------------------------
-    // 2. LAPORAN & EKSPOR DATA (Super Admin, Admin, Teknisi, Laboran, Pimpinan, Viewer)
+    // 2. LAPORAN & EKSPOR DATA (Super Admin, Admin, Teknisi, Laboran, Pimpinan, Waka, Viewer)
     // Siswa / Guru (Role User) dilarang mengakses laporan
     // ------------------------------------------
-    Route::middleware(['role:super_admin,admin,teknisi,laboran,pimpinan,pimpinan_sekolah,viewer'])->group(function () {
+    Route::middleware(['role:super_admin,admin,teknisi,laboran,pimpinan,pimpinan_sekolah,waka,wakasek,viewer'])->group(function () {
         Route::prefix('reports')->name('reports.')->group(function () {
             Route::get('/', [ReportController::class, 'index'])->name('index');
             Route::get('/pdf', [ReportController::class, 'exportPdf'])->name('pdf');
@@ -67,10 +67,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // ------------------------------------------
-    // 3. READ-ONLY ENDPOINTS MODUL ASET, LOKASI, JENIS, MAINTENANCE, CONSUMABLE
-    // Dapat diakses oleh staf & viewer, tetapi dikecualikan untuk Pimpinan Sekolah dan User (Siswa/Guru)
+    // 3. READ-ONLY ENDPOINTS MODUL ASET, LOKASI, JENIS, MAINTENANCE
+    // Dapat diakses oleh staf, viewer, pimpinan, dan wakasek
     // ------------------------------------------
-    Route::middleware(['role:super_admin,admin,teknisi,laboran,viewer'])->group(function () {
+    Route::middleware(['role:super_admin,admin,teknisi,laboran,pimpinan,pimpinan_sekolah,waka,wakasek,viewer'])->group(function () {
         Route::get('/assets', [AssetController::class, 'index'])->name('assets.index');
         Route::get('/assets/{asset}', [AssetController::class, 'show'])->name('assets.show')->whereNumber('asset');
         Route::get('/assets/{asset}/qrcode', [AssetController::class, 'qrcode'])->name('assets.qrcode')->whereNumber('asset');
@@ -88,24 +88,27 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/maintenance/schedules/overdue', [MaintenanceController::class, 'overdue'])->name('maintenance.overdue');
         Route::get('/maintenance/asset/{assetId}/history', [MaintenanceController::class, 'assetHistory'])->name('maintenance.asset-history')->whereNumber('assetId');
         Route::get('/maintenance/{maintenance}', [MaintenanceController::class, 'show'])->name('maintenance.show')->whereNumber('maintenance');
-
-        Route::get('/consumables', [ConsumableController::class, 'index'])->name('consumables.index');
-        Route::get('/consumables/{consumable}', [ConsumableController::class, 'show'])->name('consumables.show')->whereNumber('consumable');
     });
 
-    // Peminjaman: Read-only dapat diakses semua role terautentikasi (termasuk Pimpinan & Siswa/Guru)
+    // ------------------------------------------
+    // 3B. BARANG HABIS PAKAI (SEMUA ROLE TERAUTENTIKASI: SISWA, GURU, WAKA, PIMPINAN, ADMIN)
+    // ------------------------------------------
+    Route::get('/consumables', [ConsumableController::class, 'index'])->name('consumables.index');
+    Route::get('/consumables/{consumable}', [ConsumableController::class, 'show'])->name('consumables.show')->whereNumber('consumable');
+    Route::post('/consumables/{consumable}/request', [ConsumableController::class, 'storeRequest'])->name('consumables.request.store')->whereNumber('consumable');
+
+    // Peminjaman: Read-only & Direct Return dapat diakses semua role terautentikasi (termasuk Pimpinan & Siswa/Guru)
     Route::get('/borrowings', [BorrowingController::class, 'index'])->name('borrowings.index');
     Route::get('/borrowings/{borrowing}', [BorrowingController::class, 'show'])->name('borrowings.show')->whereNumber('borrowing');
-
+    Route::post('/borrowings/{borrowing}/return-direct', [BorrowingController::class, 'returnDirect'])->name('borrowings.return-direct')->whereNumber('borrowing');
 
     // ------------------------------------------
-    // 4. LEVEL AJUKAN PEMINJAMAN (SEMUA STAF, PIMPINAN SEKOLAH, GURU, KARYAWAN, & SISWA)
+    // 4. LEVEL AJUKAN PEMINJAMAN (SEMUA STAF, PIMPINAN SEKOLAH, WAKA, GURU, KARYAWAN, & SISWA)
     // ------------------------------------------
-    Route::middleware(['role:super_admin,admin,teknisi,laboran,pimpinan,pimpinan_sekolah,guru,karyawan,siswa,user,user_biasa,siswa_guru'])->group(function () {
+    Route::middleware(['role:super_admin,admin,teknisi,laboran,pimpinan,pimpinan_sekolah,waka,wakasek,guru,karyawan,siswa,user,user_biasa,siswa_guru'])->group(function () {
         Route::get('/borrowings/create', [BorrowingController::class, 'create'])->name('borrowings.create');
         Route::post('/borrowings', [BorrowingController::class, 'store'])->name('borrowings.store');
     });
-
 
     // ------------------------------------------
     // 5. LEVEL OPERASIONAL (SUPER ADMIN, ADMIN, TEKNISI, LABORAN)
@@ -126,9 +129,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::patch('/{maintenance}/complete', [MaintenanceController::class, 'complete'])->name('complete')->whereNumber('maintenance');
         });
 
-        // Edit status / approve pengembalian Peminjaman Aset (Khusus staf)
+        // Edit status / update peminjaman Aset
         Route::get('/borrowings/{borrowing}/edit', [BorrowingController::class, 'edit'])->name('borrowings.edit')->whereNumber('borrowing');
         Route::match(['put', 'patch'], '/borrowings/{borrowing}', [BorrowingController::class, 'update'])->name('borrowings.update')->whereNumber('borrowing');
+
+        // ACC / Setujui & Tolak Peminjaman Aset (Sesuai wewenang ruangan / admin umum)
+        Route::post('/borrowings/{borrowing}/approve', [BorrowingController::class, 'approve'])->name('borrowings.approve')->whereNumber('borrowing');
+        Route::post('/borrowings/{borrowing}/reject', [BorrowingController::class, 'reject'])->name('borrowings.reject')->whereNumber('borrowing');
+
+        // ACC / Setujui & Tolak Pengajuan Barang Habis Pakai
+        Route::post('/consumables/requests/{consumableRequest}/approve', [ConsumableController::class, 'approveRequest'])->name('consumables.request.approve')->whereNumber('consumableRequest');
+        Route::post('/consumables/requests/{consumableRequest}/reject', [ConsumableController::class, 'rejectRequest'])->name('consumables.request.reject')->whereNumber('consumableRequest');
 
         // Barang Habis Pakai (Tambah item, edit, dan catat transaksi keluar-masuk)
         Route::prefix('consumables')->name('consumables.')->group(function () {

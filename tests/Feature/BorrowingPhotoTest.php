@@ -108,7 +108,7 @@ class BorrowingPhotoTest extends TestCase
 
         $borrowing = Borrowing::where('user_id', $this->user->id)->latest()->first();
         $this->assertNotNull($borrowing);
-        $this->assertEquals('borrowed', $borrowing->status);
+        $this->assertEquals('pending', $borrowing->status);
         $this->assertNotNull($borrowing->borrow_photo);
         Storage::disk('public')->assertExists($borrowing->borrow_photo);
     }
@@ -197,5 +197,72 @@ class BorrowingPhotoTest extends TestCase
 
         $response->assertRedirect(route('borrowings.index'));
         Storage::disk('public')->assertMissing($storedPath);
+    }
+
+    public function test_admin_can_approve_and_reject_borrowing(): void
+    {
+        $borrowing = Borrowing::create([
+            'user_id' => $this->user->id,
+            'asset_id' => $this->asset->id,
+            'borrow_date' => now(),
+            'expected_return_date' => now()->addDay(),
+            'status' => 'pending',
+        ]);
+
+        // Admin approve
+        $response = $this->actingAs($this->admin)->post(route('borrowings.approve', $borrowing), [
+            'notes' => 'Disetujui untuk kegiatan sekolah',
+        ]);
+
+        $response->assertSessionHas('success');
+        $borrowing->refresh();
+        $this->assertEquals('borrowed', $borrowing->status);
+        $this->assertEquals($this->admin->id, $borrowing->approved_by);
+        $this->assertNotNull($borrowing->approval_date);
+
+        // Test reject on another pending borrowing
+        $borrowing2 = Borrowing::create([
+            'user_id' => $this->user->id,
+            'asset_id' => $this->asset->id,
+            'borrow_date' => now(),
+            'expected_return_date' => now()->addDay(),
+            'status' => 'pending',
+        ]);
+
+        $responseReject = $this->actingAs($this->admin)->post(route('borrowings.reject', $borrowing2), [
+            'reason' => 'Sedang dipakai ujian',
+        ]);
+
+        $responseReject->assertSessionHas('success');
+        $borrowing2->refresh();
+        $this->assertEquals('rejected', $borrowing2->status);
+        $this->assertEquals($this->admin->id, $borrowing2->approved_by);
+        $this->assertEquals('Sedang dipakai ujian', $borrowing2->approval_notes);
+    }
+
+    public function test_direct_return_modal_action(): void
+    {
+        $borrowing = Borrowing::create([
+            'user_id' => $this->user->id,
+            'asset_id' => $this->asset->id,
+            'borrow_date' => now(),
+            'expected_return_date' => now()->addDay(),
+            'status' => 'borrowed',
+        ]);
+
+        $returnFile = UploadedFile::fake()->image('direct_kembali.jpg');
+
+        $response = $this->actingAs($this->user)->post(route('borrowings.return-direct', $borrowing), [
+            'actual_return_date' => now()->toDateString(),
+            'return_photo' => $returnFile,
+            'notes' => 'Barang mulus tanpa cacat',
+        ]);
+
+        $response->assertSessionHas('success');
+        $borrowing->refresh();
+        $this->assertEquals('returned', $borrowing->status);
+        $this->assertNotNull($borrowing->return_photo);
+        $this->assertStringContainsString('Barang mulus tanpa cacat', $borrowing->notes);
+        Storage::disk('public')->assertExists($borrowing->return_photo);
     }
 }

@@ -27,4 +27,9 @@ class Consumable extends Model
     {
         return $this->hasMany(ConsumableTransaction::class);
     }
+
+    public function requests()
+    {
+        return $this->hasMany(ConsumableRequest::class);
+    }
 }

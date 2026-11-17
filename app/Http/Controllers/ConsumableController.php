@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Consumable;
+use App\Models\ConsumableRequest;
 use App\Models\ConsumableTransaction;
 use App\Models\Location;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
@@ -17,14 +19,58 @@ class ConsumableController extends Controller
     public function index(Request $request)
     {
         $query = Consumable::with('location');
+        $user = auth()->user();
 
         if ($request->filled('search')) {
-            $query->where('name', 'like', "%{$request->search}%")
-                  ->orWhere('kategori', 'like', "%{$request->search}%");
+            $search = trim($request->search);
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('kategori', 'like', "%{$search}%")
+                  ->orWhereHas('location', function ($ql) use ($search) {
+                      $ql->where('name', 'like', "%{$search}%");
+                  });
+            });
         }
 
-        $consumables = $query->latest()->paginate(15)->withQueryString();
-        return view('consumables.index', compact('consumables'));
+        $consumables = $query->latest()->paginate(12)->withQueryString();
+
+        // 1. Riwayat Permintaan Barang Saya (untuk User / Waka / Peminjam)
+        $myRequests = ConsumableRequest::where('user_id', $user->id)
+            ->with(['consumable.location', 'approver'])
+            ->latest()
+            ->take(15)
+            ->get();
+
+        // 2. Daftar Pengajuan Masuk untuk Admin / Super Admin (sesuai wewenang lokasi)
+        $pendingRequests = collect();
+        if ($user->isAdmin() || $user->isLaboran() || $user->isTeknisi()) {
+            $reqQuery = ConsumableRequest::where('status', 'pending')
+                ->with(['consumable.location', 'user']);
+
+            if ($user->role === 'admin') {
+                if ($user->location_id) {
+                    $adminLocId = $user->location_id;
+                    $reqQuery->whereHas('consumable', function ($q) use ($adminLocId) {
+                        $q->where('location_id', $adminLocId);
+                    });
+                } else {
+                    // Admin Barang Umum: permintaan barang umum non-lab
+                    $dedicatedLocationIds = User::where('role', 'admin')
+                        ->whereNotNull('location_id')
+                        ->pluck('location_id')
+                        ->toArray();
+
+                    $reqQuery->whereHas('consumable', function ($q) use ($dedicatedLocationIds) {
+                        $q->whereNull('location_id')
+                          ->orWhereNotIn('location_id', $dedicatedLocationIds);
+                    });
+                }
+            }
+
+            $pendingRequests = $reqQuery->latest()->get();
+        }
+
+        return view('consumables.index', compact('consumables', 'myRequests', 'pendingRequests'));
     }
 
     public function create()
@@ -173,5 +219,106 @@ class ConsumableController extends Controller
         });
 
         return redirect()->route('consumables.show', $consumable)->with('success', 'Transaksi stok berhasil dicatat!');
+    }
+
+    /**
+     * Pengajuan Permintaan Barang Habis Pakai oleh User / Waka / Siswa / Guru
+     */
+    public function storeRequest(Request $request, Consumable $consumable)
+    {
+        $validated = $request->validate([
+            'quantity' => 'required|integer|min:1',
+            'request_date' => 'required|date',
+            'notes' => 'nullable|string|max:500',
+        ], [
+            'quantity.required' => 'Jumlah barang wajib diisi.',
+            'quantity.min' => 'Jumlah barang minimal 1.',
+            'request_date.required' => 'Tanggal pengajuan wajib diisi.',
+        ]);
+
+        if ($consumable->stock < $validated['quantity']) {
+            return back()->with('error', "Stok barang ini tidak mencukupi (Tersedia: {$consumable->stock} {$consumable->unit}).")->withInput();
+        }
+
+        ConsumableRequest::create([
+            'consumable_id' => $consumable->id,
+            'user_id' => auth()->id(),
+            'quantity' => $validated['quantity'],
+            'request_date' => $validated['request_date'],
+            'notes' => $validated['notes'],
+            'status' => 'pending',
+        ]);
+
+        return back()->with('success', "Pengajuan permintaan barang '{$consumable->name}' sebanyak {$validated['quantity']} {$consumable->unit} berhasil diajukan! Menunggu persetujuan pengelola.");
+    }
+
+    /**
+     * Persetujuan (ACC) Pengajuan Barang Habis Pakai oleh Pengelola Ruangan / Admin
+     */
+    public function approveRequest(Request $request, ConsumableRequest $consumableRequest)
+    {
+        $this->authorize('approveRequest', $consumableRequest->consumable);
+
+        if ($consumableRequest->status !== 'pending') {
+            return back()->with('error', 'Pengajuan ini sudah tidak berstatus pending.');
+        }
+
+        $consumable = $consumableRequest->consumable;
+
+        if ($consumable->stock < $consumableRequest->quantity) {
+            return back()->with('error', "Gagal menyetujui: Stok barang saat ini ({$consumable->stock}) kurang dari jumlah pengajuan ({$consumableRequest->quantity})!");
+        }
+
+        DB::transaction(function () use ($consumableRequest, $consumable, $request) {
+            // 1. Kurangi stok barang
+            $consumable->decrement('stock', $consumableRequest->quantity);
+
+            // 2. Catat transaksi pengeluaran stok
+            ConsumableTransaction::create([
+                'consumable_id' => $consumable->id,
+                'user_id' => $consumableRequest->user_id,
+                'type' => 'out',
+                'quantity' => $consumableRequest->quantity,
+                'transaction_date' => now()->toDateString(),
+                'notes' => "Pengajuan barang disetujui untuk {$consumableRequest->user->name}. " . ($consumableRequest->notes ? "Keperluan: {$consumableRequest->notes}" : ''),
+            ]);
+
+            // 3. Update status permintaan
+            $consumableRequest->update([
+                'status' => 'approved',
+                'approved_by' => auth()->id(),
+                'approval_date' => now(),
+                'approval_notes' => $request->input('notes'),
+            ]);
+        });
+
+        return back()->with('success', "Pengajuan '{$consumable->name}' berhasil disetujui (ACC) dan stok telah diperbarui.");
+    }
+
+    /**
+     * Tolak Pengajuan Barang Habis Pakai
+     */
+    public function rejectRequest(Request $request, ConsumableRequest $consumableRequest)
+    {
+        $this->authorize('rejectRequest', $consumableRequest->consumable);
+
+        if ($consumableRequest->status !== 'pending') {
+            return back()->with('error', 'Pengajuan ini sudah tidak berstatus pending.');
+        }
+
+        $request->validate([
+            'reason' => 'required|string|max:500',
+        ], [
+            'reason.required' => 'Alasan penolakan pengajuan wajib diisi.',
+        ]);
+
+        $consumableRequest->update([
+            'status' => 'rejected',
+            'approved_by' => auth()->id(),
+            'approval_date' => now(),
+            'approval_notes' => $request->reason,
+        ]);
+
+        return back()->with('success', "Pengajuan '{$consumableRequest->consumable->name}' telah ditolak.");
     }
 }

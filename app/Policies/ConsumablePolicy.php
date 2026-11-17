@@ -24,16 +24,35 @@ class ConsumablePolicy
 
     public function update(User $user, Consumable $consumable): bool
     {
+        if ($user->role === 'admin') {
+            return $user->managesLocation($consumable->location_id);
+        }
         return in_array($user->role, ['super_admin', 'admin', 'teknisi', 'laboran']);
     }
 
     public function transaction(User $user, Consumable $consumable): bool
     {
+        if ($user->role === 'admin') {
+            return $user->managesLocation($consumable->location_id);
+        }
         return in_array($user->role, ['super_admin', 'admin', 'teknisi', 'laboran']);
     }
 
     public function delete(User $user, Consumable $consumable): bool
     {
+        if ($user->role === 'admin') {
+            return $user->managesLocation($consumable->location_id);
+        }
         return in_array($user->role, ['super_admin', 'admin']);
+    }
+
+    public function approveRequest(User $user, Consumable $consumable): bool
+    {
+        return $user->managesLocation($consumable->location_id);
+    }
+
+    public function rejectRequest(User $user, Consumable $consumable): bool
+    {
+        return $user->managesLocation($consumable->location_id);
     }
 }

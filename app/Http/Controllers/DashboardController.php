@@ -11,8 +11,8 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        // Role Pimpinan Sekolah dan User (Siswa/Guru) hanya fokus pada peminjaman, alihkan ke peminjaman
-        if (auth()->check() && (auth()->user()->isPimpinan() || auth()->user()->isUser())) {
+        // User biasa (Siswa/Guru/Karyawan) dialihkan ke peminjaman; Pimpinan dan Waka tetap dapat melihat Dashboard Overview
+        if (auth()->check() && auth()->user()->isUser() && !auth()->user()->isPimpinan()) {
             return redirect()->route('borrowings.index');
         }
 
@@ -50,8 +50,8 @@ class DashboardController extends Controller
             ->get();
 
         // ===== Bar chart: aset per lokasi (top 5) =====
-        $locations = Location::withCount('assets')
-            ->having('assets_count', '>', 0)
+        $locations = Location::has('assets')
+            ->withCount('assets')
             ->orderByDesc('assets_count')
             ->take(5)
             ->get();

@@ -62,6 +62,7 @@
                             <option value="">Pilih Sumber Dana...</option>
                             <option value="Dana Sekolah" {{ old('sumber_dana') == 'Dana Sekolah' ? 'selected' : '' }}>Dana Sekolah</option>
                             <option value="Dana BOS" {{ old('sumber_dana') == 'Dana BOS' ? 'selected' : '' }}>Dana BOS</option>
+                            <option value="Dana BOSDA" {{ old('sumber_dana') == 'Dana BOSDA' ? 'selected' : '' }}>Dana BOSDA</option>
                             <option value="Yayasan" {{ old('sumber_dana') == 'Yayasan' ? 'selected' : '' }}>Yayasan</option>
                             <option value="Lainnya" {{ old('sumber_dana') == 'Lainnya' ? 'selected' : '' }}>Lainnya</option>
                         </select>
