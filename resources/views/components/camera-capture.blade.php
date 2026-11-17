@@ -191,8 +191,36 @@
         stream: null,
         currentFacingMode: 'user',
 
+        isMobileDevice: function() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                   (navigator.maxTouchPoints && navigator.maxTouchPoints > 2 && /Macintosh/.test(navigator.userAgent));
+        },
+
         startCamera: function() {
             const self = this;
+
+            // 1. Jika di HP (Mobile):
+            // Langsung panggil kamera bawaan HP via HTML5 capture="environment".
+            // Ini 100% bekerja di semua Android & iOS tanpa butuh HTTPS dan tanpa diblokir browser!
+            if (this.isMobileDevice()) {
+                this.triggerNativeCamera();
+                return;
+            }
+
+            // 2. Jika diakses via HTTP non-localhost (misal IP server http://192.168.x.x atau domain tanpa SSL):
+            // Browser modern (Chrome/Safari) secara ketat memblokir WebRTC getUserMedia di insecure origin.
+            const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            const isSecure = window.isSecureContext || isLocalhost;
+
+            if (!isSecure) {
+                self.showCameraError(
+                    'Kamera Langsung Memerlukan HTTPS',
+                    'Akses webcam langsung di browser membutuhkan protokol aman (HTTPS). Karena saat ini menggunakan alamat HTTP non-localhost (' + window.location.hostname + '), silakan gunakan tombol di bawah untuk memilih file foto langsung dari laptop atau gunakan HP Anda.'
+                );
+                return;
+            }
+
+            // 3. Pada desktop/laptop di localhost / HTTPS: Hubungkan ke webcam
             const emptyState = document.getElementById(id + '-empty-state');
             const previewState = document.getElementById(id + '-preview-state');
             const cameraState = document.getElementById(id + '-camera-state');
@@ -217,13 +245,16 @@
                 this.stopStream();
             }
 
-            // Validasi mediaDevices
+            // Validasi dukungan mediaDevices
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                self.showCameraError('Browser tidak mengizinkan akses kamera pada protokol ini.', 'Pastikan membuka aplikasi via http://localhost:8000 atau https.');
+                self.showCameraError(
+                    'Browser Tidak Mengizinkan Akses Kamera',
+                    'Browser tidak mengizinkan akses webcam pada protokol ini. Silakan gunakan tombol Pilih Foto dari Komputer.'
+                );
                 return;
             }
 
-            // Jalankan getUserMedia dengan video: true murni
+            // Minta akses webcam
             navigator.mediaDevices.getUserMedia({ video: true, audio: false })
                 .then(function(stream) {
                     self.stream = stream;
@@ -250,20 +281,21 @@
                 })
                 .catch(function(err) {
                     console.error("Camera access error:", err);
-                    let title = 'Kamera tidak dapat diakses.';
-                    let hint = 'Kode error: [' + err.name + ' - ' + err.message + ']. ';
+                    let title = 'Akses Kamera Tidak Diizinkan';
+                    let hint = '';
 
                     if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-                        title = 'Akses Kamera Diblokir';
-                        hint += 'Silakan klik ikon pengaturan di sebelah kiri URL http://127.0.0.1:8000 dan ubah izin Kamera ke "Allow". Di Windows, buka Settings > Privacy & security > Camera dan pastikan Camera Access aktif.';
+                        title = 'Izin Kamera Diblokir di Browser';
+                        hint = 'Browser menolak izin akses webcam. Silakan klik ikon pengaturan / gembok di sebelah kiri URL (' + window.location.origin + ') dan ubah izin Kamera menjadi "Allow". Tips laptop: Buka via http://localhost:8000 (bukan 127.0.0.1) agar browser otomatis mengizinkan kamera.';
                     } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
-                        title = 'Kamera Laptop Terkunci / Sedang Dipakai';
-                        hint += 'Webcam sedang digunakan oleh aplikasi lain (Zoom, Teams, Meet, atau Windows Camera) atau privacy slider kamera tertutup. Tutup aplikasi lain lalu coba lagi.';
+                        title = 'Webcam Sedang Digunakan Aplikasi Lain';
+                        hint = 'Webcam laptop sedang dipakai oleh aplikasi lain (Zoom, Teams, Meet, atau Windows Camera) atau privacy slider kamera tertutup. Tutup aplikasi lain lalu coba lagi.';
                     } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
                         title = 'Webcam Tidak Terdeteksi';
-                        hint += 'Periksa apakah ada tombol fisik kamera di keyboard (misal Fn + F10 di laptop ASUS) atau slider penutup webcam.';
+                        hint = 'Periksa apakah ada tombol fisik kamera di keyboard (misal Fn + F10 di laptop ASUS) atau slider penutup webcam.';
                     } else {
-                        hint += 'Gagal menghubungkan webcam. Anda dapat langsung memilih file foto dari komputer.';
+                        title = 'Gagal Menghubungkan Kamera';
+                        hint = 'Error: [' + err.name + ' - ' + (err.message || 'Tidak diizinkan') + ']. Anda dapat langsung memilih file foto dari komputer.';
                     }
 
                     self.showCameraError(title, hint);
@@ -277,17 +309,28 @@
             const errDesc = document.getElementById(id + '-error-desc');
             const errHint = document.getElementById(id + '-error-hint');
             const loading = document.getElementById(id + '-camera-loading');
+            const previewBox = document.getElementById(id + '-preview-box');
 
             if (cameraState) cameraState.style.display = 'none';
             if (loading) loading.style.display = 'none';
             if (errDesc) errDesc.innerText = title;
             if (errHint) errHint.innerText = hint;
             if (cameraError) cameraError.style.display = 'flex';
+
+            if (previewBox) {
+                previewBox.classList.remove('border-solid', 'border-blue-500', 'border-blue-400');
+                previewBox.classList.add('border-dashed', 'border-amber-300');
+            }
         },
 
         triggerNativeCamera: function() {
             const fallbackInput = document.getElementById(id + '-camera-fallback-input');
-            if (fallbackInput) fallbackInput.click();
+            if (fallbackInput) {
+                fallbackInput.click();
+            } else {
+                const fileInput = document.getElementById(id + '-file-input');
+                if (fileInput) fileInput.click();
+            }
         },
 
         stopCamera: function() {
@@ -329,6 +372,8 @@
 
             document.getElementById(id + '-base64-input').value = base64Data;
             document.getElementById(id + '-file-input').value = '';
+            const fallback = document.getElementById(id + '-camera-fallback-input');
+            if (fallback) fallback.value = '';
 
             if (document.getElementById(id + '-remove-input')) {
                 document.getElementById(id + '-remove-input').value = '0';
@@ -351,7 +396,7 @@
             if (cameraState) cameraState.style.display = 'none';
             if (cameraError) cameraError.style.display = 'none';
 
-            previewImg.src = srcUrl;
+            if (previewImg) previewImg.src = srcUrl;
             if (previewState) previewState.style.display = 'flex';
             
             if (previewBox) {
@@ -382,7 +427,7 @@
 
             if (previewBox) {
                 previewBox.classList.add('border-dashed', 'border-gray-300');
-                previewBox.classList.remove('border-solid', 'border-blue-400', 'border-blue-500');
+                previewBox.classList.remove('border-solid', 'border-blue-400', 'border-blue-500', 'border-amber-300');
             }
 
             if (badge) {
@@ -393,11 +438,16 @@
 
         resetPhoto: function() {
             const previewImg = document.getElementById(id + '-preview-img');
-            previewImg.src = '';
+            if (previewImg) previewImg.src = '';
 
-            document.getElementById(id + '-file-input').value = '';
-            document.getElementById(id + '-camera-fallback-input').value = '';
-            document.getElementById(id + '-base64-input').value = '';
+            const fileInput = document.getElementById(id + '-file-input');
+            if (fileInput) fileInput.value = '';
+
+            const fallbackInput = document.getElementById(id + '-camera-fallback-input');
+            if (fallbackInput) fallbackInput.value = '';
+
+            const base64Input = document.getElementById(id + '-base64-input');
+            if (base64Input) base64Input.value = '';
 
             if (document.getElementById(id + '-remove-input')) {
                 document.getElementById(id + '-remove-input').value = '1';
@@ -420,7 +470,10 @@
 
         const reader = new FileReader();
         reader.onload = function(evt) {
-            document.getElementById(id + '-base64-input').value = '';
+            const base64Input = document.getElementById(id + '-base64-input');
+            if (base64Input) {
+                base64Input.value = evt.target.result;
+            }
             if (document.getElementById(id + '-remove-input')) {
                 document.getElementById(id + '-remove-input').value = '0';
             }
@@ -432,14 +485,17 @@
     const fileInput = document.getElementById(id + '-file-input');
     if (fileInput) {
         fileInput.addEventListener('change', function(e) {
-            processSelectedFile(e.target.files[0]);
+            const file = e.target.files && e.target.files[0];
+            if (file) {
+                processSelectedFile(file);
+            }
         });
     }
 
     const fallbackInput = document.getElementById(id + '-camera-fallback-input');
     if (fallbackInput) {
         fallbackInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
+            const file = e.target.files && e.target.files[0];
             if (file) {
                 try {
                     const dataTransfer = new DataTransfer();
