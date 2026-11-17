@@ -265,4 +265,25 @@ class BorrowingPhotoTest extends TestCase
         $this->assertStringContainsString('Barang mulus tanpa cacat', $borrowing->notes);
         Storage::disk('public')->assertExists($borrowing->return_photo);
     }
+
+    public function test_can_view_borrowing_detail_page(): void
+    {
+        $borrowing = Borrowing::create([
+            'user_id' => $this->user->id,
+            'asset_id' => $this->asset->id,
+            'borrow_date' => now(),
+            'expected_return_date' => now()->addDay(),
+            'status' => 'pending',
+        ]);
+
+        $response = $this->actingAs($this->user)->get(route('borrowings.show', $borrowing));
+        $response->assertOk();
+        $response->assertSee('Detail Peminjaman');
+        $response->assertSee('Menunggu Persetujuan Admin');
+
+        // Admin view
+        $responseAdmin = $this->actingAs($this->admin)->get(route('borrowings.show', $borrowing));
+        $responseAdmin->assertOk();
+        $responseAdmin->assertSee('Setujui Peminjaman');
+    }
 }

@@ -1,4 +1,4 @@
-<x-app-layout :title="'Detail Peminjaman - ' . $borrowing->user->name">
+<x-app-layout :title="'Detail Peminjaman - ' . ($borrowing->user?->name ?? 'Aset')">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         @php
             $statusStyles = [
@@ -41,24 +41,31 @@
 
         <!-- Header Halaman -->
         <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div class="flex items-center gap-3">
-                <a href="{{ route('borrowings.index') }}" class="p-2 text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded-xl border border-gray-200 transition-colors shadow-sm" title="Kembali">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            <div class="flex items-center gap-3.5">
+                <a href="{{ route('borrowings.index') }}" 
+                   class="group flex items-center justify-center w-11 h-11 bg-white hover:bg-gray-50 active:bg-gray-100 text-gray-600 hover:text-blue-600 rounded-2xl border border-gray-200 shadow-sm hover:shadow transition-all duration-200 active:scale-95 flex-shrink-0" 
+                   title="Kembali ke Daftar Peminjaman">
+                    <svg class="w-5 h-5 transition-transform duration-200 group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                     </svg>
                 </a>
                 <div>
-                    <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Detail Peminjaman</h1>
-                    <p class="text-xs sm:text-sm text-gray-500 mt-1">Peminjam: {{ $borrowing->user->name }} • Kode: {{ $borrowing->asset->asset_code }}</p>
+                    <h1 class="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight flex items-center gap-2">
+                        Detail Peminjaman
+                    </h1>
+                    <p class="text-xs sm:text-sm text-gray-500 mt-0.5">
+                        Peminjam: <span class="font-semibold text-gray-700">{{ $borrowing->user?->name ?? 'Pengguna' }}</span> • Kode Aset: <span class="font-mono font-semibold text-blue-600">{{ $borrowing->asset?->asset_code ?? '-' }}</span>
+                    </p>
                 </div>
             </div>
 
-            <div class="flex flex-wrap items-center gap-2">
+            <!-- Tombol Aksi di Header (Hanya Tombol Aksi, Tanpa Tombol Kembali Ganda) -->
+            <div class="flex flex-wrap items-center gap-2.5">
                 @if($borrowing->status === 'pending')
                     @can('approve', $borrowing)
                         <form action="{{ route('borrowings.approve', $borrowing) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menyetujui peminjaman ini?')">
                             @csrf
-                            <button type="submit" class="inline-flex items-center justify-center px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-semibold shadow-sm transition-all active:scale-[0.98]">
+                            <button type="submit" class="inline-flex items-center justify-center px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-semibold shadow-sm hover:shadow transition-all active:scale-[0.98]">
                                 <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
                                 </svg>
@@ -68,7 +75,7 @@
                     @endcan
                 @elseif($borrowing->status === 'borrowed')
                     @if(Auth::user()->isAdmin() || Auth::user()->isLaboran() || Auth::user()->isSuperAdmin())
-                        <a href="{{ route('borrowings.edit', $borrowing) }}" class="inline-flex items-center justify-center px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-semibold shadow-sm transition-all active:scale-[0.98]">
+                        <a href="{{ route('borrowings.edit', $borrowing) }}" class="inline-flex items-center justify-center px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-semibold shadow-sm hover:shadow transition-all active:scale-[0.98]">
                             <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
                             </svg>
@@ -76,12 +83,6 @@
                         </a>
                     @endif
                 @endif
-                <a href="{{ route('borrowings.index') }}" class="inline-flex items-center justify-center px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-sm font-semibold transition-colors">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-                    </svg>
-                    Daftar Peminjaman
-                </a>
             </div>
         </div>
 
@@ -105,33 +106,33 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                     <div class="p-4 bg-gray-50 rounded-xl border border-gray-100">
                         <span class="text-xs text-gray-500 block mb-1">Aset / Barang</span>
-                        <p class="font-semibold text-gray-900">{{ $borrowing->asset->brand }} - {{ $borrowing->asset->model }}</p>
-                        <p class="text-xs text-gray-500 font-mono mt-0.5">Kode: {{ $borrowing->asset->asset_code }}</p>
+                        <p class="font-semibold text-gray-900">{{ $borrowing->asset?->brand ?? 'Aset' }} - {{ $borrowing->asset?->model ?? '-' }}</p>
+                        <p class="text-xs text-gray-500 font-mono mt-0.5">Kode: {{ $borrowing->asset?->asset_code ?? '-' }}</p>
                     </div>
 
                     <div class="p-4 bg-gray-50 rounded-xl border border-gray-100">
                         <span class="text-xs text-gray-500 block mb-1">Lokasi Ruangan</span>
-                        <p class="font-semibold text-gray-900">{{ $borrowing->asset->location->name ?? 'Barang Umum / Belum Ditentukan' }}</p>
-                        <p class="text-xs text-gray-500 mt-0.5">Lantai: {{ $borrowing->asset->location->floor ?? '-' }}</p>
+                        <p class="font-semibold text-gray-900">{{ $borrowing->asset?->location->name ?? 'Barang Umum / Belum Ditentukan' }}</p>
+                        <p class="text-xs text-gray-500 mt-0.5">Lantai: {{ $borrowing->asset?->location->floor ?? '-' }}</p>
                     </div>
 
                     <div class="p-4 bg-gray-50 rounded-xl border border-gray-100">
                         <span class="text-xs text-gray-500 block mb-1">Peminjam</span>
                         <p class="font-semibold text-gray-900 flex items-center gap-1.5">
-                            {{ $borrowing->user->name }}
-                            @if($borrowing->user->gender === 'Laki-laki')
+                            {{ $borrowing->user?->name ?? '-' }}
+                            @if(($borrowing->user?->gender ?? null) === 'Laki-laki')
                                 <span class="text-[10px] font-bold text-blue-700 bg-blue-50 border border-blue-200 px-1 py-0.2 rounded" title="Laki-laki">L</span>
-                            @elseif($borrowing->user->gender === 'Perempuan')
+                            @elseif(($borrowing->user?->gender ?? null) === 'Perempuan')
                                 <span class="text-[10px] font-bold text-rose-700 bg-rose-50 border border-rose-200 px-1 py-0.2 rounded" title="Perempuan">P</span>
                             @endif
                         </p>
-                        <p class="text-xs text-gray-500 mt-0.5">{{ ucfirst($borrowing->user->role) }} {{ $borrowing->user->class_name ? '• Kelas ' . $borrowing->user->class_name : '' }}</p>
+                        <p class="text-xs text-gray-500 mt-0.5">{{ ucfirst($borrowing->user?->role ?? 'User') }} {{ $borrowing->user?->class_name ? '• Kelas ' . $borrowing->user->class_name : '' }}</p>
                     </div>
 
                     <div class="p-4 bg-gray-50 rounded-xl border border-gray-100">
                         <span class="text-xs text-gray-500 block mb-1">Jadwal Tanggal</span>
-                        <p class="font-semibold text-gray-900">Pinjam: {{ $borrowing->borrow_date->format('d M Y') }}</p>
-                        <p class="text-xs text-gray-500 mt-0.5">Rencana Kembali: {{ $borrowing->expected_return_date->format('d M Y') }}</p>
+                        <p class="font-semibold text-gray-900">Pinjam: {{ $borrowing->borrow_date ? $borrowing->borrow_date->format('d M Y') : '-' }}</p>
+                        <p class="text-xs text-gray-500 mt-0.5">Rencana Kembali: {{ $borrowing->expected_return_date ? $borrowing->expected_return_date->format('d M Y') : '-' }}</p>
                     </div>
                 </div>
 
@@ -251,11 +252,6 @@
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</x-app-layout>
                 </div>
             </div>
         </div>

@@ -164,7 +164,7 @@ class BorrowingController extends Controller
     {
         $this->authorize('view', $borrowing);
 
-        $borrowing->load(['asset.location', 'user']);
+        $borrowing->load(['asset.location', 'user', 'approver']);
         return view('borrowings.show', compact('borrowing'));
     }
 
