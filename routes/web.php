@@ -68,9 +68,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // ------------------------------------------
     // 3. READ-ONLY ENDPOINTS MODUL ASET, LOKASI, JENIS, MAINTENANCE
-    // Dapat diakses oleh staf, viewer, pimpinan, dan wakasek
+    // Dapat diakses oleh staf dan viewer (dikecualikan untuk role Pimpinan Sekolah, Waka, dan User)
     // ------------------------------------------
-    Route::middleware(['role:super_admin,admin,teknisi,laboran,pimpinan,pimpinan_sekolah,waka,wakasek,viewer'])->group(function () {
+    Route::middleware(['role:super_admin,admin,teknisi,laboran,viewer'])->group(function () {
         Route::get('/assets', [AssetController::class, 'index'])->name('assets.index');
         Route::get('/assets/{asset}', [AssetController::class, 'show'])->name('assets.show')->whereNumber('asset');
         Route::get('/assets/{asset}/qrcode', [AssetController::class, 'qrcode'])->name('assets.qrcode')->whereNumber('asset');

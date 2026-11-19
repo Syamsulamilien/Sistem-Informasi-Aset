@@ -9,17 +9,27 @@ class AssetPolicy
 {
     public function viewAny(User $user): bool
     {
-        return true; // Semua role bisa melihat daftar
+        // Pimpinan dan Waka dilarang mengakses modul aset
+        if ($user->isPimpinan()) {
+            return false;
+        }
+
+        return true;
     }
 
     public function view(User $user, Asset $asset): bool
     {
+        // Pimpinan dan Waka dilarang mengakses modul aset
+        if ($user->isPimpinan()) {
+            return false;
+        }
+
         // Jika Admin memiliki ruangan tertentu, hanya bisa melihat detail aset ruangannya
         if ($user->role === 'admin' && $user->location_id) {
             return $asset->location_id == $user->location_id;
         }
 
-        return true; // Super Admin, Pimpinan, dan User lain
+        return true;
     }
 
     public function create(User $user): bool

@@ -143,9 +143,10 @@ class SecurityRedirectTest extends TestCase
         $response = $this->actingAs($pimpinan)->get('/dashboard');
         $response->assertOk();
 
-        // Modul aset dan barang habis pakai dapat diakses read-only oleh Pimpinan & Waka
+        // Modul aset diblokir untuk Pimpinan Sekolah (auto redirect ke dashboard dengan error)
         $response = $this->actingAs($pimpinan)->get('/assets');
-        $response->assertOk();
+        $response->assertRedirect(route('dashboard'));
+        $response->assertSessionHas('error');
 
         $response = $this->actingAs($pimpinan)->get('/consumables');
         $response->assertOk();
@@ -154,6 +155,46 @@ class SecurityRedirectTest extends TestCase
         $response = $this->actingAs($pimpinan)->get('/assets/create');
         $response->assertRedirect(route('dashboard'));
         $response->assertSessionHas('error');
+    }
+
+    public function test_waka_role_permissions_and_redirects(): void
+    {
+        $waka = new User([
+            'name' => 'Waka Kurikulum',
+            'username' => 'wakakurikulum',
+            'role' => 'waka',
+        ]);
+        $waka->id = 16;
+
+        $this->assertTrue($waka->isPimpinan());
+        $this->assertTrue($waka->isWaka());
+        $this->assertFalse($waka->isAdmin());
+
+        // AssetPolicy viewAny & view ditolak untuk role waka
+        $assetPolicy = new \App\Policies\AssetPolicy();
+        $this->assertFalse($assetPolicy->viewAny($waka));
+        $this->assertFalse($assetPolicy->view($waka, new \App\Models\Asset()));
+        $this->assertFalse($assetPolicy->create($waka));
+
+        // Waka dapat mengakses Dashboard
+        $response = $this->actingAs($waka)->get('/dashboard');
+        $response->assertOk();
+
+        // Fitur / modul aset diblokir untuk Waka (auto redirect ke dashboard dengan error)
+        $response = $this->actingAs($waka)->get('/assets');
+        $response->assertRedirect(route('dashboard'));
+        $response->assertSessionHas('error');
+
+        $response = $this->actingAs($waka)->get('/assets/create');
+        $response->assertRedirect(route('dashboard'));
+        $response->assertSessionHas('error');
+
+        // Waka tetap bisa mengakses Barang Habis Pakai dan Peminjaman
+        $response = $this->actingAs($waka)->get('/consumables');
+        $response->assertOk();
+
+        $response = $this->actingAs($waka)->get('/borrowings');
+        $response->assertOk();
     }
 
     public function test_guru_and_siswa_role_permissions_and_redirects(): void

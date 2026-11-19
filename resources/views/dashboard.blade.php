@@ -48,11 +48,17 @@
                 <div class="bg-white rounded-xl shadow-sm p-5">
                     <div class="flex items-center justify-between mb-3">
                         <h3 class="text-sm font-bold text-gray-900">Aset Terbaru</h3>
-                        <a href="{{ route('assets.index') }}" class="text-[11px] font-semibold text-blue-600 hover:underline">Lihat Semua &gt;</a>
+                        @if(!Auth::user()->isPimpinan())
+                            <a href="{{ route('assets.index') }}" class="text-[11px] font-semibold text-blue-600 hover:underline">Lihat Semua &gt;</a>
+                        @endif
                     </div>
                     <div class="space-y-2">
                         @forelse($recentAssets as $asset)
-                            <a href="{{ route('assets.show', $asset) }}" class="flex items-center justify-between bg-gray-100 hover:bg-gray-200 transition-colors rounded-lg px-3 py-2">
+                            @if(!Auth::user()->isPimpinan())
+                                <a href="{{ route('assets.show', $asset) }}" class="flex items-center justify-between bg-gray-100 hover:bg-gray-200 transition-colors rounded-lg px-3 py-2">
+                            @else
+                                <div class="flex items-center justify-between bg-gray-100 rounded-lg px-3 py-2">
+                            @endif
                                 <div class="flex items-center gap-3">
                                     <span class="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center">
                                         <span class="w-3 h-3 rounded-full border-2 border-blue-500"></span>
@@ -65,7 +71,11 @@
                                 <span class="px-2 py-0.5 text-[10px] font-semibold rounded {{ $asset->status === 'Aktif' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600' }}">
                                     {{ $asset->status }}
                                 </span>
-                            </a>
+                            @if(!Auth::user()->isPimpinan())
+                                </a>
+                            @else
+                                </div>
+                            @endif
                         @empty
                             <p class="text-xs text-gray-400 text-center py-4">Belum ada aset</p>
                         @endforelse
