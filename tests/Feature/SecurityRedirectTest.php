@@ -290,4 +290,16 @@ class SecurityRedirectTest extends TestCase
         $this->assertEquals('Aktif', $prepared['status']);
         $this->assertNotNull($prepared['location_id']);
     }
+
+    public function test_super_admin_can_access_maintenance_create_and_policy(): void
+    {
+        $superAdmin = new User(['name' => 'Super Admin', 'role' => 'super_admin']);
+        $superAdmin->id = 1;
+
+        $this->assertTrue(\Illuminate\Support\Facades\Gate::forUser($superAdmin)->allows('create', \App\Models\MaintenanceRecord::class));
+        $this->assertTrue(\Illuminate\Support\Facades\Gate::forUser($superAdmin)->allows('update', new \App\Models\MaintenanceRecord()));
+        $this->assertTrue(\Illuminate\Support\Facades\Gate::forUser($superAdmin)->allows('delete', new \App\Models\MaintenanceRecord()));
+        $this->assertTrue(\Illuminate\Support\Facades\Gate::forUser($superAdmin)->allows('complete', new \App\Models\MaintenanceRecord()));
+        $this->assertTrue(\Illuminate\Support\Facades\Gate::forUser($superAdmin)->allows('markInProgress', new \App\Models\MaintenanceRecord()));
+    }
 }
